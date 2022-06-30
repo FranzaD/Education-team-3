@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(haven)
+library(readxl)
 library(ggplot2)
 library(tidyverse)
 library(dplyr)
@@ -18,7 +19,7 @@ w1_1_DEM_w1 <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 w1_10_MT_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
 w_1_MT <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 w_1_PLS <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
-#w_2 <- read_dta("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
+w_2 <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 ```
 
 
