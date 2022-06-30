@@ -27,4 +27,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 .DS_Store
+
+# data files
 data/
+# Compiled files
+**/*.html
