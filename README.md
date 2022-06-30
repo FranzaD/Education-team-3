@@ -7,7 +7,7 @@ data collection approaches:
 
 # PROJECT NOTES
 
-- Store all data inside folder `datasets`
+- Store all data inside folder `data`
 ```
 Education-3
 ├── data
