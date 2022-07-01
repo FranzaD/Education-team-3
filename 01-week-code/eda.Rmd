@@ -75,7 +75,7 @@ colMeans(is.na(media_tech))
 ```
 
 ```{r}
-media_tech %>%
+media_tech_cleaned <- media_tech %>%
   transmute(child_id = as.character(childid),
          par_id = as.character(parid),
          q4a = as.factor(case_when(
