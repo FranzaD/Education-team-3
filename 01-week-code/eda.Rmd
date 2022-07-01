@@ -25,13 +25,15 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
-#wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
+wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 #wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
 ```
 
 # Aubree's code
 
 ```{r}
+
+#learning to give cells names 
 overall_background <- 
 overall_background %>% 
   mutate(bg02a = as.factor(bg02a),
@@ -45,6 +47,14 @@ overall_background %>%
          bg02a == -666 ~ "refused",
          bg02a == -888 ~ "error",
          bg02a == -999 ~ "missing tool") )
+
+#subsetting data 
+
+public_assistance <- overall_background %>% 
+  select(bg12a, bg12b, bg12c,
+         bg12d, bg12e, bg12f, bg12g,
+         bg12h, bg12i, bg12j, bg12k, bg12o,
+         bg12otxt, bg15, assistance)
 
 
 ```
@@ -190,10 +200,9 @@ glimpse(scores_w1)
 ```
 ```{r}
 scores_w1 <-  scores_w1 %>% 
-  mutate(pargen = as.factor(case_when(
-          pargen == 1 ~ "male",
-          pargen == 0 ~ "female"
-        )),
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+         father = pargen == 1,
         language_26_PLS_w1 = as.factor(case_when(
           language_26_pls_w1 == 0 ~ "english",
           language_26_pls_w1 == 1 ~ "spanish"
@@ -224,6 +233,13 @@ scores_w1 <-  scores_w1 %>%
 |plsecpr| Expressive Communication percentile rank|
 |plsss| Total Standard Score|
 |plspr| Total score percentile rank|
+
+## modeling w1_scores
+
+```{r}
+model_score <- scores_w1 %>%
+  select(child_id, par_id, father, language = language_26_PLS_w1, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
+```
 
 
 # Nick's code
@@ -327,5 +343,21 @@ parent_demographic %>%
 parent_demographic %>% 
   ggplot(aes(x = par_us_born)) + 
   geom_bar()
+```
+
+# James'
+
+```{r}
+model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
+```
+
+```{r}
+model_score_demographic %>% 
+  glimpse()
+```
+
+```{r}
+model_score_demographic %>% 
+  ggplot(aes(x = audit))
 ```
 
