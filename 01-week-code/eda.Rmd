@@ -209,18 +209,18 @@ media_tech_cleaned <- media_tech %>%
            mtz05lz == 3 ~ "most-days-each-week",
            mtz05lz == 4 ~ "once-a-day",
            mtz05lz == 5 ~ "several-times-each-day")),
-         n-devices = MTndevices,
-         tv-exposure = MTtvexposure,
+         n_devices = MTndevices,
+         tv_exposure = MTtvexposure,
          solo = MTsolomedia,
          passive = MTpassive,
          coop = MTcouse,
          mealtimes = MTmealtimes,
-         behavior-management = MTdcbhv,
-         possitive-beliefs-media = MTbeliefs,
-         educational-benefits = MTeduc,
-         digital-babysitting = MTbabysit,
-         daily-use = MTdailyuse
-  )
+         behavior_management = MTdcbhv,
+         possitive_beliefs_media = MTbeliefs,
+         educational_benefits = MTeduc,
+         digital_babysitting = MTbabysit,
+         daily_use = MTdailyuse
+)
 ```
 
 
