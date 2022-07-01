@@ -38,8 +38,20 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 ```{r}
 glimpse(media_tech)
 
-
 ```
+
+```{r}
+# total na values per column
+colSums(is.na(media_tech))
+
+# percentage na values per column
+colMeans(is.na(media_tech))
+```
+
+```{r}
+attributes(media_tech$mt05a)
+```
+
 
 # Deborah's code
 
