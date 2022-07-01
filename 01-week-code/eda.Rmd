@@ -386,21 +386,42 @@ ggplot(data = parent_demographic, aes(
   x= par_ethnicity)) +
 geom_bar()
 parent_demographic %>% 
-  ggplot(aes(x = planned_preg)) + 
-  geom_bar()
-parent_demographic %>% 
-  ggplot(aes(x = chi_ethnicity)) + 
-  geom_bar()
-parent_demographic %>% 
   ggplot(aes(x = chi_par_lang)) + 
   geom_bar()
+#most parents speak either english or spanish to their children
 parent_demographic %>% 
   ggplot(aes(x = par_language)) + 
   geom_bar()
+#majority parents speak english/spanish
 parent_demographic %>% 
   ggplot(aes(x = par_us_born)) + 
   geom_bar()
+#Slightly more than half of the parents were born outside of the U.S.
 ```
+
+```{r}
+model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
+```
+
+```{r}
+model_score_demographic %>% 
+  ggplot(aes(x=par_ethnicity, 
+             y= Auditory_Comprehension_score,
+             fill = par_ethnicity)) +
+  geom_boxplot(alpha = 0.3) +
+  labs(x= "Parent Ethnicity",
+       y= "Auditory Comprehension Score") + 
+  theme(panel.grid.major = element_blank(), 
+                 panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_blank(),
+        legend.title = element_text(colour = "steelblue", face = "bold.italic",)) +
+  ggtitle("Spread of ACS")
+  
+  
+```
+
 
 # James'
 
