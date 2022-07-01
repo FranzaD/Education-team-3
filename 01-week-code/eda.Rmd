@@ -50,11 +50,21 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
 # Nick's code
 ```{r}
-print("Don't touch my code chunk or I'll fight you - Nick")
 
-demographic_background <-demographic_background %>% 
-  mutate(dem04 = as.character(dem04),
-          ethnicity = case_when(
+parent_demographic <- demographic_background %>%
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+         language = case_when(
+           language == 1 ~1, 
+           language == 0 ~ 0),
+         span_lang_form = as.logical(language),
+         pargen = case_when(
+           pargen == 0 ~ 0,
+           pargen == 1 ~ 1),
+         father = as.logical(pargen),
+         data_site = as.character(site),
+         par_ethnicity= as.character(dem04),
+         par_ethnicity = case_when(
             dem04 == 1 ~ "White",
             dem04 == 2 ~ "African American",
             dem04 == 4 ~ "Asian/Asian American",
@@ -62,8 +72,81 @@ demographic_background <-demographic_background %>%
             dem04 == 7 ~ "Native Haiwaiian/Pacific Islander",
             dem04 == 8 ~ "Hispanic/Latino",
             dem04 == 9 ~ "Other",
-            dem04 == 10 ~ "multiracial"
-          ))
+            dem04 == 10 ~ "multiracial"),
+         dem05 = case_when(
+           dem05 == 0 ~ 0,
+           dem05 == 1 ~ 1),
+         par_us_born = as.logical(dem05),
+         par_language = as.character(dem06),
+         par_language = case_when(
+           dem06 == 1 ~ "English",
+           dem06 == 2 ~ "Spanish",
+           dem06 == 3 ~ "English/Spanish",
+           dem06 == 5 ~ "English/Other",
+           dem06 == 6 ~ "multilingual"),
+         dem08 = case_when(
+           dem08 == 0 ~ 0,
+           dem08 == 1 ~1),
+         chi_girl = as.logical(dem08),
+         birth_time = case_when(
+           dem10 == 1 ~ "on time",
+           dem10 == 2 ~ "early",
+           dem10 == 3 ~ "late"),
+         dem11 = case_when(dem11 == 0 ~ 0, dem11 == 1 ~1),
+         planned_preg = as.logical(dem11),
+         dem16 = case_when(
+           dem16 == 1 ~ "White",
+           dem16 == 2 ~ "Black/AA",
+           dem16 == 3 ~ "Asian",
+           dem16 == 8 ~ "Hispanic/Latino",
+           dem16 == 9 ~ "Other",
+           dem16 == 10 ~ "Multiracial"),
+         chi_ethnicity = as.character(dem16),
+         dem17 = case_when(
+           dem17 == 1 ~ "English",
+           dem17 == 2 ~ "Spanish",
+           dem17 == 3 ~ "English/Spanish",
+           dem17 == 4 ~ "Vietnamese",
+           dem17 == 5 ~ "English/Other", 
+           dem17 == 6 ~ "Multilingual",
+           dem17 == 7 ~ "Other"),
+         chi_par_lang = as.character(dem17),
+         dem19 = case_when(
+           dem19 == 1 ~ "English",
+           dem19 == 2 ~ "Spanish",
+           dem19 == 3 ~ "English/Spanish",
+           dem19 == 4 ~ "Vietnamese",
+           dem19 == 5 ~ "English/Other",
+           dem19 == 6 ~ "Multilingual",
+           dem19 == 7 ~ "Other"),
+         relatives_lang = as.character(dem19) ) %>% 
+  select(child_id, par_id, span_lang_form, father,data_site, 
+         par_ethnicity,par_us_born, par_language, chi_girl, 
+         birth_time, planned_preg, chi_ethnicity, chi_par_lang, 
+         relatives_lang )
+  
+
 ```
 
+```{r}
+  
+ggplot(data = parent_demographic, aes( 
+  x= par_ethnicity)) +
+geom_bar()
+parent_demographic %>% 
+  ggplot(aes(x = planned_preg)) + 
+  geom_bar()
+parent_demographic %>% 
+  ggplot(aes(x = chi_ethnicity)) + 
+  geom_bar()
+parent_demographic %>% 
+  ggplot(aes(x = chi_par_lang)) + 
+  geom_bar()
+parent_demographic %>% 
+  ggplot(aes(x = par_language)) + 
+  geom_bar()
+parent_demographic %>% 
+  ggplot(aes(x = par_us_born)) + 
+  geom_bar()
+```
 
