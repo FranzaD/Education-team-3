@@ -32,6 +32,8 @@ wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 # Aubree's code
 
 ```{r}
+
+#learning to give cells names 
 overall_background <- 
 overall_background %>% 
   mutate(bg02a = as.factor(bg02a),
@@ -47,6 +49,13 @@ overall_background %>%
          bg02a == -999 ~ "missing tool") )
 
 #subsetting data 
+
+public_assistance <- overall_background %>% 
+  select(bg12a, bg12b, bg12c,
+         bg12d, bg12e, bg12f, bg12g,
+         bg12h, bg12i, bg12j, bg12k, bg12o,
+         bg12otxt, bg15, assistance)
+
 
 ```
 
