@@ -46,13 +46,29 @@ overall_background %>%
          bg02a == -888 ~ "error",
          bg02a == -999 ~ "missing tool") )
 
+#subsetting data 
 
 ```
 
 # Chandra's code
 
 ```{r}
+glimpse(media_tech)
+
 ```
+
+```{r}
+# total na values per column
+colSums(is.na(media_tech))
+
+# percentage na values per column
+colMeans(is.na(media_tech))
+```
+
+```{r}
+attributes(media_tech$mt05a)
+```
+
 
 # Deborah's code
 
