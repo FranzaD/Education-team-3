@@ -286,7 +286,10 @@ parent_education <- parent_education %>%
          parent_class_taken = as.logical(bg14),
          highest_degree_completed = as.factor(bg16),
          years_school_complete = as.numeric(bgz16),
-         #us_education = as.logical(bg17a),
+         bg17a = case_when(
+           bg17a == 0 ~ "no",
+           bg17a == 1 ~ "yes"),
+         us_education = as.logical(bg17a),
          education_location = as.character(bg17b)) %>% 
   select(parent_id,
          child_id, 
@@ -296,7 +299,9 @@ parent_education <- parent_education %>%
          parent_class_taken,
          highest_degree_completed,
          years_school_complete,
+         us_education,
          education_location) %>% 
+  #drop_na() %>% 
   glimpse()
 ```
 
