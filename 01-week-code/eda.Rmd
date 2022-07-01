@@ -48,4 +48,18 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 ```{r}
 print("Don't touch my code chunk or I'll fight you - Nick")
 
+demographic_background <-demographic_background %>% 
+  mutate(dem04 = as.character(dem04),
+          ethnicity = case_when(
+            dem04 == 1 ~ "White",
+            dem04 == 2 ~ "African American",
+            dem04 == 4 ~ "Asian/Asian American",
+            dem04 == 5 ~ "Middle Eastern",
+            dem04 == 7 ~ "Native Haiwaiian/Pacific Islander",
+            dem04 == 8 ~ "Hispanic/Latino",
+            dem04 == 9 ~ "Other",
+            dem04 == 10 ~ "multiracial"
+          ))
 ```
+
+
