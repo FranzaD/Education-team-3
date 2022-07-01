@@ -15,6 +15,7 @@ library(readxl)
 library(ggplot2)
 library(tidyverse)
 library(dplyr)
+library(janitor)
 demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 media_tech <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
 overall_background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
@@ -45,13 +46,6 @@ overall_background <- gsub("-777", "planned skip", overall_background$bg02a)
 # Deborah's code
 
 ```{r}
-
-#Deborah's code
-overall_background %>% 
-  mutate(bg02a = as.factor(bg02a),
-         bg02a = case_when(
-           bg02a == -777 ~ "planned skip",
-         ) )
 
 ```
 
