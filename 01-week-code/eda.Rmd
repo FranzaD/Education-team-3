@@ -253,6 +253,8 @@ model_score_demographic %>%
 
 ```{r}
 model_score_demographic %>% 
-  ggplot(aes(x = audit))
+  ggplot(aes(x = chi_ethnicity,
+             y = total_score))+
+  geom_col()
 ```
 
