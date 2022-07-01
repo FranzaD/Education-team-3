@@ -1,24 +1,25 @@
 
 # scores_w1
 
-| variable name      | description                                          |
-| ------------------ | ---------------------------------------------------- |
-| childid            | Child ID                                             |
-| parid              | Parent ID                                            |
-| wave               | wave index                                           |
-| version_26_PLS_w1  | version of this form? (we definitely dont need this) |
-| pargen             | Parent gender                                        |
-| site               | no use                                               |
-| language_26_PLS_w1 | From language                                        |
-| plsacraw           | Auditory Comprehension raw score                     |
-| plsecraw           | Expressive Communication raw score                   |
-| plsraw             | Total raw score (AC raw  + EC raw)                   |
-| plsacss            | Auditory Comprehension standard score                |
-| plsacpr            | Auditory Comprehension percentile rank               |
-| plsecss            | Expressive Communication standard score              |
-| plsecpr            | Expressive Communication percentile rank             |
-| plsss              | Total Standard Score                                 |
-| plspr              | Total score percentile rank                          |
+| variable name                  | description                                          |
+| ------------------------------ | ---------------------------------------------------- |
+| child_id                       | Child ID                                             |
+| par_id                         | Parent ID                                            |
+| wave                           | wave index                                           |
+| language                       | From language                                        |
+| auditory_comprehension_score   | Auditory Comprehension standard score                |
+| expressive_communication_score | Expressive Communication standard score              |
+| total_score                    | Total Standard Score                                 |
+| pargen                         | Parent gender                                        |
+| version_26_PLS_w1              | version of this form? (we definitely dont need this) |
+| site                           | no use                                               |
+| plsacraw                       | Auditory Comprehension raw score                     |
+| plsecraw                       | Expressive Communication raw score                   |
+| plsraw                         | Total raw score (AC raw  + EC raw)                   |
+| plsacpr                        | Auditory Comprehension percentile rank               |
+| plsecpr                        | Expressive Communication percentile rank             |
+| plspr                          | Total score percentile rank                          |
+
 
 # media_tech
 

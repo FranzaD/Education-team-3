@@ -332,10 +332,7 @@ glimpse(scores_w1)
 scores_w1 <-  scores_w1 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
-         pargen = as.factor(case_when(
-          pargen == 1 ~ "male",
-          pargen == 0 ~ "female"
-        )),
+         father = pargen == 1,
         language_26_PLS_w1 = as.factor(case_when(
           language_26_pls_w1 == 0 ~ "english",
           language_26_pls_w1 == 1 ~ "spanish"
@@ -346,12 +343,9 @@ scores_w1 <-  scores_w1 %>%
         )))
 ```
 
-
-## modeling w1_scores
-
 ```{r}
 model_score <- scores_w1 %>%
-  select(child_id, par_id, pargen, language = language_26_PLS_w1, Auditory_Comprehension_score = plsacss, Expressive_Communication_score = plsecss, Total_score = plsss)
+  select(child_id, par_id, father, language = language_26_PLS_w1, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
 ```
 
 
@@ -462,7 +456,7 @@ model_score_demographic = full_join(model_score, parent_demographic, by=c("child
 ```{r}
 model_score_demographic %>% 
   ggplot(aes(x=par_ethnicity, 
-             y= Auditory_Comprehension_score,
+             y= auditory_comprehension_score,
              fill = par_ethnicity)) +
   geom_boxplot(alpha = 0.3) +
   labs(x= "Parent Ethnicity",
@@ -485,8 +479,6 @@ model_score_demographic %>%
 model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
 ```
 
-<<<<<<< HEAD
-=======
 ```{r}
 model_score_demographic %>% 
   glimpse()
@@ -498,5 +490,3 @@ model_score_demographic %>%
              y = total_score))+
   geom_col()
 ```
-
->>>>>>> 8e3954dd7592f33dcfabc634be544d5b4e1bb4b1
