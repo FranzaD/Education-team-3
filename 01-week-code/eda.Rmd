@@ -31,9 +31,20 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 # Aubree's code
 
 ```{r}
+overall_background <- 
+overall_background %>% 
+  mutate(bg02a = as.factor(bg02a),
+         bg02a = case_when(
+           bg02a == -777 ~ "planned skip",
+         bg02a == -111 ~ "drop",
+         bg02a == -222 ~ "different version",
+         bg02a == -333 ~ "other parent",
+         bg02a == -444 ~ "unable",
+         bg02a == -555 ~ "unsure",
+         bg02a == -666 ~ "refused",
+         bg02a == -888 ~ "error",
+         bg02a == -999 ~ "missing tool") )
 
-#Aubree's code
-overall_background <- gsub("-777", "planned skip", overall_background$bg02a)
 
 ```
 
