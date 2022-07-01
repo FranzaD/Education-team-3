@@ -31,6 +31,7 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
 ```{r}
 #Aubree's code
+overall_background <- gsub("-777", "planned skip", overall_background$bg02a)
 ```
 
 ```{r}
