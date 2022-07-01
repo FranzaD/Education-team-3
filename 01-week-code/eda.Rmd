@@ -15,17 +15,17 @@ library(readxl)
 library(ggplot2)
 library(tidyverse)
 library(dplyr)
-w1_1_DEM_w1 <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
-w1_10_MT_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
-w_1_MT <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
-w_1_PLS <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
-w_2 <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+media_tech <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
+overall_background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
+scores_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
-wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
-wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
+#wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
+#wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
-wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
-wzve_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
+#wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
+#wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
 ```
 
 
