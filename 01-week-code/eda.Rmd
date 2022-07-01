@@ -1,0 +1,45 @@
+---
+title: "Exploratory Data Analysis"
+author: "Nicholas Noel"
+date: '2022-06-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(haven)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+wave_1_dem <- read_dta("../data/31_BIT_w2.dta")
+wave_1_bck <- read_dta("../data/2_BCK_w1.dta")
+wave_1_MT <- read_dta("../data/10_MT_w1.dta")
+wave_1_PLS <- read_dta("../data/26_PLS_w1.dta")
+wave_2 <- read_dta("../data/31_BIT_w2.dta")
+wave_6 <- read_dta("../data/BB2_W6_BIT.dta")
+
+```
+
+
+```{r}
+#Aubree's code
+```
+
+```{r}
+#Chandra's code
+```
+
+```{r}
+#Deborah's code
+```
+
+```{r}
+#Jame's code
+```
+
+```{r}
+#Nick's code
+```
