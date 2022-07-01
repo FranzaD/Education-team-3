@@ -50,7 +50,7 @@ overall_background %>%
 
 #subsetting data 
 
-public_assistance <- overall_background %>% 
+public_assistance_w1 <- overall_background %>% 
  mutate(parent_id = as.character(parid),
          child_id = as.character(childid),
          wave = as.factor(wave),
@@ -86,7 +86,7 @@ public_assistance <- overall_background %>%
          #other_specify = as.character(bg12oxtxt),
          assistance = as.factor(assistance))
 
-public_assistance <- public_assistance%>% 
+public_assistance_w1 <- public_assistance_w1%>% 
   select(parent_id, child_id, state_welfare, unemployment_insurance, food_stamp, wic,
          child_support, ssi_and_ssdi, adoption_assistance, utility_assistance, childcare_subsidy, vertan_benefit, medical_assistance, none, other, assistance)
 
