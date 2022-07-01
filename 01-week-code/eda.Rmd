@@ -48,7 +48,10 @@ overall_background <- gsub("-777", "planned skip", overall_background$bg02a)
 
 #Deborah's code
 overall_background %>% 
-  mutate(bg02a = as.factor(bg02a))
+  mutate(bg02a = as.factor(bg02a),
+         bg02a = case_when(
+           bg02a == -777 ~ "planned skip",
+         ) )
 
 ```
 
