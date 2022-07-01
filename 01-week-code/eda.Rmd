@@ -15,13 +15,14 @@ library(readxl)
 library(ggplot2)
 library(tidyverse)
 library(dplyr)
+library(janitor)
 demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 media_tech <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
 overall_background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 scores_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
 w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
-#wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
+wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
 #wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
@@ -43,12 +44,54 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 ```{r}
 ```
 
-# Jame's code
+# James' code
+
+## clean data
 
 ```{r}
+scores_w1 <- clean_names(scores_w1)
+glimpse(scores_w1)
+```
+```{r}
+scores_w1 <-  scores_w1 %>% 
+  mutate(pargen = as.factor(case_when(
+          pargen == 1 ~ "male",
+          pargen == 0 ~ "female"
+        )),
+        language_26_PLS_w1 = as.factor(case_when(
+          language_26_pls_w1 == 0 ~ "english",
+          language_26_pls_w1 == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "UMD",
+          site == 2 ~ "UCI"
+        )))
 ```
 
+### Variable meaning
+
+|variable name| description|
+|-------------|------------|
+|childid| Child ID|
+|parid| Parent ID|
+|wave| wave index|
+|version_26_PLS_w1| version of this form? (we definitely dont need this)|
+|pargen| Parent gender|
+|site | no use|
+|language_26_PLS_w1| From language|
+|plsacraw| Auditory Comprehension raw score|
+|plsecraw| Expressive Communication raw score|
+|plsraw| Total raw score (AC raw  + EC raw)|
+|plsacss| Auditory Comprehension standard score|
+|plsacpr| Auditory Comprehension percentile rank|
+|plsecss| Expressive Communication standard score|
+|plsecpr| Expressive Communication percentile rank|
+|plsss| Total Standard Score|
+|plspr| Total score percentile rank|
+
+
 # Nick's code
+
 ```{r}
 print("Don't touch my code chunk or I'll fight you - Nick")
 
