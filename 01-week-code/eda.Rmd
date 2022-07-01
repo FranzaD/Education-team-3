@@ -50,12 +50,45 @@ overall_background %>%
 
 #subsetting data 
 
-public_assistance <- overall_background %>% 
-  select(bg12a, bg12b, bg12c,
-         bg12d, bg12e, bg12f, bg12g,
-         bg12h, bg12i, bg12j, bg12k, bg12o,
-         bg12otxt, bg15, assistance)
+public_assistance_w1 <- overall_background %>% 
+ mutate(parent_id = as.character(parid),
+         child_id = as.character(childid),
+         wave = as.factor(wave),
+         par_gen = case_when(
+           pargen == 0 ~ 0,
+           pargen == 1 ~ 1),
+         state_welfare = case_when(bg12a == 0 ~ 0,
+                                   bg12a == 1~1),
+         unemployment_insurance = case_when(bg12b== 0 ~ 0,
+                                   bg12b == 1~1),
+         food_stamp = case_when(bg12c == 0 ~ 0,
+                                   bg12c == 1~1),
+         wic = case_when(bg12d == 0 ~ 0,
+                                   bg12d == 1~1),
+         child_support = case_when(bg12e == 0 ~ 0,
+                                   bg12e == 1~1),
+         ssi_and_ssdi = case_when(bg12f == 0 ~ 0,
+                                   bg12f == 1~1),
+         adoption_assistance = case_when(bg12g == 0 ~ 0,
+                                   bg12g == 1~1),
+         utility_assistance = case_when(bg12h == 0 ~ 0,
+                                   bg12h == 1~1), 
+         childcare_subsidy = case_when(bg12i == 0 ~ 0,
+                                   bg12i == 1~1),
+         vertan_benefit = case_when(bg12j == 0 ~ 0,
+                                   bg12j == 1~1),
+         medical_assistance = case_when(bg12k == 0 ~ 0,
+                                   bg12k == 1~1),
+         none = case_when(bg12l == 0 ~ 0,
+                                   bg12l == 1~1),
+         other = case_when(bg12o == 0 ~ 0,
+                                   bg12o == 1~1),
+         #other_specify = as.character(bg12oxtxt),
+         assistance = as.factor(assistance))
 
+public_assistance_w1 <- public_assistance_w1%>% 
+  select(parent_id, child_id, state_welfare, unemployment_insurance, food_stamp, wic,
+         child_support, ssi_and_ssdi, adoption_assistance, utility_assistance, childcare_subsidy, vertan_benefit, medical_assistance, none, other, assistance)
 
 ```
 
@@ -226,10 +259,48 @@ media_tech_cleaned <- media_tech %>%
 
 
 # Deborah's code
+```{r}
+#overall_background$bg14 %>% 
+#  distinct()
+```
 
 ```{r}
+# parent education table
+parent_education <- overall_background %>% 
+  select(parid, childid, wave, pargen, bg07f, bg14, bg16, bgz16, bg17a, bg17b) %>% 
+  glimpse()
 
 ```
+
+
+```{r}
+parent_education <- parent_education %>% 
+    mutate(parent_id = as.character(parid),
+         child_id  = as.character(childid),
+         wave = as.factor(wave),
+         parent_gender = as.factor(pargen),
+         degree_cert_in_prog = as.factor(bg07f),
+         bg14 = case_when(
+           bg14 == 0 ~ "no",
+           bg14 == 1 ~ "yes"),
+         parent_class_taken = as.logical(bg14),
+         highest_degree_completed = as.factor(bg16),
+         years_school_complete = as.numeric(bgz16),
+         #us_education = as.logical(bg17a),
+         education_location = as.character(bg17b)) %>% 
+  select(parent_id,
+         child_id, 
+         wave, 
+         parent_gender, 
+         degree_cert_in_prog, 
+         parent_class_taken,
+         highest_degree_completed,
+         years_school_complete,
+         education_location) %>% 
+  glimpse()
+```
+
+
 
 # James' code
 
@@ -243,7 +314,10 @@ glimpse(scores_w1)
 scores_w1 <-  scores_w1 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
-         father = pargen == 1,
+         pargen = as.factor(case_when(
+          pargen == 1 ~ "male",
+          pargen == 0 ~ "female"
+        )),
         language_26_PLS_w1 = as.factor(case_when(
           language_26_pls_w1 == 0 ~ "english",
           language_26_pls_w1 == 1 ~ "spanish"
@@ -259,7 +333,7 @@ scores_w1 <-  scores_w1 %>%
 
 ```{r}
 model_score <- scores_w1 %>%
-  select(child_id, par_id, father, language = language_26_PLS_w1, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
+  select(child_id, par_id, pargen, language = language_26_PLS_w1, Auditory_Comprehension_score = plsacss, Expressive_Communication_score = plsecss, Total_score = plsss)
 ```
 
 
@@ -350,21 +424,42 @@ ggplot(data = parent_demographic, aes(
   x= par_ethnicity)) +
 geom_bar()
 parent_demographic %>% 
-  ggplot(aes(x = planned_preg)) + 
-  geom_bar()
-parent_demographic %>% 
-  ggplot(aes(x = chi_ethnicity)) + 
-  geom_bar()
-parent_demographic %>% 
   ggplot(aes(x = chi_par_lang)) + 
   geom_bar()
+#most parents speak either english or spanish to their children
 parent_demographic %>% 
   ggplot(aes(x = par_language)) + 
   geom_bar()
+#majority parents speak english/spanish
 parent_demographic %>% 
   ggplot(aes(x = par_us_born)) + 
   geom_bar()
+#Slightly more than half of the parents were born outside of the U.S.
 ```
+
+```{r}
+model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
+```
+
+```{r}
+model_score_demographic %>% 
+  ggplot(aes(x=par_ethnicity, 
+             y= Auditory_Comprehension_score,
+             fill = par_ethnicity)) +
+  geom_boxplot(alpha = 0.3) +
+  labs(x= "Parent Ethnicity",
+       y= "Auditory Comprehension Score") + 
+  theme(panel.grid.major = element_blank(), 
+                 panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_blank(),
+        legend.title = element_text(colour = "steelblue", face = "bold.italic",)) +
+  ggtitle("Spread of ACS")
+  
+  
+```
+
 
 # James'
 
@@ -372,6 +467,8 @@ parent_demographic %>%
 model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
 ```
 
+<<<<<<< HEAD
+=======
 ```{r}
 model_score_demographic %>% 
   glimpse()
@@ -384,3 +481,4 @@ model_score_demographic %>%
   geom_col()
 ```
 
+>>>>>>> 8e3954dd7592f33dcfabc634be544d5b4e1bb4b1
