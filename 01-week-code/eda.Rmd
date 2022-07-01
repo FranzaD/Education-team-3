@@ -178,7 +178,48 @@ media_tech %>%
            mt07a == 4 ~ "strongly-agree")),
          q8 = as.logical(case_when(
            mt08 == 0 ~ 0,
-           mt08 == 1 ~ 1))
+           mt08 == 1 ~ 1)),
+         q5hz = as.factor(case_when(
+           mtz05hz == 1 ~ "never-or-rarely",
+           mtz05hz == 2 ~ "some-days-each-week",
+           mtz05hz == 3 ~ "most-days-each-week",
+           mtz05hz == 4 ~ "once-a-day",
+           mtz05hz == 5 ~ "several-times-each-day")),
+         q5iz = as.factor(case_when(
+           mtz05iz == 1 ~ "never-or-rarely",
+           mtz05iz == 2 ~ "some-days-each-week",
+           mtz05iz == 3 ~ "most-days-each-week",
+           mtz05iz == 4 ~ "once-a-day",
+           mtz05iz == 5 ~ "several-times-each-day")),
+         q5jz = as.factor(case_when(
+           mtz05jz == 1 ~ "never-or-rarely",
+           mtz05jz == 2 ~ "some-days-each-week",
+           mtz05jz == 3 ~ "most-days-each-week",
+           mtz05jz == 4 ~ "once-a-day",
+           mtz05jz == 5 ~ "several-times-each-day")),
+         q5kz = as.factor(case_when(
+           mtz05kz == 1 ~ "never-or-rarely",
+           mtz05kz == 2 ~ "some-days-each-week",
+           mtz05kz == 3 ~ "most-days-each-week",
+           mtz05kz == 4 ~ "once-a-day",
+           mtz05kz == 5 ~ "several-times-each-day")),
+         q5lz = as.factor(case_when(
+           mtz05lz == 1 ~ "never-or-rarely",
+           mtz05lz == 2 ~ "some-days-each-week",
+           mtz05lz == 3 ~ "most-days-each-week",
+           mtz05lz == 4 ~ "once-a-day",
+           mtz05lz == 5 ~ "several-times-each-day")),
+         n-devices = MTndevices,
+         tv-exposure = MTtvexposure,
+         solo = MTsolomedia,
+         passive = MTpassive,
+         coop = MTcouse,
+         mealtimes = MTmealtimes,
+         behavior-management = MTdcbhv,
+         possitive-beliefs-media = MTbeliefs,
+         educational-benefits = MTeduc,
+         digital-babysitting = MTbabysit,
+         daily-use = MTdailyuse
   )
 ```
 
