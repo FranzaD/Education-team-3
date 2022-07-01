@@ -265,12 +265,6 @@ media_tech_cleaned <- media_tech %>%
 ```
 
 ```{r}
-
-
-```
-
-
-```{r}
 # parent education table
 parent_education <- overall_background %>% 
   select(parid, childid, wave, pargen, bg07f, bg14, bg16, bgz16, bg17a, bg17b) %>% 
@@ -314,7 +308,6 @@ parent_education <- parent_education %>%
          years_school_complete,
          us_education,
          education_location) %>% 
-   drop_na() %>% 
   glimpse()
 ```
 
