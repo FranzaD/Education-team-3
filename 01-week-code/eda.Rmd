@@ -287,10 +287,66 @@ media_tech_cleaned <- media_tech %>%
 
 
 # Deborah's code
+```{r}
+#overall_background$bg14 %>% 
+#  distinct()
+```
 
 ```{r}
 
+
 ```
+
+
+```{r}
+# parent education table
+parent_education <- overall_background %>% 
+  select(parid, childid, wave, pargen, bg07f, bg14, bg16, bgz16, bg17a, bg17b) %>% 
+  #nrow() %>% 
+  glimpse()
+
+parent_education <- parent_education %>% 
+    mutate(parent_id = as.character(parid),
+         child_id  = as.character(childid),
+         wave = as.factor(wave),
+         parent_gender = as.factor(pargen),
+         degree_cert_in_prog = as.factor(bg07f),
+         bg14 = case_when(
+           bg14 == 0 ~ "no",
+           bg14 == 1 ~ "yes"),
+         parent_class_taken = as.logical(bg14),
+         highest_degree_completed = as.factor(bg16),
+         years_school_complete = as.numeric(bgz16),
+         bg17a = case_when(
+           bg17a == 0 ~ "no",
+           bg17a == 1 ~ "yes"),
+         us_education = as.logical(bg17a),
+         education_location = as.character(bg17b),
+         education_location = case_when(
+           education_location == -777 ~ "planned skip",
+           education_location == -111 ~ "drop",
+           education_location == -222 ~ "different version",
+           education_location == -333 ~ "other parent",
+           education_location == -444 ~ "unable",
+           education_location == -555 ~ "unsure",
+           education_location == -666 ~ "refused",
+           education_location == -888 ~ "error",
+           education_location == -999 ~ "missing tool")) %>% 
+  select(parent_id,
+         child_id, 
+         wave, 
+         parent_gender, 
+         degree_cert_in_prog, 
+         parent_class_taken,
+         highest_degree_completed,
+         years_school_complete,
+         us_education,
+         education_location) %>% 
+   drop_na() %>% 
+  glimpse()
+```
+
+
 
 # James' code
 
@@ -304,10 +360,7 @@ glimpse(scores_w1)
 scores_w1 <-  scores_w1 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
-         pargen = as.factor(case_when(
-          pargen == 1 ~ "male",
-          pargen == 0 ~ "female"
-        )),
+         father = pargen == 1,
         language_26_PLS_w1 = as.factor(case_when(
           language_26_pls_w1 == 0 ~ "english",
           language_26_pls_w1 == 1 ~ "spanish"
@@ -318,12 +371,9 @@ scores_w1 <-  scores_w1 %>%
         )))
 ```
 
-
-## modeling w1_scores
-
 ```{r}
 model_score <- scores_w1 %>%
-  select(child_id, par_id, pargen, language = language_26_PLS_w1, Auditory_Comprehension_score = plsacss, Expressive_Communication_score = plsecss, Total_score = plsss)
+  select(child_id, par_id, father, language = language_26_PLS_w1, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
 ```
 
 
@@ -434,7 +484,7 @@ model_score_demographic = full_join(model_score, parent_demographic, by=c("child
 ```{r}
 model_score_demographic %>% 
   ggplot(aes(x=par_ethnicity, 
-             y= Auditory_Comprehension_score,
+             y= auditory_comprehension_score,
              fill = par_ethnicity)) +
   geom_boxplot(alpha = 0.3) +
   labs(x= "Parent Ethnicity",
@@ -457,8 +507,6 @@ model_score_demographic %>%
 model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
 ```
 
-<<<<<<< HEAD
-=======
 ```{r}
 model_score_demographic %>% 
   glimpse()
@@ -470,5 +518,3 @@ model_score_demographic %>%
              y = total_score))+
   geom_col()
 ```
-
->>>>>>> 8e3954dd7592f33dcfabc634be544d5b4e1bb4b1
