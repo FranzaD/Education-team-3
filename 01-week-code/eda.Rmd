@@ -25,7 +25,7 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
-#wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
+wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 #wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
 ```
 
@@ -95,7 +95,9 @@ glimpse(scores_w1)
 ```
 ```{r}
 scores_w1 <-  scores_w1 %>% 
-  mutate(pargen = as.factor(case_when(
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+         pargen = as.factor(case_when(
           pargen == 1 ~ "male",
           pargen == 0 ~ "female"
         )),
@@ -129,6 +131,13 @@ scores_w1 <-  scores_w1 %>%
 |plsecpr| Expressive Communication percentile rank|
 |plsss| Total Standard Score|
 |plspr| Total score percentile rank|
+
+## modeling w1_scores
+
+```{r}
+model_score <- scores_w1 %>%
+  select(child_id, par_id, pargen, language = language_26_PLS_w1, Auditory_Comprehension_score = plsacss, Expressive_Communication_score = plsecss, Total_score = plsss)
+```
 
 
 # Nick's code
@@ -232,5 +241,11 @@ parent_demographic %>%
 parent_demographic %>% 
   ggplot(aes(x = par_us_born)) + 
   geom_bar()
+```
+
+# James'
+
+```{r}
+model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
 ```
 
