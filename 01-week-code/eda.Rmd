@@ -28,25 +28,52 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 #wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
 ```
 
+# Aubree's code
 
 ```{r}
+<<<<<<< HEAD
 #Aubree's code
 overall_background <- gsub("-777", "planned skip", overall_background$bg02a)
+=======
+>>>>>>> f82b3e00892007e092d1880a3433ff8602aae7e4
 ```
 
-```{r}
-#Chandra's code
-```
+# Chandra's code
 
 ```{r}
+```
+
+# Deborah's code
+
+```{r}
+
 #Deborah's code
+overall_background %>% 
+  mutate(bg02a = as.factor(bg02a))
+
 ```
+
+# Jame's code
 
 ```{r}
-#Jame's code
 ```
 
+# Nick's code
 ```{r}
 print("Don't touch my code chunk or I'll fight you - Nick")
 
+demographic_background <-demographic_background %>% 
+  mutate(dem04 = as.character(dem04),
+          ethnicity = case_when(
+            dem04 == 1 ~ "White",
+            dem04 == 2 ~ "African American",
+            dem04 == 4 ~ "Asian/Asian American",
+            dem04 == 5 ~ "Middle Eastern",
+            dem04 == 7 ~ "Native Haiwaiian/Pacific Islander",
+            dem04 == 8 ~ "Hispanic/Latino",
+            dem04 == 9 ~ "Other",
+            dem04 == 10 ~ "multiracial"
+          ))
 ```
+
+
