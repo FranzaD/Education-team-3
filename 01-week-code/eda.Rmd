@@ -46,6 +46,7 @@ overall_background %>%
          bg02a == -888 ~ "error",
          bg02a == -999 ~ "missing tool") )
 
+#subsetting data 
 
 ```
 
