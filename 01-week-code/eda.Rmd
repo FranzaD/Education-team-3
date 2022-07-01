@@ -51,7 +51,7 @@ overall_background %>%
 #subsetting data 
 
 public_assistance_w1 <- overall_background %>% 
- mutate(parent_id = as.character(parid),
+ mutate(par_id = as.character(parid),
          child_id = as.character(childid),
          wave = as.factor(wave),
          par_gen = case_when(
@@ -87,12 +87,12 @@ public_assistance_w1 <- overall_background %>%
          assistance = as.factor(assistance))
 
 public_assistance_w1 <- public_assistance_w1%>% 
-  select(parent_id, child_id, state_welfare, unemployment_insurance, food_stamp, wic,
+  select(par_id, child_id, state_welfare, unemployment_insurance, food_stamp, wic,
          child_support, ssi_and_ssdi, adoption_assistance, utility_assistance, childcare_subsidy, vertan_benefit, medical_assistance, none, other, assistance)
 
 
 access_to_childcare_w1 <- overall_background %>% 
-  mutate(parent_id = as.character(parid),
+  mutate(par_id = as.character(parid),
          child_id = as.character(childid),
          wave = as.factor(wave),
          par_gen = case_when(
@@ -115,7 +115,7 @@ access_to_childcare_w1 <- overall_background %>%
         other_care = case_when(bg06d == 0 ~ 0, bg06d == 1 ~ 1))
         
 access_to_childcare_w1 <- access_to_childcare_w1 %>% 
-  select(parent_id, child_id, wave , par_gen, household_others, adult_others, 
+  select(par_id, child_id, wave , par_gen, household_others, adult_others, 
          children_others, know_others, marital_status, recieve_childcare, 
          childcare_center, homebased_care, relative_care, other_care)
 ```
@@ -300,7 +300,7 @@ parent_education <- overall_background %>%
   glimpse()
 
 parent_education <- parent_education %>% 
-    mutate(parent_id = as.character(parid),
+    mutate(par_id = as.character(parid),
          child_id  = as.character(childid),
          wave = as.factor(wave),
          parent_gender = as.factor(pargen),
@@ -326,7 +326,7 @@ parent_education <- parent_education %>%
            education_location == -666 ~ "refused",
            education_location == -888 ~ "error",
            education_location == -999 ~ "missing tool")) %>% 
-  select(parent_id,
+  select(par_id,
          child_id, 
          wave, 
          parent_gender, 
