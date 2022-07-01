@@ -28,23 +28,27 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 #wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
 ```
 
+# Aubree's code
 
 ```{r}
-#Aubree's code
 ```
+
+# Chandra's code
 
 ```{r}
-#Chandra's code
 ```
+
+# Deborah's code
 
 ```{r}
-#Deborah's code
 ```
+
+# Jame's code
 
 ```{r}
-#Jame's code
 ```
 
+# Nick's code
 ```{r}
 print("Don't touch my code chunk or I'll fight you - Nick")
 
