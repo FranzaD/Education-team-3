@@ -75,8 +75,113 @@ colMeans(is.na(media_tech))
 ```
 
 ```{r}
-attributes(media_tech$mt05a)
+media_tech %>%
+  transmute(child_id = as.character(childid),
+         par_id = as.character(parid),
+         q4a = as.factor(case_when(
+           mt04a == 1 ~ "never-or-rarely",
+           mt04a == 2 ~ "some-days-each-week",
+           mt04a == 3 ~ "most-days-each-week",
+           mt04a == 4 ~ "once-a-day",
+           mt04a == 5 ~ "several-times-each-day")),
+         q4b = as.factor(case_when(
+           mt04b == 1 ~ "never-or-rarely",
+           mt04b == 2 ~ "some-days-each-week",
+           mt04b == 3 ~ "most-days-each-week",
+           mt04b == 4 ~ "once-a-day",
+           mt04b == 5 ~ "several-times-each-day")),
+         q4c = as.factor(case_when(
+           mt04c == 1 ~ "never-or-rarely",
+           mt04c == 2 ~ "some-days-each-week",
+           mt04c == 3 ~ "most-days-each-week",
+           mt04c == 4 ~ "once-a-day",
+           mt04c == 5 ~ "several-times-each-day")),
+         q4d = as.factor(case_when(
+           mt04d == 1 ~ "never-or-rarely",
+           mt04d == 2 ~ "some-days-each-week",
+           mt04d == 3 ~ "most-days-each-week",
+           mt04d == 4 ~ "once-a-day",
+           mt04d == 5 ~ "several-times-each-day")),
+         q5a = as.factor(case_when(
+           mt05a == 1 ~ "never-or-rarely",
+           mt05a == 2 ~ "some-days-each-week",
+           mt05a == 3 ~ "most-days-each-week",
+           mt05a == 4 ~ "once-a-day",
+           mt05a == 5 ~ "several-times-each-day")),
+         q5b = as.factor(case_when(
+           mt05b == 1 ~ "never-or-rarely",
+           mt05b == 2 ~ "some-days-each-week",
+           mt05b == 3 ~ "most-days-each-week",
+           mt05b == 4 ~ "once-a-day",
+           mt05b == 5 ~ "several-times-each-day")),
+         q5c = as.factor(case_when(
+           mt05c == 1 ~ "never-or-rarely",
+           mt05c == 2 ~ "some-days-each-week",
+           mt05c == 3 ~ "most-days-each-week",
+           mt05c == 4 ~ "once-a-day",
+           mt05c == 5 ~ "several-times-each-day")),
+         q5d = as.factor(case_when(
+           mt05d == 1 ~ "never-or-rarely",
+           mt05d == 2 ~ "some-days-each-week",
+           mt05d == 3 ~ "most-days-each-week",
+           mt05d == 4 ~ "once-a-day",
+           mt05d == 5 ~ "several-times-each-day")),
+         q5e = as.factor(case_when(
+           mt05e == 1 ~ "never-or-rarely",
+           mt05e == 2 ~ "some-days-each-week",
+           mt05e == 3 ~ "most-days-each-week",
+           mt05e == 4 ~ "once-a-day",
+           mt05e == 5 ~ "several-times-each-day")),
+         q5f = as.factor(case_when(
+           mt05f == 1 ~ "never-or-rarely",
+           mt05f == 2 ~ "some-days-each-week",
+           mt05f == 3 ~ "most-days-each-week",
+           mt05f == 4 ~ "once-a-day",
+           mt05f == 5 ~ "several-times-each-day")),
+         q5g = as.factor(case_when(
+           mt05g == 1 ~ "never-or-rarely",
+           mt05g == 2 ~ "some-days-each-week",
+           mt05g == 3 ~ "most-days-each-week",
+           mt05g == 4 ~ "once-a-day",
+           mt05g == 5 ~ "several-times-each-day")),
+         q6a = as.logical(case_when(
+           mt06a == 0 ~ 0,
+           mt06a == 1 ~ 1)),
+         q6b = as.logical(case_when(
+           mt06b == 0 ~ 0,
+           mt06b == 1 ~ 1)),
+         q6c = as.logical(case_when(
+           mt06c == 0 ~ 0,
+           mt06c == 1 ~ 1)),
+         q6d = as.logical(case_when(
+           mt06d == 0 ~ 0,
+           mt06d == 1 ~ 1)),
+         q6e = as.logical(case_when(
+           mt06e == 0 ~ 0,
+           mt06e == 1 ~ 1)),
+         q6f = as.logical(case_when(
+           mt06f == 0 ~ 0,
+           mt06f == 1 ~ 1)),
+         q6g = as.logical(case_when(
+           mt06g == 0 ~ 0,
+           mt06g == 1 ~ 1)),
+         q6h = as.logical(case_when(
+           mt06h == 0 ~ 0,
+           mt06h == 1 ~ 1)),
+         q6i = as.logical(case_when(
+           mt06i == 0 ~ 0,
+           mt06i == 1 ~ 1)),
+         q7a = as.factor(case_when(
+           mt07a == 1 ~ "strongly-disagree",
+           mt07a == 2 ~ "disagree",
+           mt07a == 3 ~ "agree",
+           mt07a == 4 ~ "strongly-agree")),
+         q8 = as.logical(case_when(
+           mt08 == 0 ~ 0,
+           mt08 == 1 ~ 1))
+  )
 ```
+
 
 
 # Deborah's code
