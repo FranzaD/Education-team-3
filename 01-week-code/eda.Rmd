@@ -88,10 +88,7 @@ glimpse(scores_w1)
 scores_w1 <-  scores_w1 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
-         pargen = as.factor(case_when(
-          pargen == 1 ~ "male",
-          pargen == 0 ~ "female"
-        )),
+         father = pargen == 1,
         language_26_PLS_w1 = as.factor(case_when(
           language_26_pls_w1 == 0 ~ "english",
           language_26_pls_w1 == 1 ~ "spanish"
@@ -127,7 +124,7 @@ scores_w1 <-  scores_w1 %>%
 
 ```{r}
 model_score <- scores_w1 %>%
-  select(child_id, par_id, pargen, language = language_26_PLS_w1, Auditory_Comprehension_score = plsacss, Expressive_Communication_score = plsecss, Total_score = plsss)
+  select(child_id, par_id, father, language = language_26_PLS_w1, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
 ```
 
 
@@ -238,5 +235,15 @@ parent_demographic %>%
 
 ```{r}
 model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
+```
+
+```{r}
+model_score_demographic %>% 
+  glimpse()
+```
+
+```{r}
+model_score_demographic %>% 
+  ggplot(aes(x = audit))
 ```
 
