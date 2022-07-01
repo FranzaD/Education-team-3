@@ -35,6 +35,9 @@ w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
 ```{r}
 #Chandra's code
+glimpse(media_tech)
+
+
 ```
 
 ```{r}
