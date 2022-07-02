@@ -50,12 +50,133 @@ overall_background %>%
 
 #subsetting data 
 
-public_assistance <- overall_background %>% 
-  select(bg12a, bg12b, bg12c,
-         bg12d, bg12e, bg12f, bg12g,
-         bg12h, bg12i, bg12j, bg12k, bg12o,
-         bg12otxt, bg15, assistance)
+public_assistance_w1 <- overall_background %>% 
+ mutate(par_id = as.character(parid),
+         child_id = as.character(childid),
+         wave = as.factor(wave),
+         par_gen = case_when(
+           pargen == 0 ~ 0,
+           pargen == 1 ~ 1),
+         state_welfare = case_when(bg12a == 0 ~ 0,
+                                   bg12a == 1~1),
+         unemployment_insurance = case_when(bg12b== 0 ~ 0,
+                                   bg12b == 1~1),
+         food_stamp = case_when(bg12c == 0 ~ 0,
+                                   bg12c == 1~1),
+         wic = case_when(bg12d == 0 ~ 0,
+                                   bg12d == 1~1),
+         child_support = case_when(bg12e == 0 ~ 0,
+                                   bg12e == 1~1),
+         ssi_and_ssdi = case_when(bg12f == 0 ~ 0,
+                                   bg12f == 1~1),
+         adoption_assistance = case_when(bg12g == 0 ~ 0,
+                                   bg12g == 1~1),
+         utility_assistance = case_when(bg12h == 0 ~ 0,
+                                   bg12h == 1~1), 
+         childcare_subsidy = case_when(bg12i == 0 ~ 0,
+                                   bg12i == 1~1),
+         vertan_benefit = case_when(bg12j == 0 ~ 0,
+                                   bg12j == 1~1),
+         medical_assistance = case_when(bg12k == 0 ~ 0,
+                                   bg12k == 1~1),
+         none = case_when(bg12l == 0 ~ 0,
+                                   bg12l == 1~1),
+         other = case_when(bg12o == 0 ~ 0,
+                                   bg12o == 1~1),
+         #other_specify = as.character(bg12oxtxt),
+         assistance = as.factor(assistance))
 
+public_assistance_w1 <- public_assistance_w1%>% 
+  select(par_id, child_id, state_welfare, unemployment_insurance, 
+         food_stamp, wic, child_support, ssi_and_ssdi, adoption_assistance, 
+         utility_assistance, childcare_subsidy, vertan_benefit, 
+         medical_assistance, none, other, assistance)
+
+
+access_to_childcare_w1 <- overall_background %>% 
+  mutate(par_id = as.character(parid),
+         child_id = as.character(childid),
+         wave = as.factor(wave),
+         par_gen = case_when(
+           pargen == 0 ~ 0,
+           pargen == 1 ~ 1),
+         household_others = case_when(bg04 == 0 ~ 0,
+                                      bg04 == 1 ~ 1),
+         adult_others = as.integer(bg04a),
+         children_others = as.integer(bg04b),
+        know_others = as.integer(bg04d),
+        marital_status = case_when(
+             bg05 == 0 ~ "Nevermarries/Single",
+             bg05 == 1 ~ "Now Married",
+             bg05 == 2 ~ "Living as Married/Engaged",
+             bg05 == 3 ~ "Divorced"),
+        recieve_childcare = case_when(bg06 == 0 ~ 0, bg06 == 1 ~ 1),
+        childcare_center = case_when(bg06a == 0 ~ 0, bg06a == 1 ~ 1),
+        homebased_care = case_when(bg06b == 0 ~ 0, bg06b == 1 ~ 1),
+        relative_care = case_when(bg06c == 0 ~ 0, bg06c == 1 ~ 1),
+        other_care = case_when(bg06d == 0 ~ 0, bg06d == 1 ~ 1))
+        
+access_to_childcare_w1 <- access_to_childcare_w1 %>% 
+  select(par_id, child_id, wave , par_gen, household_others, adult_others, 
+         children_others, know_others, marital_status, recieve_childcare, 
+         childcare_center, homebased_care, relative_care, other_care)
+
+income_w1 <- overall_background%>% 
+  mutate(par_id = as.character(parid),
+         child_id = as.character(childid),
+         wave = as.factor(wave),
+         par_gen = case_when(
+           pargen == 0 ~ 0,
+           pargen == 1 ~ 1),
+         household_income_numerical = as.integer(bgz08),
+         household_income_categorical = case_when(
+           bgz08a == 1 ~ "$5,000 or less",
+           bgz08a == 2 ~ "$5,001 - $10,000",
+           bgz08a == 3 ~ "$10,001 - $15,000",
+           bgz08a == 4 ~ "$15,001 - $20,000",
+           bgz08a == 5 ~ "$20,001 - $25,000",
+           bgz08a == 6 ~ "$25,001 - $30,000",
+           bgz08a == 7 ~ "$30,001 - $35,000",
+           bgz08a == 8 ~ "$35,001 - $40,000",
+           bgz08a == 9 ~ "$40,001 - $50,000",
+           bgz08a == 10 ~ "$50,001 - $75,000",
+           bgz08a == 11 ~ "$75,001 or more"),
+         employment_status = case_when(
+             employment == 1 ~ "Working for pay",
+             employment == 2 ~ "Attending School",
+             employment == 2 ~ "Unemployed",
+             employment == 3 ~ "Stay at home parent",
+             employment == 5 ~ "Multiple"),
+         enough_money_clothes = case_when(
+           bg09b == 1 ~ "Stongly disagree",
+           bg09b == 2 ~ "Disagree",
+           bg09b == 3 ~ "Neutral",
+           bg09b == 4 ~ "Agree",
+           bg09b == 5 ~ "Strongly agree"),
+         enough_money_food = case_when(
+           bg09c == 1 ~ "Stongly disagree",
+           bg09c == 2 ~ "Disagree",
+           bg09c == 3 ~ "Neutral",
+           bg09c == 4 ~ "Agree",
+           bg09c == 5 ~ "Strongly agree"),
+         enough_money_medical_care = case_when(
+           bg09d == 1 ~ "Stongly disagree",
+           bg09d == 2 ~ "Disagree",
+           bg09d == 3 ~ "Neutral",
+           bg09d == 4 ~ "Agree",
+           bg09d == 5 ~ "Strongly agree"),
+         bill_difficulty = case_when(
+           bg10 == 1 ~ "A great deal of difficulty",
+           bg10 == 2 ~ "Quite a bit of difficulty",
+           bg10 == 3 ~ "Some difficulty",
+           bg10 == 4 ~ "A little difficulty",
+           bg10 == 5 ~ "No difficulty")
+         )
+
+income_w1 <- income_w1 %>% 
+  select(par_id, child_id, par_gen, wave, household_income_numerical, 
+       household_income_categorical, employment_status, enough_money_clothes, 
+       enough_money_food, enough_money_medical_care, bill_difficulty)
 
 ```
 
@@ -226,10 +347,63 @@ media_tech_cleaned <- media_tech %>%
 
 
 # Deborah's code
+```{r}
+overall_background$bg14 %>% 
+  glimpse()
+```
+
 
 ```{r}
+# parent education table
+parent_education <- overall_background %>% 
+  select(parid, childid, wave, pargen, bg07f, bg14, bg16, bgz16, bg17a, bg17b) %>% 
+  glimpse()
 
+#problem, converting bg14 & bg17a into logical turns all obs into NA instead of 0 & 1
+parent_education <- parent_education %>%
+  zap_labels(bg17a) %>% # gets rid of default datatype
+  zap_labels(bg14) %>% # gets rid of default datatype
+    mutate(par_id = as.character(parid),
+         child_id  = as.character(childid),
+         wave = as.factor(wave),
+         parent_gender = as.factor(pargen),
+         degree_cert_in_prog = as.factor(bg07f),
+         #bg14 = case_when(
+         #  bg14 == 0 ~ "no",
+         #  bg14 == 1 ~ "yes"),
+         parenting_class_taken = as.logical(bg14),
+         highest_degree_completed = as.factor(bg16),
+         years_school_complete = as.numeric(bgz16),
+         #bg17a = case_when(
+         #  bg17a == 0 ~ "no",
+         #  bg17a == 1 ~ "yes"),
+         #us_education = as.factor(bg17a),
+         us_education = as.logical(bg17a),
+         education_location = as.character(bg17b),
+         education_location = case_when(
+           education_location == -777 ~ "planned skip",
+           education_location == -111 ~ "drop",
+           education_location == -222 ~ "different version",
+           education_location == -333 ~ "other parent",
+           education_location == -444 ~ "unable",
+           education_location == -555 ~ "unsure",
+           education_location == -666 ~ "refused",
+           education_location == -888 ~ "error",
+           education_location == -999 ~ "missing tool")) %>% 
+  select(par_id,
+         child_id, 
+         wave, 
+         parent_gender, 
+         degree_cert_in_prog, 
+         parenting_class_taken,
+         highest_degree_completed,
+         years_school_complete,
+         us_education,
+         education_location) %>% 
+  glimpse()
 ```
+
+
 
 # James' code
 
@@ -253,9 +427,6 @@ scores_w1 <-  scores_w1 %>%
           site == 2 ~ "UCI"
         )))
 ```
-
-
-## modeling w1_scores
 
 ```{r}
 model_score <- scores_w1 %>%
@@ -404,4 +575,3 @@ model_score_demographic %>%
              y = total_score))+
   geom_col()
 ```
-
