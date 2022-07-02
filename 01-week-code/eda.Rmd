@@ -370,7 +370,7 @@ model_score_demographic = full_join(model_score, parent_demographic, by=c("child
 ```{r}
 model_score_demographic %>% 
   ggplot(aes(x=par_ethnicity, 
-             y= Auditory_Comprehension_score,
+             y= auditory_comprehension_score,
              fill = par_ethnicity)) +
   geom_boxplot(alpha = 0.3) +
   labs(x= "Parent Ethnicity",
