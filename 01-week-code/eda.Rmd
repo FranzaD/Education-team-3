@@ -87,16 +87,11 @@ public_assistance_w1 <- overall_background %>%
          assistance = as.factor(assistance))
 
 public_assistance_w1 <- public_assistance_w1%>% 
-<<<<<<< HEAD
   select(par_id, child_id, state_welfare, unemployment_insurance, 
          food_stamp, wic, child_support, ssi_and_ssdi, adoption_assistance, 
          utility_assistance, childcare_subsidy, vertan_benefit, 
          medical_assistance, none, other, assistance)
-=======
-  select(par_id, child_id, state_welfare, unemployment_insurance, food_stamp, wic,
-         child_support, ssi_and_ssdi, adoption_assistance, utility_assistance, childcare_subsidy, vertan_benefit, medical_assistance, none, other, assistance)
 
->>>>>>> 2827f4e557a4ce9cb8e742c46ea086dd79fff689
 
 access_to_childcare_w1 <- overall_background %>% 
   mutate(par_id = as.character(parid),
@@ -122,14 +117,8 @@ access_to_childcare_w1 <- overall_background %>%
         other_care = case_when(bg06d == 0 ~ 0, bg06d == 1 ~ 1))
         
 access_to_childcare_w1 <- access_to_childcare_w1 %>% 
-<<<<<<< HEAD
-  select(par_id, child_id, wave , par_gen,
-         household_others, adult_others, children_others,
-         know_others, marital_status,recieve_childcare,
-=======
   select(par_id, child_id, wave , par_gen, household_others, adult_others, 
          children_others, know_others, marital_status, recieve_childcare, 
->>>>>>> 2827f4e557a4ce9cb8e742c46ea086dd79fff689
          childcare_center, homebased_care, relative_care, other_care)
 
 income_w1 <- overall_background%>% 
