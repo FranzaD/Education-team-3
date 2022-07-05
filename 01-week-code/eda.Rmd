@@ -425,9 +425,27 @@ parent_english_fluency <- parent_english_fluency %>%
              bg25r == 2 ~ "pretty well",
              bg25r == 3 ~ "very well"
              )),
-         reading_english = as.factor(bg26r),
-         writing_english = as.factor(bg27r),
-         understanding_english = as.factor(bg28r),
+         reading_english = as.factor(
+           case_when(
+             bg26r == 0 ~ "not well at all",
+             bg26r == 1 ~ "not very well",
+             bg26r == 2 ~ "pretty well",
+             bg26r == 3 ~ "very well"
+             )),
+         writing_english = as.factor(
+           case_when(
+             bg27r == 0 ~ "not well at all",
+             bg27r == 1 ~ "not very well",
+             bg27r == 2 ~ "pretty well",
+             bg27r == 3 ~ "very well"
+             )),
+         understanding_english = as.factor(
+           case_when(
+             bg28r == 0 ~ "not well at all",
+             bg28r == 1 ~ "not very well",
+             bg28r == 2 ~ "pretty well",
+             bg28r == 3 ~ "very well"
+             )),
          english_level = as.numeric(englishlanguage)
          ) %>% 
   select(par_id,
