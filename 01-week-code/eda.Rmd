@@ -844,6 +844,7 @@ ggplot(edu_demo_media,
 ```
 
 
+
 ---
 
 According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
