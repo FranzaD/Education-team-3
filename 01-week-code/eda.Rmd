@@ -1173,13 +1173,6 @@ parent_demographic %>%
 ```
 
 ```{r}
-model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
-
-model_score_education = full_join(model_score, parent_education, by=c("child_id", "par_id"))
-
-model_media_demographic = full_join(media_tech_cleaned, parent_education, parent_demographic, by = c("child_id", "par_id"))
-media_score = full_join(model_score, media_tech_cleaned, by=c("child_id", "par_id"))
-
 valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
 valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
 valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
