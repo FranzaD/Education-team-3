@@ -180,6 +180,7 @@ income_w1 <- income_w1 %>%
        enough_money_food, enough_money_medical_care, bill_difficulty)
 
 ```
+
 ### Aubree Visualization 
 ```{r}
 
@@ -678,6 +679,19 @@ parent_education <- parent_education %>%
              bg16 == 9 ~ "4 yr cert or degree",
              bg16 == 10 ~ "Other",
              )),
+         highest_degree_completed = fct_relevel(
+           highest_degree_completed, 
+           "some elementary", 
+           "completed elementary", 
+           "some middle school", 
+           "completed middle school",
+           "some highschool",
+           "completed highschool",
+           "some college",
+           "2 yr cert or degree",
+           "4 yr cert or degree",
+           "Other"
+           ),
          years_school_complete = as.numeric(bgz16),
          #bg17a = case_when(
          #  bg17a == 0 ~ "no",
@@ -706,6 +720,10 @@ parent_education <- parent_education %>%
          us_education,
          education_location) %>% 
   glimpse()
+```
+```{r}
+parent_education$highest_degree_completed %>% 
+  fct_relevel()
 ```
 
 ```{r}
@@ -1314,7 +1332,7 @@ model_score_demographic %>%
 
 ---
 
-### Deborah's Preliminary EDA
+# Deborah's Preliminary EDA
 Just based off my tables is there a relationship between English proficiency and education?
 * parent_english_fluency: english_level & parent_education: highest_degree_completed
   + summary with quantitative and categorical variable = bar graph
@@ -1379,6 +1397,7 @@ ggplot(edu_demo_media,
   geom_boxplot() +
   ggtitle('Child Daily Media Use and Highest Degree Completed by Parents') 
 ```
+
 
 
 ---
