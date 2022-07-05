@@ -179,8 +179,36 @@ income_w1 <- income_w1 %>%
        enough_money_food, enough_money_medical_care, bill_difficulty)
 
 ```
+### Aubree Visualization 
+```{r}
+
+
+```
+
+
 
 # Chandra's code
+
+```{r}
+# wave 2 translation for bit08 and bit36
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit08txt)) {
+  value <- wave_2_translated$bit08txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit08txt[i] = wave_2_translated$bit08txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit36txt)) {
+  value <- wave_2_translated$bit36txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit36txt[i] = wave_2_translated$bit36txt_e[i]
+  }
+}
+
+```
+
 
 ```{r}
 glimpse(media_tech)
@@ -726,16 +754,29 @@ parent_demographic %>%
 
 ```{r}
 model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
+
+model_score_education = full_join(model_score, parent_education, by=c("child_id", "par_id"))
+
+model_media_demographic = full_join(media_tech_cleaned, parent_education, parent_demographic, by = c("child_id", "par_id"))
+media_score = full_join(model_score, media_tech_cleaned, by=c("child_id", "par_id"))
+
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
+valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, public_assistance_w1, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id")) 
+
+
 ```
 
 ```{r}
-model_score_demographic %>% 
-  ggplot(aes(x=par_ethnicity, 
-             y= auditory_comprehension_score,
+  ggplot(data= valuable_dataset, aes(x=par_ethnicity, 
+             y= total_score,
              fill = par_ethnicity)) +
   geom_boxplot(alpha = 0.3) +
   labs(x= "Parent Ethnicity",
-       y= "Auditory Comprehension Score") + 
+       y= "Total Score") + 
   theme(panel.grid.major = element_blank(), 
                  panel.grid.minor = element_blank(),
         panel.background = element_blank(), 
@@ -744,7 +785,7 @@ model_score_demographic %>%
         legend.title = element_text(colour = "steelblue", face = "bold.italic",)) +
   ggtitle("Spread of ACS")
   
-model_score_demographic %>% 
+valuable_dataset %>% 
   ggplot(aes(x = par_us_born,
              y = auditory_comprehension_score)) + 
   geom_boxplot() +
@@ -752,7 +793,78 @@ model_score_demographic %>%
        y= "Auditory Comprehension Score") +
   theme_minimal()
 
-  
+valuable_dataset %>% 
+  ggplot(aes(x = chi_girl,
+             y = total_score)) + 
+  geom_boxplot() +
+  labs(x = "Was The form in spanish?",
+       y= "Auditory Comprehension Score") +
+  theme_minimal()
+
+valuable_dataset %>% 
+  mutate(years_school_complete = as.character(years_school_complete)) %>% 
+  ggplot(aes(x = years_school_complete,
+             y = total_score)) + 
+  geom_boxplot()
+   
+valuable_dataset %>% 
+  mutate(daily_use = as.numeric(daily_use)) %>% 
+  ggplot(aes(x = solo, 
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>%
+  ggplot(aes(x = total_score,
+             y= daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = household_income_numerical,
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = positive_beliefs_media,
+             y = total_score)) + 
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = passive,
+             y = daily_use)) + 
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = q7a,
+             y = daily_use)) +
+  geom_boxplot()
+
+valuable_dataset %>% 
+  ggplot(aes(x = tv_exposure,
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = coop,
+             y = total_score)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = coop,
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = n_devices,
+             y = positive_beliefs_media)) + 
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = highest_degree_completed,
+             y = positive_beliefs_media,
+             fill = parenting_class_taken)) +
+  geom_boxplot() + 
+
+
 ```
 
 
