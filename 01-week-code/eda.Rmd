@@ -484,7 +484,7 @@ parent_english_fluency <- overall_background %>%
 
 ---
 
-### Deborah's Preliminary 
+### Deborah's Preliminary EDA
 Just based off my tables is there a relationship between English proficiency and education?
 * parent_english_fluency: english_level & parent_education: highest_degree_completed
   + summary with quantitative and categorical variable = bar graph
@@ -504,6 +504,8 @@ ggplot(parent_edu_eng, aes(y = highest_degree_completed)) +
  geom_bar(aes(fill = parenting_class_taken), position = position_stack(reverse = TRUE)) +
  theme(legend.position = "top")
 ```
+This graph is interesting because it shows that the majority of parents in every education category have taken a parenting class, hence suggesting that education may be independent of the status of whether a parent has taken an education class.
+
 ##### Bar Graph showing Education level of English Comprehension in Parents
 ```{r}
 #parent_edu_eng %>% 
@@ -515,6 +517,9 @@ ggplot(parent_edu_eng) +       # reference to data
         fill = highest_degree_completed)   
   )
 ```
+
+No surprises here, the parents who understood English very well were also the parents who had more education than other categories. Although there are many NA responses in terms of education for the parents who understood English very well, this may suggest that english speakers were more self conscious of reporting their education achievement.
+
 ##### Bar Graph of English Level and Whether a Parent has taken a Parenting Class
 ```{r}
 ggplot(parent_edu_eng,
@@ -523,6 +528,9 @@ ggplot(parent_edu_eng,
   geom_violin()
 ```
 
+This is an interesting visualization, it seems to suggest that parents who had lower levels of english were also less likely to have taken a parenting class, as the neck of the false violin plot is thicker than that of the true violin plot. Additionally, the NA plot is somewhat constant across all levels of english suggesting that it wasn't english proficiency that dictated whether a parent took a parenting class.
+
+---
 
 According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
 
