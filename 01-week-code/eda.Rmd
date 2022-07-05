@@ -129,7 +129,7 @@ income_w1 <- overall_background%>%
          par_gen = case_when(
            pargen == 0 ~ 0,
            pargen == 1 ~ 1),
-         household_income_numerical = as.integer(bgz08),
+         household_income_numerical = as.integer(hhincome),
          household_income_categorical = case_when(
            bgz08a == 1 ~ "$5,000 or less",
            bgz08a == 2 ~ "$5,001 - $10,000",
@@ -183,9 +183,18 @@ income_w1 <- income_w1 %>%
 
 ### Aubree Visualization 
 ```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
+
+valuable_dataset %>% 
+         ggplot(aes(x = positive_beliefs_media,
+             y = household_income_numerical,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
 
 
 ```
+
 
 
 
@@ -1291,10 +1300,17 @@ valuable_dataset %>%
 
 #q8: do you limit how much time the children use 
 valuable_dataset %>% 
+<<<<<<< HEAD
+  ggplot(aes(x =  positive_beliefs_media,
+             y = highest_degree_completed,
+             fill = parenting_class_taken)) +
+  geom_boxplot() + 
+=======
   ggplot(aes(x = household_income_categorical,
              y = positive_beliefs_media,
              fill = q8 )) +
   geom_boxplot()
+>>>>>>> 86b682d73df1b4bc4c281502559f0aa877bd93b4
 
 valuable_dataset %>% 
   ggplot(aes(y = household_income_numerical,
@@ -1398,6 +1414,16 @@ ggplot(edu_demo_media,
   ggtitle('Child Daily Media Use and Highest Degree Completed by Parents') 
 ```
 
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
+valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, public_assistance_w1, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, parent_english_fluency, 
+                              by = c("child_id", "par_id"))
+```
 
 # save data back to file
 
