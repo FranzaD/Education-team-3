@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+install.packages("forcats")
+library(forcats)
 library(haven)
 library(readxl)
 library(ggplot2)
@@ -858,12 +860,24 @@ valuable_dataset %>%
              y = positive_beliefs_media)) + 
   geom_point()
 
+#q8: do you limit how much time the children use 
 valuable_dataset %>% 
-  ggplot(aes(x = highest_degree_completed,
+  ggplot(aes(x = household_income_categorical,
              y = positive_beliefs_media,
-             fill = parenting_class_taken)) +
-  geom_boxplot() + 
+             fill = q8 )) +
+  geom_boxplot()
 
+valuable_dataset %>% 
+  ggplot(aes(y = household_income_numerical,
+             x = highest_degree_completed,
+             fill = highest_degree_completed)) +
+  geom_boxplot()
+
+valuable_dataset %>% 
+  ggplot(aes(x = positive_beliefs_media,
+             y = daily_use,
+             fill = positive_beliefs_media)) +
+  geom_point()
 
 ```
 
