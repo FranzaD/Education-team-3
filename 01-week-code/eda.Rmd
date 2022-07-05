@@ -1398,6 +1398,16 @@ ggplot(edu_demo_media,
   ggtitle('Child Daily Media Use and Highest Degree Completed by Parents') 
 ```
 
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
+valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, public_assistance_w1, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, parent_english_fluency, 
+                              by = c("child_id", "par_id"))
+```
 
 
 ---
