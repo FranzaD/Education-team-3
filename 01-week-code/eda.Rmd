@@ -192,51 +192,6 @@ income_w1 <- income_w1 %>%
 # Chandra's code
 
 ```{r}
-# wave 2 translation for bit08 and bit36
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit08txt)) {
-  value <- wave_2_translated$bit08txt_e[i]
-  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit08txt[i] = wave_2_translated$bit08txt_e[i]
-  }
-}
-
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit36txt)) {
-  value <- wave_2_translated$bit36txt_e[i]
-  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit36txt[i] = wave_2_translated$bit36txt_e[i]
-  }
-}
-
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit37txt)) {
-  value <- wave_2_translated$bit37txt_e[i]
-  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit37txt[i] = wave_2_translated$bit37txt_e[i]
-  }
-}
-
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit41txt)) {
-  value <- wave_2_translated$bit41txt_e[i]
-  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit41txt[i] = wave_2_translated$bit41txt_e[i]
-  }
-}
-
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit42txt)) {
-  value <- wave_2_translated$bit42txt_e[i]
-  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit42txt[i] = wave_2_translated$bit42txt_e[i]
-  }
-}
-
-```
-
-
-```{r}
 glimpse(media_tech)
 
 ```
@@ -784,7 +739,53 @@ model_w2 <- wave_2 %>%
           BITprob_cut = as.integer(BITprob_cut),)
 ```
 
+### Removed non-english text responses - Chandra
 
+```{r}
+# wave 2 translations
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit08txt)) {
+  value <- wave_2_translated$bit08txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit08txt[i] = wave_2_translated$bit08txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit36txt)) {
+  value <- wave_2_translated$bit36txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit36txt[i] = wave_2_translated$bit36txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit37txt)) {
+  value <- wave_2_translated$bit37txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit37txt[i] = wave_2_translated$bit37txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit41txt)) {
+  value <- wave_2_translated$bit41txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit41txt[i] = wave_2_translated$bit41txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit42txt)) {
+  value <- wave_2_translated$bit42txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit42txt[i] = wave_2_translated$bit42txt_e[i]
+  }
+}
+
+glimpse(wave_2_translated)
+
+```
 
 ## clean data
 
