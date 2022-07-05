@@ -87,8 +87,10 @@ public_assistance_w1 <- overall_background %>%
          assistance = as.factor(assistance))
 
 public_assistance_w1 <- public_assistance_w1%>% 
-  select(par_id, child_id, state_welfare, unemployment_insurance, food_stamp, wic,
-         child_support, ssi_and_ssdi, adoption_assistance, utility_assistance, childcare_subsidy, vertan_benefit, medical_assistance, none, other, assistance)
+  select(par_id, child_id, state_welfare, unemployment_insurance, 
+         food_stamp, wic, child_support, ssi_and_ssdi, adoption_assistance, 
+         utility_assistance, childcare_subsidy, vertan_benefit, 
+         medical_assistance, none, other, assistance)
 
 
 access_to_childcare_w1 <- overall_background %>% 
@@ -118,6 +120,64 @@ access_to_childcare_w1 <- access_to_childcare_w1 %>%
   select(par_id, child_id, wave , par_gen, household_others, adult_others, 
          children_others, know_others, marital_status, recieve_childcare, 
          childcare_center, homebased_care, relative_care, other_care)
+
+income_w1 <- overall_background%>% 
+  mutate(par_id = as.character(parid),
+         child_id = as.character(childid),
+         wave = as.factor(wave),
+         par_gen = case_when(
+           pargen == 0 ~ 0,
+           pargen == 1 ~ 1),
+         household_income_numerical = as.integer(bgz08),
+         household_income_categorical = case_when(
+           bgz08a == 1 ~ "$5,000 or less",
+           bgz08a == 2 ~ "$5,001 - $10,000",
+           bgz08a == 3 ~ "$10,001 - $15,000",
+           bgz08a == 4 ~ "$15,001 - $20,000",
+           bgz08a == 5 ~ "$20,001 - $25,000",
+           bgz08a == 6 ~ "$25,001 - $30,000",
+           bgz08a == 7 ~ "$30,001 - $35,000",
+           bgz08a == 8 ~ "$35,001 - $40,000",
+           bgz08a == 9 ~ "$40,001 - $50,000",
+           bgz08a == 10 ~ "$50,001 - $75,000",
+           bgz08a == 11 ~ "$75,001 or more"),
+         employment_status = case_when(
+             employment == 1 ~ "Working for pay",
+             employment == 2 ~ "Attending School",
+             employment == 2 ~ "Unemployed",
+             employment == 3 ~ "Stay at home parent",
+             employment == 5 ~ "Multiple"),
+         enough_money_clothes = case_when(
+           bg09b == 1 ~ "Stongly disagree",
+           bg09b == 2 ~ "Disagree",
+           bg09b == 3 ~ "Neutral",
+           bg09b == 4 ~ "Agree",
+           bg09b == 5 ~ "Strongly agree"),
+         enough_money_food = case_when(
+           bg09c == 1 ~ "Stongly disagree",
+           bg09c == 2 ~ "Disagree",
+           bg09c == 3 ~ "Neutral",
+           bg09c == 4 ~ "Agree",
+           bg09c == 5 ~ "Strongly agree"),
+         enough_money_medical_care = case_when(
+           bg09d == 1 ~ "Stongly disagree",
+           bg09d == 2 ~ "Disagree",
+           bg09d == 3 ~ "Neutral",
+           bg09d == 4 ~ "Agree",
+           bg09d == 5 ~ "Strongly agree"),
+         bill_difficulty = case_when(
+           bg10 == 1 ~ "A great deal of difficulty",
+           bg10 == 2 ~ "Quite a bit of difficulty",
+           bg10 == 3 ~ "Some difficulty",
+           bg10 == 4 ~ "A little difficulty",
+           bg10 == 5 ~ "No difficulty")
+         )
+
+income_w1 <- income_w1 %>% 
+  select(par_id, child_id, par_gen, wave, household_income_numerical, 
+       household_income_categorical, employment_status, enough_money_clothes, 
+       enough_money_food, enough_money_medical_care, bill_difficulty)
+
 ```
 
 # Chandra's code
