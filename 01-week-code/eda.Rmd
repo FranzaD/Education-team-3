@@ -188,14 +188,6 @@ glimpse(media_tech)
 ```
 
 ```{r}
-# total na values per column
-colSums(is.na(media_tech))
-
-# percentage na values per column
-colMeans(is.na(media_tech))
-```
-
-```{r}
 media_tech_cleaned <- media_tech %>%
   transmute(child_id = as.character(childid),
          par_id = as.character(parid),
@@ -344,6 +336,41 @@ media_tech_cleaned <- media_tech %>%
 )
 ```
 
+```{r}
+# total na values per column
+colSums(is.na(media_tech_cleaned))
+
+# percentage na values per column
+colMeans(is.na(media_tech_cleaned))
+```
+
+```{r}
+# visualizing na values
+library(visdat)
+vis_miss(media_tech_cleaned)
+```
+
+
+```{r}
+# correlation between average score data
+library(ggcorrplot)
+average_scores <- media_tech_cleaned %>% 
+  select(!starts_with("q"), -child_id, -par_id)
+
+correlation <- cor(average_scores, use = "complete.obs")
+
+correlation
+```
+
+
+```{r}
+# visualizing correlation
+ggcorrplot(correlation,
+           hc.order = TRUE,
+           type = "lower",
+           outline.color = "white")
+
+```
 
 
 # Deborah's code
