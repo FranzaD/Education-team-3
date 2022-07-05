@@ -188,14 +188,6 @@ glimpse(media_tech)
 ```
 
 ```{r}
-# total na values per column
-colSums(is.na(media_tech))
-
-# percentage na values per column
-colMeans(is.na(media_tech))
-```
-
-```{r}
 media_tech_cleaned <- media_tech %>%
   transmute(child_id = as.character(childid),
          par_id = as.character(parid),
@@ -337,13 +329,48 @@ media_tech_cleaned <- media_tech %>%
          coop = MTcouse,
          mealtimes = MTmealtimes,
          behavior_management = MTdcbhv,
-         possitive_beliefs_media = MTbeliefs,
+         positive_beliefs_media = MTbeliefs,
          educational_benefits = MTeduc,
          digital_babysitting = MTbabysit,
          daily_use = MTdailyuse
 )
 ```
 
+```{r}
+# total na values per column
+colSums(is.na(media_tech_cleaned))
+
+# percentage na values per column
+colMeans(is.na(media_tech_cleaned))
+```
+
+```{r}
+# visualizing na values
+library(visdat)
+vis_miss(media_tech_cleaned)
+```
+
+
+```{r}
+# correlation between average score data
+library(ggcorrplot)
+average_scores <- media_tech_cleaned %>% 
+  select(!starts_with("q"), -child_id, -par_id)
+
+correlation <- cor(average_scores, use = "complete.obs")
+
+correlation
+```
+
+
+```{r}
+# visualizing correlation
+ggcorrplot(correlation,
+           hc.order = TRUE,
+           type = "lower",
+           outline.color = "white")
+
+```
 
 
 # Deborah's code
@@ -351,7 +378,6 @@ media_tech_cleaned <- media_tech %>%
 overall_background$bg14 %>% 
   glimpse()
 ```
-
 
 ```{r}
 # parent education table
@@ -366,13 +392,33 @@ parent_education <- parent_education %>%
     mutate(par_id = as.character(parid),
          child_id  = as.character(childid),
          wave = as.factor(wave),
-         parent_gender = as.factor(pargen),
-         degree_cert_in_prog = as.factor(bg07f),
+         father = as.logical(pargen),
+         degree_cert_in_prog = as.factor(
+           case_when(
+             bg07f == 0 ~ "None",
+             bg07f == 1 ~ "GED",
+             bg07f == 2 ~ "AA",
+             bg07f == 3 ~ "Technical Cert",
+             bg07f == 4 ~ "BA/BS",
+             bg07f == 5 ~ "Other"
+             )),
          #bg14 = case_when(
          #  bg14 == 0 ~ "no",
          #  bg14 == 1 ~ "yes"),
          parenting_class_taken = as.logical(bg14),
-         highest_degree_completed = as.factor(bg16),
+         highest_degree_completed = as.factor(
+           case_when(
+             bg16 == 1 ~ "some elementary",
+             bg16 == 2 ~ "completed elementary",
+             bg16 == 3 ~ "some middle school",
+             bg16 == 4 ~ "completed middle school",
+             bg16 == 5 ~ "some highschool",
+             bg16 == 6 ~ "completed highschool",
+             bg16 == 7 ~ "some college",
+             bg16 == 8 ~ "2 yr cert or degree",
+             bg16 == 9 ~ "4 yr cert or degree",
+             bg16 == 10 ~ "Other",
+             )),
          years_school_complete = as.numeric(bgz16),
          #bg17a = case_when(
          #  bg17a == 0 ~ "no",
@@ -393,7 +439,7 @@ parent_education <- parent_education %>%
   select(par_id,
          child_id, 
          wave, 
-         parent_gender, 
+         father, 
          degree_cert_in_prog, 
          parenting_class_taken,
          highest_degree_completed,
@@ -403,7 +449,129 @@ parent_education <- parent_education %>%
   glimpse()
 ```
 
+```{r}
+#Creating parent English Fluency Table
 
+parent_english_fluency <- overall_background %>% 
+  select(parid, childid, wave, pargen, bg25r, bg26r, bg27r, bg28r, englishlanguage) %>%  
+  glimpse()
+```
+
+```{r}
+#cleaning up parent_fluency table
+parent_english_fluency <- overall_background %>% 
+  zap_labels() %>% 
+  mutate(par_id = as.character(parid),
+         child_id  = as.character(childid),
+         wave = as.factor(wave),
+         father = as.logical(pargen),
+         speaking_english = as.factor(
+           case_when(
+             bg25r == 0 ~ "not well at all",
+             bg25r == 1 ~ "not very well",
+             bg25r == 2 ~ "pretty well",
+             bg25r == 3 ~ "very well"
+             )),
+         reading_english = as.factor(
+           case_when(
+             bg26r == 0 ~ "not well at all",
+             bg26r == 1 ~ "not very well",
+             bg26r == 2 ~ "pretty well",
+             bg26r == 3 ~ "very well"
+             )),
+         writing_english = as.factor(
+           case_when(
+             bg27r == 0 ~ "not well at all",
+             bg27r == 1 ~ "not very well",
+             bg27r == 2 ~ "pretty well",
+             bg27r == 3 ~ "very well"
+             )),
+         understanding_english = as.factor(
+           case_when(
+             bg28r == 0 ~ "not well at all",
+             bg28r == 1 ~ "not very well",
+             bg28r == 2 ~ "pretty well",
+             bg28r == 3 ~ "very well"
+             )),
+         english_level = as.integer(englishlanguage)
+         ) %>% 
+  select(par_id,
+         child_id,
+         wave,
+         father,
+         speaking_english,
+         reading_english,
+         writing_english,
+         understanding_english,
+         english_level
+         ) %>% 
+  glimpse()
+
+```
+
+---
+
+### Deborah's Preliminary EDA
+Just based off my tables is there a relationship between English proficiency and education?
+* parent_english_fluency: english_level & parent_education: highest_degree_completed
+  + summary with quantitative and categorical variable = bar graph
+
+##### Bar Graph of Parents Education and whether or not they've taken a parenting class
+```{r}
+# join the parent education and parent english fluency tables 
+parent_edu_eng <- left_join(parent_education, parent_english_fluency, by = c("par_id", "child_id", "wave"))
+
+#this plot didn't quite work because the labels were squished
+
+#g <- ggplot(parent_edu_eng, aes(highest_degree_completed))
+#g + geom_bar(aes(fill = parenting_class_taken))
+
+#plotting parents education with the number who have taken a parenting class
+ggplot(parent_edu_eng, aes(y = highest_degree_completed)) +
+ geom_bar(aes(fill = parenting_class_taken), position = position_stack(reverse = TRUE)) +
+ theme(legend.position = "top")
+```
+This graph is interesting because it shows that the majority of parents in every education category have taken a parenting class, hence suggesting that education may be independent of the status of whether a parent has taken an education class.
+
+##### Bar Graph showing Education level of English Comprehension in Parents
+```{r}
+#parent_edu_eng %>% 
+#  glimpse()
+
+ggplot(parent_edu_eng) +       # reference to data
+  geom_bar(                 # geometry - a shape
+    aes(x = understanding_english,   # aesthetics - x, y, and color values
+        fill = highest_degree_completed)   
+  )
+```
+
+No surprises here, the parents who understood English very well were also the parents who had more education than other categories. Although there are many NA responses in terms of education for the parents who understood English very well, this may suggest that english speakers were more self conscious of reporting their education achievement.
+
+##### Bar Graph of English Level and Whether a Parent has taken a Parenting Class
+```{r}
+#violin plots show ddensity
+ggplot(parent_edu_eng,
+       aes(x = parenting_class_taken,
+           y = english_level))  +
+  geom_violin()
+```
+
+
+This is an interesting visualization, it seems to suggest that parents who had lower levels of english were also less likely to have taken a parenting class, as the neck of the false violin plot is thicker than that of the true violin plot. Additionally, the NA plot is somewhat constant across all levels of english suggesting that it wasn't english proficiency that dictated whether a parent took a parenting class.
+
+---
+
+According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
+
+* Are the English scores of the parent related to the standardized expressive or auditory comprehension scores?
+  + model_score
+  + parent_english_fluency
+  
+* are solo/passive/coop infant media measurements related to parent's education attainment?
+  + media_tech_cleaned
+  + parent_education
+  
+---
 
 # James' code
 
