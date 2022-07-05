@@ -352,7 +352,6 @@ overall_background$bg14 %>%
   glimpse()
 ```
 
-
 ```{r}
 # parent education table
 parent_education <- overall_background %>% 
@@ -366,7 +365,7 @@ parent_education <- parent_education %>%
     mutate(par_id = as.character(parid),
          child_id  = as.character(childid),
          wave = as.factor(wave),
-         parent_gender = as.factor(pargen),
+         parent_gender = as.logical(pargen),
          degree_cert_in_prog = as.factor(bg07f),
          #bg14 = case_when(
          #  bg14 == 0 ~ "no",
@@ -411,7 +410,6 @@ parent_english_fluency <- overall_background %>%
   glimpse()
 ```
 
-
 ```{r}
 #cleaning up parent_fluency table
 parent_english_fluency <- parent_english_fluency %>% 
@@ -419,7 +417,7 @@ parent_english_fluency <- parent_english_fluency %>%
   mutate(par_id = as.character(parid),
          child_id  = as.character(childid),
          wave = as.factor(wave),
-         parent_gender = as.factor(pargen),
+         parent_gender = as.logical(pargen),
          speaking_english = as.factor(bg25r),
          reading_english = as.factor(bg26r),
          writing_english = as.factor(bg27r),
