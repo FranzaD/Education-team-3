@@ -207,6 +207,30 @@ for (i in 1:length(wave_2_translated$bit36txt)) {
   }
 }
 
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit37txt)) {
+  value <- wave_2_translated$bit37txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit37txt[i] = wave_2_translated$bit37txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit41txt)) {
+  value <- wave_2_translated$bit41txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit41txt[i] = wave_2_translated$bit41txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit42txt)) {
+  value <- wave_2_translated$bit42txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit42txt[i] = wave_2_translated$bit42txt_e[i]
+  }
+}
+
 ```
 
 
