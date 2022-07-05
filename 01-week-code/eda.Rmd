@@ -1399,6 +1399,14 @@ ggplot(edu_demo_media,
 ```
 
 
+# save data back to file
+
+```{r}
+saveRDS(model_w2, file="../data/model_w2.dta")
+saveRDS(model_w6, file="../data/model_w6.dta")
+saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
+```
+
 
 ---
 
