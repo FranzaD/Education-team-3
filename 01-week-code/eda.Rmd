@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-install.packages("forcats")
 library(forcats)
 library(haven)
 library(readxl)
@@ -743,51 +742,59 @@ model_w2 <- wave_2 %>%
 
 ```{r}
 # wave 2 translations
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit08txt)) {
-  value <- wave_2_translated$bit08txt_e[i]
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit08txt)) {
+  value <- model_w2$bit08txt_e[i]
   if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit08txt[i] = wave_2_translated$bit08txt_e[i]
+    model_w2$bit08txt[i] = model_w2$bit08txt_e[i]
   }
 }
 
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit36txt)) {
-  value <- wave_2_translated$bit36txt_e[i]
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit36txt)) {
+  value <- model_w2$bit36txt_e[i]
   if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit36txt[i] = wave_2_translated$bit36txt_e[i]
+    model_w2$bit36txt[i] = model_w2$bit36txt_e[i]
   }
 }
 
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit37txt)) {
-  value <- wave_2_translated$bit37txt_e[i]
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit37txt)) {
+  value <- model_w2$bit37txt_e[i]
   if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit37txt[i] = wave_2_translated$bit37txt_e[i]
+    model_w2$bit37txt[i] = model_w2$bit37txt_e[i]
   }
 }
 
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit41txt)) {
-  value <- wave_2_translated$bit41txt_e[i]
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit41txt)) {
+  value <- model_w2$bit41txt_e[i]
   if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit41txt[i] = wave_2_translated$bit41txt_e[i]
+    model_w2$bit41txt[i] = model_w2$bit41txt_e[i]
   }
 }
 
-wave_2_translated <- wave_2
-for (i in 1:length(wave_2_translated$bit42txt)) {
-  value <- wave_2_translated$bit42txt_e[i]
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit42txt)) {
+  value <- model_w2$bit42txt_e[i]
   if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
-    wave_2_translated$bit42txt[i] = wave_2_translated$bit42txt_e[i]
+    model_w2$bit42txt[i] = model_w2$bit42txt_e[i]
   }
 }
 
-glimpse(wave_2_translated)
+glimpse(model_w2)
 
 ```
 
-## clean data
+remove redundant variables
+
+```{r}
+model_w2 <- model_w2 %>% 
+  select(-c(bit08txt_r,bit08txt_e,bit36txt_r, bit36txt_e,bit37txt_r,bit37txt_e,bit41txt_r,bit41txt_e,bit42txt_e,bit42txt_r))
+```
+
+
+## clean data w1
 
 ```{r}
 scores_w1 <- clean_names(scores_w1)
