@@ -406,7 +406,7 @@ parent_education <- parent_education %>%
 ```{r}
 #Creating parent English Fluency Table
 
-english_fluency <- overall_background %>% 
+parent_english_fluency <- overall_background %>% 
   select(parid, childid, wave, pargen, bg25r, bg26r, bg27r, bg28r, englishlanguage) %>%  
   glimpse()
 ```
@@ -414,9 +414,30 @@ english_fluency <- overall_background %>%
 
 ```{r}
 #cleaning up parent_fluency table
-english_fluency <- english_fluency %>% 
+parent_english_fluency <- parent_english_fluency %>% 
   zap_labels() %>% 
-  glimpse() 
+  mutate(par_id = as.character(parid),
+         child_id  = as.character(childid),
+         wave = as.factor(wave),
+         parent_gender = as.factor(pargen),
+         speaking_english = as.factor(bg25r),
+         reading_english = as.factor(bg26r),
+         writing_english = as.factor(bg27r),
+         understanding_english = as.factor(bg28r),
+         english_level = as.numeric(englishlanguage)
+         ) %>% 
+  select(par_id,
+         child_id,
+         wave,
+         parent_gender,
+         speaking_english,
+         reading_english,
+         writing_english,
+         understanding_english,
+         english_level
+         ) %>% 
+  glimpse()
+
 ```
 
 
