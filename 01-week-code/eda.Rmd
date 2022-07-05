@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+library(forcats)
 library(haven)
 library(readxl)
 library(ggplot2)
@@ -179,6 +180,7 @@ income_w1 <- income_w1 %>%
        enough_money_food, enough_money_medical_care, bill_difficulty)
 
 ```
+
 ### Aubree Visualization 
 ```{r}
 valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
@@ -388,6 +390,257 @@ ggcorrplot(correlation,
 
 ```
 
+```{r}
+# wave 6 translations
+model_w6 <- wave_6
+for (i in 1:length(model_w6$bit08txt)) {
+  value <- model_w6$bit08txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w6$bit08txt[i] = model_w6$bit08txt_e[i]
+  }
+}
+
+model_w6 <- model_w6
+for (i in 1:length(model_w6$bit36txt)) {
+  value <- model_w6$bit36txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w6$bit36txt[i] = model_w6$bit36txt_e[i]
+  }
+}
+
+model_w6 <- model_w6
+for (i in 1:length(model_w6$bit37txt)) {
+  value <- model_w6$bit37txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w6$bit37txt[i] = model_w6$bit37txt_e[i]
+  }
+}
+
+model_w6 <- model_w6
+for (i in 1:length(model_w6$bit41txt)) {
+  value <- model_w6$bit41txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w6$bit41txt[i] = model_w6$bit41txt_e[i]
+  }
+}
+
+model_w6 <- model_w6
+for (i in 1:length(model_w6$bit42txt)) {
+  value <- model_w6$bit42txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w6$bit42txt[i] = model_w6$bit42txt_e[i]
+  }
+}
+
+glimpse(model_w6)
+
+```
+
+```{r}
+# wave 6 cleaning
+model_w6 <- model_w6 %>% 
+  transmute(child_id = as.character(childid),
+          par_id = as.character(parid),
+          wave = as.factor(wave),
+          pargen = as.factor(pargen),
+          site = as.factor(site),
+          bit01 = as.factor(case_when(
+            bit01 == 0 ~ "Not true/Rarely",
+            bit01 == 1 ~ "Somewhat true/Sometimes",
+            bit01 == 2 ~ "Very true/Often"
+          )),
+          bit02 = as.factor(case_when(
+						bit02 == 0 ~ "Not true/Rarely",
+						bit02 == 1 ~ "Somewhat true/Sometimes",
+						bit02 == 2 ~ "Very true/Often")),
+          bit03 = as.factor(case_when(
+						bit03 == 0 ~ "Not true/Rarely",
+						bit03 == 1 ~ "Somewhat true/Sometimes",
+						bit03 == 2 ~ "Very true/Often")),
+          bit04 = as.factor(case_when(
+						bit04 == 0 ~ "Not true/Rarely",
+						bit04 == 1 ~ "Somewhat true/Sometimes",
+						bit04 == 2 ~ "Very true/Often")),
+          bit05 = as.factor(case_when(
+						bit05 == 0 ~ "Not true/Rarely",
+						bit05 == 1 ~ "Somewhat true/Sometimes",
+						bit05 == 2 ~ "Very true/Often")),
+          bit06 = as.factor(case_when(
+						bit06 == 0 ~ "Not true/Rarely",
+						bit06 == 1 ~ "Somewhat true/Sometimes",
+						bit06 == 2 ~ "Very true/Often")),
+          bit07 = as.factor(case_when(
+						bit07 == 0 ~ "Not true/Rarely",
+						bit07 == 1 ~ "Somewhat true/Sometimes",
+						bit07 == 2 ~ "Very true/Often")),
+          bit08 = as.factor(case_when(
+						bit08 == 0 ~ "Not true/Rarely",
+						bit08 == 1 ~ "Somewhat true/Sometimes",
+						bit08 == 2 ~ "Very true/Often")),
+          bit08txt = as.character(bit08txt),
+          bit09 = as.factor(case_when(
+						bit09 == 0 ~ "Not true/Rarely",
+						bit09 == 1 ~ "Somewhat true/Sometimes",
+						bit09 == 2 ~ "Very true/Often")),
+          bit10 = as.factor(case_when(
+						bit10 == 0 ~ "Not true/Rarely",
+						bit10 == 1 ~ "Somewhat true/Sometimes",
+						bit10 == 2 ~ "Very true/Often")),
+          bit11 = as.factor(case_when(
+						bit11 == 0 ~ "Not true/Rarely",
+						bit11 == 1 ~ "Somewhat true/Sometimes",
+						bit11 == 2 ~ "Very true/Often")),
+          bit12 = as.factor(case_when(
+						bit12 == 0 ~ "Not true/Rarely",
+						bit12 == 1 ~ "Somewhat true/Sometimes",
+						bit12 == 2 ~ "Very true/Often")),
+          bit13 = as.factor(case_when(
+						bit13 == 0 ~ "Not true/Rarely",
+						bit13 == 1 ~ "Somewhat true/Sometimes",
+						bit13 == 2 ~ "Very true/Often")),
+          bit14 = as.factor(case_when(
+						bit14 == 0 ~ "Not true/Rarely",
+						bit14 == 1 ~ "Somewhat true/Sometimes",
+						bit14 == 2 ~ "Very true/Often")),
+          bit15 = as.factor(case_when(
+						bit15 == 0 ~ "Not true/Rarely",
+						bit15 == 1 ~ "Somewhat true/Sometimes",
+						bit15 == 2 ~ "Very true/Often")),
+          bit16 = as.factor(case_when(
+						bit16 == 0 ~ "Not true/Rarely",
+						bit16 == 1 ~ "Somewhat true/Sometimes",
+						bit16 == 2 ~ "Very true/Often")),
+          bit17 = as.factor(case_when(
+						bit17 == 0 ~ "Not true/Rarely",
+						bit17 == 1 ~ "Somewhat true/Sometimes",
+						bit17 == 2 ~ "Very true/Often")),
+          bit18 = as.factor(case_when(
+						bit18 == 0 ~ "Not true/Rarely",
+						bit18 == 1 ~ "Somewhat true/Sometimes",
+						bit18 == 2 ~ "Very true/Often")),
+          bit19 = as.factor(case_when(
+						bit19 == 0 ~ "Not true/Rarely",
+						bit19 == 1 ~ "Somewhat true/Sometimes",
+						bit19 == 2 ~ "Very true/Often")),
+          bit20 = as.factor(case_when(
+						bit20 == 0 ~ "Not true/Rarely",
+						bit20 == 1 ~ "Somewhat true/Sometimes",
+						bit20 == 2 ~ "Very true/Often")),
+          bit21 = as.factor(case_when(
+						bit21 == 0 ~ "Not true/Rarely",
+						bit21 == 1 ~ "Somewhat true/Sometimes",
+						bit21 == 2 ~ "Very true/Often")),
+          bit22 = as.factor(case_when(
+						bit22 == 0 ~ "Not true/Rarely",
+						bit22 == 1 ~ "Somewhat true/Sometimes",
+						bit22 == 2 ~ "Very true/Often")),
+          bit23 = as.factor(case_when(
+						bit23 == 0 ~ "Not true/Rarely",
+						bit23 == 1 ~ "Somewhat true/Sometimes",
+						bit23 == 2 ~ "Very true/Often")),
+          bit24 = as.factor(case_when(
+						bit24 == 0 ~ "Not true/Rarely",
+						bit24 == 1 ~ "Somewhat true/Sometimes",
+						bit24 == 2 ~ "Very true/Often")),
+          bit25 = as.factor(case_when(
+						bit25 == 0 ~ "Not true/Rarely",
+						bit25 == 1 ~ "Somewhat true/Sometimes",
+						bit25 == 2 ~ "Very true/Often")),
+          bit26 = as.factor(case_when(
+						bit26 == 0 ~ "Not true/Rarely",
+						bit26 == 1 ~ "Somewhat true/Sometimes",
+						bit26 == 2 ~ "Very true/Often")),
+          bit27 = as.factor(case_when(
+						bit27 == 0 ~ "Not true/Rarely",
+						bit27 == 1 ~ "Somewhat true/Sometimes",
+						bit27 == 2 ~ "Very true/Often")),
+          bit28 = as.factor(case_when(
+						bit28 == 0 ~ "Not true/Rarely",
+						bit28 == 1 ~ "Somewhat true/Sometimes",
+						bit28 == 2 ~ "Very true/Often")),
+          bit29 = as.factor(case_when(
+						bit29 == 0 ~ "Not true/Rarely",
+						bit29 == 1 ~ "Somewhat true/Sometimes",
+						bit29 == 2 ~ "Very true/Often")),
+          bit30 = as.factor(case_when(
+						bit30 == 0 ~ "Not true/Rarely",
+						bit30 == 1 ~ "Somewhat true/Sometimes",
+						bit30 == 2 ~ "Very true/Often")),
+          bit31 = as.factor(case_when(
+						bit31 == 0 ~ "Not true/Rarely",
+						bit31 == 1 ~ "Somewhat true/Sometimes",
+						bit31 == 2 ~ "Very true/Often")),
+          bit32 = as.factor(case_when(
+						bit32 == 0 ~ "Not true/Rarely",
+						bit32 == 1 ~ "Somewhat true/Sometimes",
+						bit32 == 2 ~ "Very true/Often")),
+          bit33 = as.factor(case_when(
+						bit33 == 0 ~ "Not true/Rarely",
+						bit33 == 1 ~ "Somewhat true/Sometimes",
+						bit33 == 2 ~ "Very true/Often")),
+          bit34 = as.factor(case_when(
+						bit34 == 0 ~ "Not true/Rarely",
+						bit34 == 1 ~ "Somewhat true/Sometimes",
+						bit34 == 2 ~ "Very true/Often")),
+          bit35 = as.factor(case_when(
+						bit35 == 0 ~ "Not true/Rarely",
+						bit35 == 1 ~ "Somewhat true/Sometimes",
+						bit35 == 2 ~ "Very true/Often")),
+          bit36 = as.factor(case_when(
+						bit36 == 0 ~ "Not true/Rarely",
+						bit36 == 1 ~ "Somewhat true/Sometimes",
+						bit36 == 2 ~ "Very true/Often")),
+          bit36txt = as.character(bit36txt),
+          bit37 = as.factor(case_when(
+						bit37 == 0 ~ "Not true/Rarely",
+						bit37 == 1 ~ "Somewhat true/Sometimes",
+						bit37 == 2 ~ "Very true/Often")),
+          bit37txt = as.character(bit37txt),
+          bit38 = as.factor(case_when(
+						bit38 == 0 ~ "Not true/Rarely",
+						bit38 == 1 ~ "Somewhat true/Sometimes",
+						bit38 == 2 ~ "Very true/Often")),
+          bit39 = as.factor(case_when(
+						bit39 == 0 ~ "Not true/Rarely",
+						bit39 == 1 ~ "Somewhat true/Sometimes",
+						bit39 == 2 ~ "Very true/Often")),
+          bit40 = as.factor(case_when(
+						bit40 == 0 ~ "Not true/Rarely",
+						bit40 == 1 ~ "Somewhat true/Sometimes",
+						bit40 == 2 ~ "Very true/Often")),
+          bit41 = as.factor(case_when(
+						bit41 == 0 ~ "Not true/Rarely",
+						bit41 == 1 ~ "Somewhat true/Sometimes",
+						bit41 == 2 ~ "Very true/Often")),
+          bit41txt = as.character(bit41txt),
+          bit42 = as.factor(case_when(
+						bit42 == 0 ~ "Not true/Rarely",
+						bit42 == 1 ~ "Somewhat true/Sometimes",
+						bit42 == 2 ~ "Very true/Often")),
+          bit42txt = as.character(bit42txt),
+          bit43a = as.factor(case_when(
+						bit43a == 1 ~ "Not worried at all",
+						bit43a == 2 ~ "A little worried",
+						bit43a == 3 ~ "Worried",
+						bit43a == 4 ~ "Very worried")),
+          bit43b = as.factor(case_when(
+						bit43b == 1 ~ "Not worried at all",
+						bit43b == 2 ~ "A little worried",
+						bit43b == 3 ~ "Worried",
+						bit43b == 4 ~ "Very worried")),
+          BITcompnic = as.integer(BITcompnic),
+          BITcompts = as.integer(BITcompts),
+          BITcompavg = as.double(BITcompavg),
+          BITprobnic = as.integer(BITprobnic),
+          BITprobts = as.integer(BITprobts),
+          BITprobavg = as.double(BITprobavg),
+          BITcomp_cut = as.integer(BITcomp_cut),
+          BITprob_cut = as.integer(BITprob_cut),)
+
+glimpse(model_w6)
+```
+
+
 
 # Deborah's code
 ```{r}
@@ -435,6 +688,19 @@ parent_education <- parent_education %>%
              bg16 == 9 ~ "4 yr cert or degree",
              bg16 == 10 ~ "Other",
              )),
+         highest_degree_completed = fct_relevel(
+           highest_degree_completed, 
+           "some elementary", 
+           "completed elementary", 
+           "some middle school", 
+           "completed middle school",
+           "some highschool",
+           "completed highschool",
+           "some college",
+           "2 yr cert or degree",
+           "4 yr cert or degree",
+           "Other"
+           ),
          years_school_complete = as.numeric(bgz16),
          #bg17a = case_when(
          #  bg17a == 0 ~ "no",
@@ -463,6 +729,10 @@ parent_education <- parent_education %>%
          us_education,
          education_location) %>% 
   glimpse()
+```
+```{r}
+parent_education$highest_degree_completed %>% 
+  fct_relevel()
 ```
 
 ```{r}
@@ -534,73 +804,208 @@ wave_2 <- wave_2 %>%
   select(-version_31_BIT_w2)
 ```
 ```{r}
-wave_2 <- wave_2 %>% 
-  mutate(childid = as.character(childid),
-          parid = as.character(parid),
+model_w2 <- wave_2 %>% 
+  mutate(child_id = as.character(childid),
+          par_id = as.character(parid),
           wave = as.factor(wave),
           pargen = as.factor(pargen),
           svdt_31_BIT_w2 = as.factor(svdt_31_BIT_w2),
           language_31_BIT_w2 = as.factor(language_31_BIT_w2),
           site = as.factor(site),
-          bit01 = as.factor(bit01),
-          bit02 = as.factor(bit02),
-          bit03 = as.factor(bit03),
-          bit04 = as.factor(bit04),
-          bit05 = as.factor(bit05),
-          bit06 = as.factor(bit06),
-          bit07 = as.factor(bit07),
-          bit08 = as.factor(bit08),
+          bit01 = as.factor(case_when(
+            bit01 == 0 ~ "Not true/Rarely",
+            bit01 == 1 ~ "Somewhat true/Sometimes",
+            bit01 == 2 ~ "Very true/Often"
+          )),
+          bit02 = as.factor(case_when(
+						bit02 == 0 ~ "Not true/Rarely",
+						bit02 == 1 ~ "Somewhat true/Sometimes",
+						bit02 == 2 ~ "Very true/Often")),
+          bit03 = as.factor(case_when(
+						bit03 == 0 ~ "Not true/Rarely",
+						bit03 == 1 ~ "Somewhat true/Sometimes",
+						bit03 == 2 ~ "Very true/Often")),
+          bit04 = as.factor(case_when(
+						bit04 == 0 ~ "Not true/Rarely",
+						bit04 == 1 ~ "Somewhat true/Sometimes",
+						bit04 == 2 ~ "Very true/Often")),
+          bit05 = as.factor(case_when(
+						bit05 == 0 ~ "Not true/Rarely",
+						bit05 == 1 ~ "Somewhat true/Sometimes",
+						bit05 == 2 ~ "Very true/Often")),
+          bit06 = as.factor(case_when(
+						bit06 == 0 ~ "Not true/Rarely",
+						bit06 == 1 ~ "Somewhat true/Sometimes",
+						bit06 == 2 ~ "Very true/Often")),
+          bit07 = as.factor(case_when(
+						bit07 == 0 ~ "Not true/Rarely",
+						bit07 == 1 ~ "Somewhat true/Sometimes",
+						bit07 == 2 ~ "Very true/Often")),
+          bit08 = as.factor(case_when(
+						bit08 == 0 ~ "Not true/Rarely",
+						bit08 == 1 ~ "Somewhat true/Sometimes",
+						bit08 == 2 ~ "Very true/Often")),
           bit08txt = as.character(bit08txt),
           bit08txt_r = as.character(bit08txt_r),
           bit08txt_e = as.character(bit08txt_e),
-          bit09 = as.factor(bit09),
-          bit10 = as.factor(bit10),
-          bit11 = as.factor(bit11),
-          bit12 = as.factor(bit12),
-          bit13 = as.factor(bit13),
-          bit14 = as.factor(bit14),
-          bit15 = as.factor(bit15),
-          bit16 = as.factor(bit16),
-          bit17 = as.factor(bit17),
-          bit18 = as.factor(bit18),
-          bit19 = as.factor(bit19),
-          bit20 = as.factor(bit20),
-          bit21 = as.factor(bit21),
-          bit22 = as.factor(bit22),
-          bit23 = as.factor(bit23),
-          bit24 = as.factor(bit24),
-          bit25 = as.factor(bit25),
-          bit26 = as.factor(bit26),
-          bit27 = as.factor(bit27),
-          bit28 = as.factor(bit28),
-          bit29 = as.factor(bit29),
-          bit30 = as.factor(bit30),
-          bit31 = as.factor(bit31),
-          bit32 = as.factor(bit32),
-          bit33 = as.factor(bit33),
-          bit34 = as.factor(bit34),
-          bit35 = as.factor(bit35),
-          bit36 = as.factor(bit36),
+          bit09 = as.factor(case_when(
+						bit09 == 0 ~ "Not true/Rarely",
+						bit09 == 1 ~ "Somewhat true/Sometimes",
+						bit09 == 2 ~ "Very true/Often")),
+          bit10 = as.factor(case_when(
+						bit10 == 0 ~ "Not true/Rarely",
+						bit10 == 1 ~ "Somewhat true/Sometimes",
+						bit10 == 2 ~ "Very true/Often")),
+          bit11 = as.factor(case_when(
+						bit11 == 0 ~ "Not true/Rarely",
+						bit11 == 1 ~ "Somewhat true/Sometimes",
+						bit11 == 2 ~ "Very true/Often")),
+          bit12 = as.factor(case_when(
+						bit12 == 0 ~ "Not true/Rarely",
+						bit12 == 1 ~ "Somewhat true/Sometimes",
+						bit12 == 2 ~ "Very true/Often")),
+          bit13 = as.factor(case_when(
+						bit13 == 0 ~ "Not true/Rarely",
+						bit13 == 1 ~ "Somewhat true/Sometimes",
+						bit13 == 2 ~ "Very true/Often")),
+          bit14 = as.factor(case_when(
+						bit14 == 0 ~ "Not true/Rarely",
+						bit14 == 1 ~ "Somewhat true/Sometimes",
+						bit14 == 2 ~ "Very true/Often")),
+          bit15 = as.factor(case_when(
+						bit15 == 0 ~ "Not true/Rarely",
+						bit15 == 1 ~ "Somewhat true/Sometimes",
+						bit15 == 2 ~ "Very true/Often")),
+          bit16 = as.factor(case_when(
+						bit16 == 0 ~ "Not true/Rarely",
+						bit16 == 1 ~ "Somewhat true/Sometimes",
+						bit16 == 2 ~ "Very true/Often")),
+          bit17 = as.factor(case_when(
+						bit17 == 0 ~ "Not true/Rarely",
+						bit17 == 1 ~ "Somewhat true/Sometimes",
+						bit17 == 2 ~ "Very true/Often")),
+          bit18 = as.factor(case_when(
+						bit18 == 0 ~ "Not true/Rarely",
+						bit18 == 1 ~ "Somewhat true/Sometimes",
+						bit18 == 2 ~ "Very true/Often")),
+          bit19 = as.factor(case_when(
+						bit19 == 0 ~ "Not true/Rarely",
+						bit19 == 1 ~ "Somewhat true/Sometimes",
+						bit19 == 2 ~ "Very true/Often")),
+          bit20 = as.factor(case_when(
+						bit20 == 0 ~ "Not true/Rarely",
+						bit20 == 1 ~ "Somewhat true/Sometimes",
+						bit20 == 2 ~ "Very true/Often")),
+          bit21 = as.factor(case_when(
+						bit21 == 0 ~ "Not true/Rarely",
+						bit21 == 1 ~ "Somewhat true/Sometimes",
+						bit21 == 2 ~ "Very true/Often")),
+          bit22 = as.factor(case_when(
+						bit22 == 0 ~ "Not true/Rarely",
+						bit22 == 1 ~ "Somewhat true/Sometimes",
+						bit22 == 2 ~ "Very true/Often")),
+          bit23 = as.factor(case_when(
+						bit23 == 0 ~ "Not true/Rarely",
+						bit23 == 1 ~ "Somewhat true/Sometimes",
+						bit23 == 2 ~ "Very true/Often")),
+          bit24 = as.factor(case_when(
+						bit24 == 0 ~ "Not true/Rarely",
+						bit24 == 1 ~ "Somewhat true/Sometimes",
+						bit24 == 2 ~ "Very true/Often")),
+          bit25 = as.factor(case_when(
+						bit25 == 0 ~ "Not true/Rarely",
+						bit25 == 1 ~ "Somewhat true/Sometimes",
+						bit25 == 2 ~ "Very true/Often")),
+          bit26 = as.factor(case_when(
+						bit26 == 0 ~ "Not true/Rarely",
+						bit26 == 1 ~ "Somewhat true/Sometimes",
+						bit26 == 2 ~ "Very true/Often")),
+          bit27 = as.factor(case_when(
+						bit27 == 0 ~ "Not true/Rarely",
+						bit27 == 1 ~ "Somewhat true/Sometimes",
+						bit27 == 2 ~ "Very true/Often")),
+          bit28 = as.factor(case_when(
+						bit28 == 0 ~ "Not true/Rarely",
+						bit28 == 1 ~ "Somewhat true/Sometimes",
+						bit28 == 2 ~ "Very true/Often")),
+          bit29 = as.factor(case_when(
+						bit29 == 0 ~ "Not true/Rarely",
+						bit29 == 1 ~ "Somewhat true/Sometimes",
+						bit29 == 2 ~ "Very true/Often")),
+          bit30 = as.factor(case_when(
+						bit30 == 0 ~ "Not true/Rarely",
+						bit30 == 1 ~ "Somewhat true/Sometimes",
+						bit30 == 2 ~ "Very true/Often")),
+          bit31 = as.factor(case_when(
+						bit31 == 0 ~ "Not true/Rarely",
+						bit31 == 1 ~ "Somewhat true/Sometimes",
+						bit31 == 2 ~ "Very true/Often")),
+          bit32 = as.factor(case_when(
+						bit32 == 0 ~ "Not true/Rarely",
+						bit32 == 1 ~ "Somewhat true/Sometimes",
+						bit32 == 2 ~ "Very true/Often")),
+          bit33 = as.factor(case_when(
+						bit33 == 0 ~ "Not true/Rarely",
+						bit33 == 1 ~ "Somewhat true/Sometimes",
+						bit33 == 2 ~ "Very true/Often")),
+          bit34 = as.factor(case_when(
+						bit34 == 0 ~ "Not true/Rarely",
+						bit34 == 1 ~ "Somewhat true/Sometimes",
+						bit34 == 2 ~ "Very true/Often")),
+          bit35 = as.factor(case_when(
+						bit35 == 0 ~ "Not true/Rarely",
+						bit35 == 1 ~ "Somewhat true/Sometimes",
+						bit35 == 2 ~ "Very true/Often")),
+          bit36 = as.factor(case_when(
+						bit36 == 0 ~ "Not true/Rarely",
+						bit36 == 1 ~ "Somewhat true/Sometimes",
+						bit36 == 2 ~ "Very true/Often")),
           bit36txt = as.character(bit36txt),
           bit36txt_r = as.character(bit36txt_r),
           bit36txt_e = as.character(bit36txt_e),
-          bit37 = as.factor(bit37),
+          bit37 = as.factor(case_when(
+						bit37 == 0 ~ "Not true/Rarely",
+						bit37 == 1 ~ "Somewhat true/Sometimes",
+						bit37 == 2 ~ "Very true/Often")),
           bit37txt = as.character(bit37txt),
           bit37txt_r = as.character(bit37txt_r),
           bit37txt_e = as.character(bit37txt_e),
-          bit38 = as.factor(bit38),
-          bit39 = as.factor(bit39),
-          bit40 = as.factor(bit40),
-          bit41 = as.factor(bit41),
+          bit38 = as.factor(case_when(
+						bit38 == 0 ~ "Not true/Rarely",
+						bit38 == 1 ~ "Somewhat true/Sometimes",
+						bit38 == 2 ~ "Very true/Often")),
+          bit39 = as.factor(case_when(
+						bit39 == 0 ~ "Not true/Rarely",
+						bit39 == 1 ~ "Somewhat true/Sometimes",
+						bit39 == 2 ~ "Very true/Often")),
+          bit40 = as.factor(case_when(
+						bit40 == 0 ~ "Not true/Rarely",
+						bit40 == 1 ~ "Somewhat true/Sometimes",
+						bit40 == 2 ~ "Very true/Often")),
+          bit41 = as.factor(case_when(
+						bit41 == 0 ~ "Not true/Rarely",
+						bit41 == 1 ~ "Somewhat true/Sometimes",
+						bit41 == 2 ~ "Very true/Often")),
           bit41txt = as.character(bit41txt),
           bit41txt_r = as.character(bit41txt_r),
           bit41txt_e = as.character(bit41txt_e),
-          bit42 = as.factor(bit42),
+          bit42 = as.factor(case_when(
+						bit42 == 0 ~ "Not true/Rarely",
+						bit42 == 1 ~ "Somewhat true/Sometimes",
+						bit42 == 2 ~ "Very true/Often")),
           bit42txt = as.character(bit42txt),
           bit42txt_r = as.character(bit42txt_r),
           bit42txt_e = as.character(bit42txt_e),
-          bit43a = as.factor(bit43a),
-          bit43b = as.factor(bit43b),
+          bit43a = as.factor(case_when(
+						bit43a == 1 ~ "Not worried at all",
+						bit43a == 2 ~ "A little worried",
+						bit43a == 3 ~ "Worried",
+						bit43a == 4 ~ "Very worried")),
+          bit43b = as.factor(case_when(
+						bit43b == 1 ~ "Not worried at all",
+						bit43b == 2 ~ "A little worried",
+						bit43b == 3 ~ "Worried",
+						bit43b == 4 ~ "Very worried")),
           BITcompnic = as.integer(BITcompnic),
           BITcompts = as.integer(BITcompts),
           BITcompavg = as.double(BITcompavg),
@@ -611,9 +1016,63 @@ wave_2 <- wave_2 %>%
           BITprob_cut = as.integer(BITprob_cut),)
 ```
 
+### Removed non-english text responses - Chandra
+
+```{r}
+# wave 2 translations
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit08txt)) {
+  value <- model_w2$bit08txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w2$bit08txt[i] = model_w2$bit08txt_e[i]
+  }
+}
+
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit36txt)) {
+  value <- model_w2$bit36txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w2$bit36txt[i] = model_w2$bit36txt_e[i]
+  }
+}
+
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit37txt)) {
+  value <- model_w2$bit37txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w2$bit37txt[i] = model_w2$bit37txt_e[i]
+  }
+}
+
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit41txt)) {
+  value <- model_w2$bit41txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w2$bit41txt[i] = model_w2$bit41txt_e[i]
+  }
+}
+
+model_w2 <- model_w2
+for (i in 1:length(model_w2$bit42txt)) {
+  value <- model_w2$bit42txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    model_w2$bit42txt[i] = model_w2$bit42txt_e[i]
+  }
+}
+
+glimpse(model_w2)
+
+```
+
+remove redundant variables
+
+```{r}
+model_w2 <- model_w2 %>% 
+  select(-c(bit08txt_r,bit08txt_e,bit36txt_r, bit36txt_e,bit37txt_r,bit37txt_e,bit41txt_r,bit41txt_e,bit42txt_e,bit42txt_r))
+```
 
 
-## clean data
+## clean data w1
 
 ```{r}
 scores_w1 <- clean_names(scores_w1)
@@ -741,13 +1200,6 @@ parent_demographic %>%
 ```
 
 ```{r}
-model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
-
-model_score_education = full_join(model_score, parent_education, by=c("child_id", "par_id"))
-
-model_media_demographic = full_join(media_tech_cleaned, parent_education, parent_demographic, by = c("child_id", "par_id"))
-media_score = full_join(model_score, media_tech_cleaned, by=c("child_id", "par_id"))
-
 valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
 valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
 valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
@@ -846,12 +1298,31 @@ valuable_dataset %>%
              y = positive_beliefs_media)) + 
   geom_point()
 
+#q8: do you limit how much time the children use 
 valuable_dataset %>% 
+<<<<<<< HEAD
   ggplot(aes(x =  positive_beliefs_media,
              y = highest_degree_completed,
              fill = parenting_class_taken)) +
   geom_boxplot() + 
+=======
+  ggplot(aes(x = household_income_categorical,
+             y = positive_beliefs_media,
+             fill = q8 )) +
+  geom_boxplot()
+>>>>>>> 86b682d73df1b4bc4c281502559f0aa877bd93b4
 
+valuable_dataset %>% 
+  ggplot(aes(y = household_income_numerical,
+             x = highest_degree_completed,
+             fill = highest_degree_completed)) +
+  geom_boxplot()
+
+valuable_dataset %>% 
+  ggplot(aes(x = positive_beliefs_media,
+             y = daily_use,
+             fill = positive_beliefs_media)) +
+  geom_point()
 
 ```
 
@@ -877,7 +1348,7 @@ model_score_demographic %>%
 
 ---
 
-### Deborah's Preliminary EDA
+# Deborah's Preliminary EDA
 Just based off my tables is there a relationship between English proficiency and education?
 * parent_english_fluency: english_level & parent_education: highest_degree_completed
   + summary with quantitative and categorical variable = bar graph
@@ -941,6 +1412,17 @@ ggplot(edu_demo_media,
            fill=chi_par_lang)) +
   geom_boxplot() +
   ggtitle('Child Daily Media Use and Highest Degree Completed by Parents') 
+```
+
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
+valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, public_assistance_w1, by=c("child_id", "par_id"))
+valuable_dataset = inner_join(valuable_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, parent_english_fluency, 
+                              by = c("child_id", "par_id"))
 ```
 
 
