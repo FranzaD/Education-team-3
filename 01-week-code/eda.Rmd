@@ -366,7 +366,15 @@ parent_education <- parent_education %>%
          child_id  = as.character(childid),
          wave = as.factor(wave),
          father = as.logical(pargen),
-         degree_cert_in_prog = as.factor(bg07f),
+         degree_cert_in_prog = as.factor(
+           case_when(
+             bg07f == 0 ~ "None",
+             bg07f == 1 ~ "GED",
+             bg07f == 2 ~ "AA",
+             bg07f == 3 ~ "Technical Cert",
+             bg07f == 4 ~ "BA/BS",
+             bg07f == 5 ~ "Other"
+             )),
          #bg14 = case_when(
          #  bg14 == 0 ~ "no",
          #  bg14 == 1 ~ "yes"),
