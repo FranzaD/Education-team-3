@@ -412,7 +412,7 @@ parent_english_fluency <- overall_background %>%
 
 ```{r}
 #cleaning up parent_fluency table
-parent_english_fluency <- parent_english_fluency %>% 
+parent_english_fluency <- overall_background %>% 
   zap_labels() %>% 
   mutate(par_id = as.character(parid),
          child_id  = as.character(childid),
@@ -446,7 +446,7 @@ parent_english_fluency <- parent_english_fluency %>%
              bg28r == 2 ~ "pretty well",
              bg28r == 3 ~ "very well"
              )),
-         english_level = as.numeric(englishlanguage)
+         english_level = as.integer(englishlanguage)
          ) %>% 
   select(par_id,
          child_id,
@@ -462,7 +462,14 @@ parent_english_fluency <- parent_english_fluency %>%
 
 ```
 
+
+
+
+---
+
 ### Deborah's Preliminary EDA
+According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
+* 
 
 
 # James' code
