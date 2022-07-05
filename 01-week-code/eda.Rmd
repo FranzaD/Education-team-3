@@ -549,11 +549,13 @@ No surprises here, the parents who understood English very well were also the pa
 
 ##### Bar Graph of English Level and Whether a Parent has taken a Parenting Class
 ```{r}
+#violin plots show ddensity
 ggplot(parent_edu_eng,
        aes(x = parenting_class_taken,
            y = english_level))  +
   geom_violin()
 ```
+
 
 This is an interesting visualization, it seems to suggest that parents who had lower levels of english were also less likely to have taken a parenting class, as the neck of the false violin plot is thicker than that of the true violin plot. Additionally, the NA plot is somewhat constant across all levels of english suggesting that it wasn't english proficiency that dictated whether a parent took a parenting class.
 
