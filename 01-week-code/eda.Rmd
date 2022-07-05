@@ -179,6 +179,13 @@ income_w1 <- income_w1 %>%
        enough_money_food, enough_money_medical_care, bill_difficulty)
 
 ```
+### Aubree Visualization 
+```{r}
+
+
+```
+
+
 
 # Chandra's code
 
