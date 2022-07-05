@@ -181,8 +181,36 @@ income_w1 <- income_w1 %>%
        enough_money_food, enough_money_medical_care, bill_difficulty)
 
 ```
+### Aubree Visualization 
+```{r}
+
+
+```
+
+
 
 # Chandra's code
+
+```{r}
+# wave 2 translation for bit08 and bit36
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit08txt)) {
+  value <- wave_2_translated$bit08txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit08txt[i] = wave_2_translated$bit08txt_e[i]
+  }
+}
+
+wave_2_translated <- wave_2
+for (i in 1:length(wave_2_translated$bit36txt)) {
+  value <- wave_2_translated$bit36txt_e[i]
+  if (value != "" && !(value %in% c("n/a", "N/A")) && is.na(as.numeric(value))) {
+    wave_2_translated$bit36txt[i] = wave_2_translated$bit36txt_e[i]
+  }
+}
+
+```
+
 
 ```{r}
 glimpse(media_tech)
