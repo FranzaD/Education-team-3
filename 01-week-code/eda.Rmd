@@ -509,11 +509,18 @@ ggplot(parent_edu_eng, aes(y = highest_degree_completed)) +
 #parent_edu_eng %>% 
 #  glimpse()
 
-ggplot( data = parent_edu_eng) +       # reference to data
+ggplot(parent_edu_eng) +       # reference to data
   geom_bar(                 # geometry - a shape
     aes(x = understanding_english,   # aesthetics - x, y, and color values
         fill = highest_degree_completed)   
   )
+```
+##### Bar Graph of English Level and Whether a Parent has taken a Parenting Class
+```{r}
+ggplot(parent_edu_eng,
+       aes(x = parenting_class_taken,
+           y = english_level))  +
+  geom_violin()
 ```
 
 
