@@ -329,7 +329,7 @@ media_tech_cleaned <- media_tech %>%
          coop = MTcouse,
          mealtimes = MTmealtimes,
          behavior_management = MTdcbhv,
-         possitive_beliefs_media = MTbeliefs,
+         positive_beliefs_media = MTbeliefs,
          educational_benefits = MTeduc,
          digital_babysitting = MTbabysit,
          daily_use = MTdailyuse
