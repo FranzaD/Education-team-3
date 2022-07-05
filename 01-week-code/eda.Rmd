@@ -778,8 +778,8 @@ wave_2 <- wave_2 %>%
 ```
 ```{r}
 model_w2 <- wave_2 %>% 
-  mutate(childid = as.character(childid),
-          parid = as.character(parid),
+  mutate(child_id = as.character(childid),
+          par_id = as.character(parid),
           wave = as.factor(wave),
           pargen = as.factor(pargen),
           svdt_31_BIT_w2 = as.factor(svdt_31_BIT_w2),
