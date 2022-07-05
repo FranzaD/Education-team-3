@@ -467,11 +467,20 @@ parent_english_fluency <- overall_background %>%
 
 ---
 
-### Deborah's Preliminary EDA
+### Deborah's Preliminary 
+Just based off my tables is there a relationship between english proficiency and education?
+
 According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
 
-* 
-
+* Are the English scores of the parent related to the standardized expressive or auditory comprehension scores?
+  + model_score
+  + parent_english_fluency
+  
+* are solo/passive/coop infant media measurements related to parent's education attainment?
+  + media_tech_cleaned
+  + parent_education
+  
+---
 
 # James' code
 
