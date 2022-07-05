@@ -482,13 +482,32 @@ parent_english_fluency <- overall_background %>%
 
 ```
 
-
-
-
 ---
 
 ### Deborah's Preliminary 
-Just based off my tables is there a relationship between english proficiency and education?
+Just based off my tables is there a relationship between English proficiency and education?
+* parent_english_fluency: english_level & parent_education: highest_degree_completed
+  + summary with quantitative and categorical variable = bar graph
+
+##### Bar Graph of Parents Education and whether or not they've taken a parenting class
+```{r}
+# join the parent education and parent english fluency tables 
+parent_edu_eng <- left_join(parent_education, parent_english_fluency, by = c("par_id", "child_id", "wave"))
+
+parent_edu_eng %>% 
+  glimpse()
+
+#this plot didn't quite work because the labels were squished
+
+#g <- ggplot(parent_edu_eng, aes(highest_degree_completed))
+#g + geom_bar(aes(fill = parenting_class_taken))
+
+#plotting parents education with the number who have taken a parenting class
+ggplot(parent_edu_eng, aes(y = highest_degree_completed)) +
+ geom_bar(aes(fill = parenting_class_taken), position = position_stack(reverse = TRUE)) +
+ theme(legend.position = "top")
+```
+
 
 According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
 
