@@ -418,7 +418,13 @@ parent_english_fluency <- parent_english_fluency %>%
          child_id  = as.character(childid),
          wave = as.factor(wave),
          parent_gender = as.logical(pargen),
-         speaking_english = as.factor(bg25r),
+         speaking_english = as.factor(
+           case_when(
+             bg25r == 0 ~ "not well at all",
+             bg25r == 1 ~ "not very well",
+             bg25r == 2 ~ "pretty well",
+             bg25r == 3 ~ "very well"
+             )),
          reading_english = as.factor(bg26r),
          writing_english = as.factor(bg27r),
          understanding_english = as.factor(bg28r),
@@ -437,6 +443,8 @@ parent_english_fluency <- parent_english_fluency %>%
   glimpse()
 
 ```
+
+### Deborah's Preliminary EDA
 
 
 # James' code
