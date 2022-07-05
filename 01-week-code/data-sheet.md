@@ -69,7 +69,7 @@
 | coop                    | Co-Use Media Average Score                                   | average of q4a q5a q5hz q5c q5g                           |
 | mealtimes               | Mealtimes Media Average Score                                | average of q5c q5d q5jz                                   |
 | behavior_management     | Media for Discipline/Behavior Management Avg score (v1)      | average of q5e q5f q5kz q5lz                              |
-| possitive_beliefs_media | Positive Attitudes/ Beliefs about Media Avg score            | average of q7a q7b q7c q7d q7e                            |
+| positive_beliefs_media  | Positive Attitudes/ Beliefs about Media Avg score            | average of q7a q7b q7c q7d q7e                            |
 | educational_benefits    | Educational benefits of media Average score                  | average of q7b q7c q7e                                    |
 | digital_babysitting     | Digital babysitting Average score                            | average of q7a q7d q5e q5f q5kz q5lz                      |
 | daily_use               | Use in a typical day Average score                           | average of q6a q6b q6c q6d q6e q6f q6g q6mz               |
