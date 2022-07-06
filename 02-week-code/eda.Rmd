@@ -67,10 +67,7 @@ for (i in w2_num){
   }
 }
 ```
-
-##### compare w2 and w6
-
-
+##### multiplot function
 ```{r}
 multiplot = function(data, list_col, plot_type){
   list_plot <- list()
@@ -84,11 +81,18 @@ multiplot = function(data, list_col, plot_type){
   }
   return(list_plot)
 }
+```
 
+##### compare w2 and w6
+
+
+```{r}
 hist1 <- multiplot(model_full, w2_num, geom_histogram())
+hist2 <- multiplot(model_full, w6_num, geom_histogram())
 
-for (i in hist1) {
-  print(i)
+for (i in 1:length(w2_num)) {
+  print(hist1[i])
+  print(hist2[i])
 }
 
 ```
