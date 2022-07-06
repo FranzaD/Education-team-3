@@ -24,7 +24,7 @@ wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 ```
 
 ```{r}
-### assessing bit12 variable (response variable)
+### assessing bit12 variable (response variable) (model_w2 data set)
 ## possible predictors 
 # bill_difficulty (income_w1 data)
 # employment_status (income_w1 data)
@@ -34,6 +34,19 @@ wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 # assistance (public_assistance_w1)
 # highest_degree_completed (parent_edu_eng data)
 # english_level (parent_edu_eng data)
+```
+
+```{r}
+# Do joins here 
+mod_2_and_income_w1 <- inner_join(model_w2, income_w1, 
+                                  by=c("child_id", "par_id"))
+```
+
+```{r}
+# bill_difficulty (income_w1 data)
+  ggplot(mod_2_and_income_w1, aes(x = bit12)) + 
+  geom_bar(aes(fill = bill_difficulty, position = "dodge", stat = "identity"))
+
 ```
 
 
