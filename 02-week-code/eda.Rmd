@@ -66,6 +66,67 @@ mod_2_and_income_w1 %>%
 
 # Nick
 
+```{r}
+#bitprobts aka social emotional problems are what is being measured, 
+#q5e do you give your child a phone to distract or stop crying
+
+# HOW AM I SUPPOSED TO FIND THE DIFFERENCE BETWEEN THE WAVES???????
+why = inner_join(valuable_dataset, model_w2, 
+                 by = c("child_id", "par_id")) %>%
+  inner_join(model_w6, by = c("child_id", "par_id")) %>%
+  select(BITprobts.x, BITprobts.y, child_id, par_id, solo, coop, q5e,
+         daily_use, parenting_class_taken, household_income_numerical, n_devices, wave ) %>% 
+  mutate(change = BITprobts.y - BITprobts.x)
+  
+why %>% 
+  ggplot(aes(x = change))  +
+  geom_histogram() 
+
+why %>% 
+  ggplot(aes(x = daily_use))  +
+  geom_bar() 
+
+
+
+ggplot(data = why, aes(x = solo,
+           y = change)) +
+  geom_point() +
+
+ggplot(data = why, aes(x = coop,
+           y = change)) +
+  geom_point()
+
+ggplot(data = why, aes(x = q5e,
+           y = change,
+           fill = parenting_class_taken)) +
+  geom_boxplot()
+
+why %>% 
+ggplot(aes(x = daily_use,
+           y = change)) +
+  geom_point()
+
+ggplot(data = why, aes(x = household_income_numerical,
+                       y = change)) +
+  geom_point()
+
+why %>% 
+  ggplot(aes(x = n_devices, 
+             y = change)) +
+  geom_point()
+
+why %>% 
+  ggplot(aes(x = q5e,
+             y = change,
+             )) + 
+  geom_boxplot()
+
+count(why, daily_use)
+#The differnce
+
+```
+
+
 # James
 
 # seperator
