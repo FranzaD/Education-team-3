@@ -14,3 +14,14 @@ model_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 ```
 
+# Deborah
+
+# Aubree
+
+# Chandra
+
+# Nick
+
+# James
+
+# seperator
