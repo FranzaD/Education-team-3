@@ -20,6 +20,13 @@ valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 
 # Chandra
 
+```{r}
+head(valuable_dataset)
+
+
+```
+
+
 # Nick
 
 # James
