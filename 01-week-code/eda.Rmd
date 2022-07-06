@@ -575,6 +575,92 @@ According to Dr. Reich's email here are some preliminary exploratory data analys
 
 # James' code
 
+## clean wave_2
+
+```{r}
+wave_2 <- wave_2 %>% 
+  select(-version_31_BIT_w2)
+```
+```{r}
+wave_2 <- wave_2 %>% 
+  mutate(childid = as.character(childid),
+          parid = as.character(parid),
+          wave = as.factor(wave),
+          pargen = as.factor(pargen),
+          svdt_31_BIT_w2 = as.factor(svdt_31_BIT_w2),
+          language_31_BIT_w2 = as.factor(language_31_BIT_w2),
+          site = as.factor(site),
+          bit01 = as.factor(bit01),
+          bit02 = as.factor(bit02),
+          bit03 = as.factor(bit03),
+          bit04 = as.factor(bit04),
+          bit05 = as.factor(bit05),
+          bit06 = as.factor(bit06),
+          bit07 = as.factor(bit07),
+          bit08 = as.factor(bit08),
+          bit08txt = as.character(bit08txt),
+          bit08txt_r = as.character(bit08txt_r),
+          bit08txt_e = as.character(bit08txt_e),
+          bit09 = as.factor(bit09),
+          bit10 = as.factor(bit10),
+          bit11 = as.factor(bit11),
+          bit12 = as.factor(bit12),
+          bit13 = as.factor(bit13),
+          bit14 = as.factor(bit14),
+          bit15 = as.factor(bit15),
+          bit16 = as.factor(bit16),
+          bit17 = as.factor(bit17),
+          bit18 = as.factor(bit18),
+          bit19 = as.factor(bit19),
+          bit20 = as.factor(bit20),
+          bit21 = as.factor(bit21),
+          bit22 = as.factor(bit22),
+          bit23 = as.factor(bit23),
+          bit24 = as.factor(bit24),
+          bit25 = as.factor(bit25),
+          bit26 = as.factor(bit26),
+          bit27 = as.factor(bit27),
+          bit28 = as.factor(bit28),
+          bit29 = as.factor(bit29),
+          bit30 = as.factor(bit30),
+          bit31 = as.factor(bit31),
+          bit32 = as.factor(bit32),
+          bit33 = as.factor(bit33),
+          bit34 = as.factor(bit34),
+          bit35 = as.factor(bit35),
+          bit36 = as.factor(bit36),
+          bit36txt = as.character(bit36txt),
+          bit36txt_r = as.character(bit36txt_r),
+          bit36txt_e = as.character(bit36txt_e),
+          bit37 = as.factor(bit37),
+          bit37txt = as.character(bit37txt),
+          bit37txt_r = as.character(bit37txt_r),
+          bit37txt_e = as.character(bit37txt_e),
+          bit38 = as.factor(bit38),
+          bit39 = as.factor(bit39),
+          bit40 = as.factor(bit40),
+          bit41 = as.factor(bit41),
+          bit41txt = as.character(bit41txt),
+          bit41txt_r = as.character(bit41txt_r),
+          bit41txt_e = as.character(bit41txt_e),
+          bit42 = as.factor(bit42),
+          bit42txt = as.character(bit42txt),
+          bit42txt_r = as.character(bit42txt_r),
+          bit42txt_e = as.character(bit42txt_e),
+          bit43a = as.factor(bit43a),
+          bit43b = as.factor(bit43b),
+          BITcompnic = as.integer(BITcompnic),
+          BITcompts = as.integer(BITcompts),
+          BITcompavg = as.double(BITcompavg),
+          BITprobnic = as.integer(BITprobnic),
+          BITprobts = as.integer(BITprobts),
+          BITprobavg = as.double(BITprobavg),
+          BITcomp_cut = as.integer(BITcomp_cut),
+          BITprob_cut = as.integer(BITprob_cut),)
+```
+
+
+
 ## clean data
 
 ```{r}
