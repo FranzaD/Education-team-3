@@ -9,58 +9,14 @@ library(janitor)
 ```
 
 ```{r}
-model_w2 <- readRDS(file = "../data/model_w2.dta")
-model_w6 <- readRDS(file = "../data/model_w6.dta")
-valuable_dataset <- readRDS(file = "../data/valuable_dataset.dta")
+model_w2 <- readRDS(file="../data/model_w2.dta")
+model_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 ```
 
 # Deborah
 
 # Aubree
-```{r}
-# Read in Data 
-wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
-wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
-```
-
-```{r}
-### assessing bit12 variable (response variable) (model_w2 data set)
-## possible predictors 
-# bill_difficulty (income_w1 data)
-# employment_status (income_w1 data)
-# household_income_numerical (income_w1 data)
-# recieve_childcare (access_to_childcare_w1 data)
-# household_others (access_to_childcare_w1 data)
-# assistance (public_assistance_w1)
-# highest_degree_completed (parent_edu_eng data)
-# english_level (parent_edu_eng data)
-```
-
-```{r}
-# Do joins here 
-mod_2_and_income_w1 <- inner_join(model_w2, income_w1, 
-                                  by=c("child_id", "par_id"))
-
-
-```
-
-```{r}
-# bill_difficulty (income_w1 data)
-  ggplot(mod_2_and_income_w1, aes(x = bit12)) + 
-  geom_bar(aes(fill = bill_difficulty, position = "dodge", stat = "identity"))
-## need to make next to eachother and not stacked 
-```
-
-```{r}
-# household_income_numerical (income_w1 data)
-library(RColorBrewer)
-mod_2_and_income_w1 %>% 
-  ggplot(aes(x = bit12, 
-             y = household_income_numerical)) + 
-  geom_boxplot() + 
-  scale_y_binned(limits = c(0, 100000)) 
-```
-
 
 # Chandra
 
@@ -114,15 +70,22 @@ for (i in w2_num){
 
 ##### compare w2 and w6
 
+
 ```{r}
-hist1 <- list()
-for (i in w2_num){
-  single_list_plot <- ggplot(model_full, 
-                aes_string(x = i)) +
-                geom_histogram() %>% 
-              list()
-  hist1 <- c(hist1, single_list_plot)
+multiplot = function(data, list_col, plot_type){
+  list_plot <- list()
+  counter = 0
+  for (i in list_col){
+    tmp <- ggplot(data, 
+                  aes_string(x = i)) +
+                  plot_type
+    counter = counter + 1
+    list_plot[[counter]] <- tmp
+  }
+  return(list_plot)
 }
+
+hist1 <- multiplot(model_full, w2_num, geom_histogram())
 
 for (i in hist1) {
   print(i)
