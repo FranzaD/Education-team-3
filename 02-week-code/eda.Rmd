@@ -24,8 +24,16 @@ wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 ```
 
 ```{r}
-## assessing bit12 variable 
-
+### assessing bit12 variable (response variable)
+## possible predictors 
+# bill_difficulty (income_w1 data)
+# employment_status (income_w1 data)
+# household_income_numerical (income_w1 data)
+# recieve_childcare (access_to_childcare_w1 data)
+# household_others (access_to_childcare_w1 data)
+# assistance (public_assistance_w1)
+# highest_degree_completed (parent_edu_eng data)
+# english_level (parent_edu_eng data)
 ```
 
 
