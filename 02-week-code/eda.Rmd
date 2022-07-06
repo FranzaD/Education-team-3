@@ -225,6 +225,7 @@ w1_cat <- list("degree_cert_in_prog" , "parenting_class_taken" , "highest_degree
 w2_cat <- list("BITcomp_cut_w2" , "BITprob_cut_w2")
 w6_cat <- list("BITcomp_cut_w6" , "BITprob_cut_w6")
 ```
+#### Merge all three datasets
 
 ```{r}
 model_full <- full_join(model_w6, model_w2, by=c("par_id", "child_id"), suffix = c("_w6", "_w2")) %>% 

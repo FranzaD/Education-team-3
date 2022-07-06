@@ -1,0 +1,109 @@
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+```{r}
+model_w2 <- readRDS(file="../data/model_w2.dta")
+model_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+```
+
+# James
+
+## preparing
+
+- numeric:
+  * w1: n_devices, tv_exposure, solo, passive, coop, mealtimes, behavior_management, positive_beliefs_media, educational_benefits, digital_babysitting, daily_use, auditory_comprehension_score, expressive_communication_score, total_score, household_income_numerical
+  * w2: BITcompnic, BITcompts, BITcompavg, BITprobnic, BITprobts, BITprobavg
+  * w6: BITcompnic, BITcompts, BITcompavg, BITprobnic, BITprobts, BITprobavg
+
+- categorical:
+  * w1: degree_cert_in_prog, parenting_class_taken, highest_degree_completed, years_school_complete, us_education, education_location, span_lang_form, father, data_site, par_ethnicity, par_us_born, par_language, chi_girl, birth_time, planned_preg, chi_ethnicity, chi_par_lang, relatives_lang, father, language, state_welfare, unemployment_insurance, food_stamp, wic, child_support, ssi_and_ssdi, adoption_assistance, utility_assistance, childcare_subsidy, vertan_benefit, medical_assistance, none, other, assistance, par_gen, household_others, marital_status, recieve_childcare, childcare_center, homebased_care, relative_care, other_care, par_gen, household_income_categorical, employment_status, enough_money_clothes, enough_money_food, enough_money_medical_care, bill_difficulty, father, speaking_english, reading_english, writing_english, understanding_english, english_level
+  * w2: BITcomp_cut, BITprob_cut
+  * w6: BITcomp_cut, BITprob_cut
+
+## For loop
+
+```{r}
+w1_num <- list("n_devices" , "tv_exposure" , "solo" , "passive" , "coop" , "mealtimes" , "behavior_management" , "positive_beliefs_media" , "educational_benefits" , "digital_babysitting" , "daily_use" , "auditory_comprehension_score" , "expressive_communication_score" , "total_score" , "household_income_numerical")
+w2_num <- list("BITcompnic_w2", "BITcompts_w2", "BITcompavg_w2", "BITprobnic_w2", "BITprobts_w2", "BITprobavg_w2")
+w6_num <- list("BITcompnic_w6", "BITcompts_w6", "BITcompavg_w6", "BITprobnic_w6", "BITprobts_w6", "BITprobavg_w6")
+
+w1_cat <- list("degree_cert_in_prog" , "parenting_class_taken" , "highest_degree_completed" , "years_school_complete" , "us_education" , "education_location" , "span_lang_form" , "father" , "data_site" , "par_ethnicity" , "par_us_born" , "par_language" , "chi_girl" , "birth_time" , "planned_preg" , "chi_ethnicity" , "chi_par_lang" , "relatives_lang" , "father" , "language" , "state_welfare" , "unemployment_insurance" , "food_stamp" , "wic" , "child_support" , "ssi_and_ssdi" , "adoption_assistance" , "utility_assistance" , "childcare_subsidy" , "vertan_benefit" , "medical_assistance" , "none" , "other" , "assistance" , "par_gen" , "household_others" , "marital_status" , "recieve_childcare" , "childcare_center" , "homebased_care" , "relative_care" , "other_care" , "par_gen" , "household_income_categorical" , "employment_status" , "enough_money_clothes" , "enough_money_food" , "enough_money_medical_care" , "bill_difficulty" , "father" , "speaking_english" , "reading_english" , "writing_english" , "understanding_english" , "english_level")
+w2_cat <- list("BITcomp_cut_w2" , "BITprob_cut_w2")
+w6_cat <- list("BITcomp_cut_w6" , "BITprob_cut_w6")
+```
+#### Merge all three datasets
+
+```{r}
+model_full <- full_join(model_w6, model_w2, by=c("par_id", "child_id"), suffix = c("_w6", "_w2")) %>% 
+  full_join(valuable_dataset, by=c("par_id", "child_id"), suffix = c("_w62", "_w1"))
+```
+
+
+#### numeric for w2 and w6
+
+
+##### point for w2 and w6
+```{r}
+for (i in w2_num){
+  for (j in w6_num){
+    plot <- ggplot(model_full, 
+              aes_string(x = i, 
+                         y = j))
+    print(plot + geom_jitter())
+    print(plot + geom_smooth())
+  }
+}
+```
+##### multiplot function
+```{r}
+multiplot = function(data, list_col, plot_type){
+  list_plot <- list()
+  counter = 0
+  for (i in list_col){
+    tmp <- ggplot(data, 
+                  aes_string(x = i)) +
+                  plot_type
+    counter = counter + 1
+    list_plot[[counter]] <- tmp
+  }
+  return(list_plot)
+}
+```
+
+#### numeric for w1 and w2
+```{r}
+for (i in w1_num){
+  for (j in w2_num){
+    plot <- ggplot(model_full, 
+              aes_string(x = i, 
+                         y = j))
+    print(plot + geom_point())
+  }
+}
+```
+
+
+##### compare w2 and w6
+
+
+```{r}
+hist1 <- multiplot(model_full, w2_num, geom_histogram())
+hist2 <- multiplot(model_full, w6_num, geom_histogram())
+
+for (i in 1:length(w2_num)) {
+  print(hist1[i])
+  print(hist2[i])
+}
+
+```
+
+#### something
+
