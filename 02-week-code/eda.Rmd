@@ -55,6 +55,7 @@ model_full <- full_join(model_w6, model_w2, by=c("par_id", "child_id"), suffix =
 
 #### numeric for w2 and w6
 
+##### point for w2 and w6
 ```{r}
 for (i in w2_num){
   for (j in w6_num){
@@ -62,8 +63,27 @@ for (i in w2_num){
               aes_string(x = i, 
                          y = j))
     print(plot + geom_jitter())
+    print(plot + geom_smooth())
   }
 }
+```
+
+##### compare w2 and w6
+
+```{r}
+hist1 <- list()
+for (i in w2_num){
+  single_list_plot <- ggplot(model_full, 
+                aes_string(x = i)) +
+                geom_histogram() %>% 
+              list()
+  hist1 <- c(hist1, single_list_plot)
+}
+
+for (i in hist1) {
+  print(i)
+}
+
 ```
 
 #### something
