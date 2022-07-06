@@ -1013,7 +1013,7 @@ model_w2 <- wave_2 %>%
           BITprobts = as.integer(BITprobts),
           BITprobavg = as.double(BITprobavg),
           BITcomp_cut = as.integer(BITcomp_cut),
-          BITprob_cut = as.integer(BITprob_cut),)
+          BITprob_cut = as.integer(BITprob_cut))
 ```
 
 ### Removed non-english text responses - Chandra
@@ -1068,7 +1068,7 @@ remove redundant variables
 
 ```{r}
 model_w2 <- model_w2 %>% 
-  select(-c(bit08txt_r,bit08txt_e,bit36txt_r, bit36txt_e,bit37txt_r,bit37txt_e,bit41txt_r,bit41txt_e,bit42txt_e,bit42txt_r))
+  select(-c(bit08txt_r,bit08txt_e,bit36txt_r, bit36txt_e,bit37txt_r,bit37txt_e,bit41txt_r,bit41txt_e,bit42txt_e,bit42txt_r, childid, parid))
 ```
 
 
