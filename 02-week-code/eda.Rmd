@@ -67,64 +67,136 @@ mod_2_and_income_w1 %>%
 
 # Nick
 
-```{r}
-#bitprobts aka social emotional problems are what is being measured, 
-#q5e do you give your child a phone to distract or stop crying
+predictors : n_devices, tv_exposure, digital_babysitting, daily_use, parenting_class_taken, data_site
+bitprobavg: bit02 bit03 bit04 bit06 bit07 bit08 bit09 bit11 bit12 bit14 bit16 bit17 bit18 bit21 bit23 bit24 bit26 bit27 bit28 bit30 bit32 bit33 bit34 bit35 bit36 bit37 bit38 bit39 bit40 bit41 bit42
 
-# HOW AM I SUPPOSED TO FIND THE DIFFERENCE BETWEEN THE WAVES???????
-why = inner_join(valuable_dataset, model_w2, 
+```{r}
+social_problem_measures = inner_join(valuable_dataset, model_w2, 
                  by = c("child_id", "par_id")) %>%
   inner_join(model_w6, by = c("child_id", "par_id")) %>%
-  select(BITprobts.x, BITprobts.y, child_id, par_id, solo, coop, q5e,
-         daily_use, parenting_class_taken, household_income_numerical, n_devices, wave ) %>% 
-  mutate(change = BITprobts.y - BITprobts.x)
-  
-why %>% 
-  ggplot(aes(x = change))  +
-  geom_histogram() 
+  select(n_devices, tv_exposure, digital_babysitting, daily_use,
+         parenting_class_taken, data_site, 
+         BITprobavg.x, BITprobavg.y, solo, passive, coop) %>% 
+  mutate(different = BITprobavg.y - BITprobavg.x)
 
-why %>% 
-  ggplot(aes(x = daily_use))  +
-  geom_bar() 
+social_problem_measures %>% 
+  ggplot(aes(x = data_site,
+             y = different)) +
+  geom_boxplot()
+#No difference between the spread of data on both site,
 
-
-
-ggplot(data = why, aes(x = solo,
-           y = change)) +
+social_problem_measures %>% 
+  ggplot(aes(x = n_devices,
+             y = different)) +
   geom_point() +
+  geom_smooth()
+#the number of devices makes no difference between on the change in development of social problems
 
-ggplot(data = why, aes(x = coop,
-           y = change)) +
-  geom_point()
+social_problem_measures %>% 
+  ggplot(aes(x = tv_exposure,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#tv exposure makes no difference between on the change in development of social problems
 
-ggplot(data = why, aes(x = q5e,
-           y = change,
-           fill = parenting_class_taken)) +
+social_problem_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#digital babysitting makes no difference between on the change in development of social problems
+
+social_problem_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#daily use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = solo,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#solo use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = coop,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#coop use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = passive,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#passive use makes no difference between on the change in development of social problems
+count(social_problem_measures, different)
+
+```
+
+
+
+```{r}
+
+social_competency_measures = inner_join(valuable_dataset, model_w2, 
+                 by = c("child_id", "par_id")) %>%
+  inner_join(model_w6, by = c("child_id", "par_id")) %>%
+  select(n_devices, tv_exposure, digital_babysitting, daily_use,
+         parenting_class_taken, data_site, 
+         BITcompavg.x, BITcompavg.y, solo, passive, coop) %>% 
+  mutate(different = BITcompavg.y - BITcompavg.x)
+
+social_competency_measures %>% 
+  ggplot(aes(x = data_site,
+             y = different)) +
   geom_boxplot()
+#No difference between the spread of data on both site,
 
-why %>% 
-ggplot(aes(x = daily_use,
-           y = change)) +
-  geom_point()
+social_competency_measures %>% 
+  ggplot(aes(x = n_devices,
+             y = different)) +
+  geom_point() +
+  geom_smooth()
+#the number of devices makes no difference between on the change in development of social competency
 
-ggplot(data = why, aes(x = household_income_numerical,
-                       y = change)) +
-  geom_point()
+social_competency_measures %>% 
+  ggplot(aes(x = tv_exposure,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#tv exposure makes no difference between on the change in development of social competency
 
-why %>% 
-  ggplot(aes(x = n_devices, 
-             y = change)) +
-  geom_point()
+social_competency_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#digital babysitting makes no difference between on the change in development of social competency
 
-why %>% 
-  ggplot(aes(x = q5e,
-             y = change,
-             )) + 
-  geom_boxplot()
-
-count(why, daily_use)
-#The differnce
-
+social_competency_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#daily use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = solo,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#solo use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = coop,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#coop use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = passive,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#passive use makes no difference between on the change in development of social competency
 ```
 
 
