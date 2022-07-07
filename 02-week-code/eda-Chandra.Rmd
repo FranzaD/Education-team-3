@@ -186,43 +186,6 @@ responses %>%
   facet_wrap(~household_income_categorical)
 ```
 
-## solo use vs problem average score
-
-```{r}
-solo_2 <- responses %>%
-  inner_join(predictors, by = c("par_id", "child_id")) %>%
-  inner_join(demographics, by = c("par_id", "child_id")) %>%
-  ggplot(aes(MT_solo, BITprobavg_w2)) +
-  labs(title = "Solo Media Usage vs Social Problem Score",
-       x = "Solo media use\nWave 2",
-       y = "Social problem average score") +
-  geom_jitter() +
-  geom_smooth(method = "lm")
-
-solo_2
-```
-
-## coop use vs problem average score
-
-```{r}
-coop_2 <- responses %>%
-  inner_join(predictors, by = c("par_id", "child_id")) %>%
-  inner_join(demographics, by = c("par_id", "child_id")) %>%
-  ggplot(aes(MT_coop, BITprobavg_w2)) +
-  labs(title = "Co-op Media Usage vs Social Problem Score",
-       x = "Co-op media use\nWave 2",
-       y = "Social problem average score") +
-  geom_jitter() +
-  geom_smooth(method = "lm")
-
-coop_2
-```
-
-## solo and coop use side by side comparison
-
-```{r}
-solo_2 + coop_2
-```
 ## daily use vs competence comparison
 
 ```{r}
@@ -251,16 +214,55 @@ responses %>%
   geom_point() +
   geom_smooth(method = "lm")
 ```
+
+## solo use vs problem average score - wave 2
+
+```{r}
+solo_2 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w2, MT_solo)) +
+  labs(title = "Solo Media Usage vs Social Problem Score",
+       y = "Solo media use",
+       x = "Social problem average score\nWave 2") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+solo_2
+```
+
+## coop use vs problem average score - wave 2
+
+```{r}
+coop_2 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w2, MT_coop)) +
+  labs(title = "Co-op Media Usage vs Social Problem Score",
+       y = "Co-op media use",
+       x = "Social problem average score\nWave 2") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+coop_2
+```
+
+## solo and coop use side by side comparison - wave 2
+
+```{r}
+solo_2 + coop_2
+```
+
 ## solo use vs problem average score - wave 6
 
 ```{r}
 solo_6 <- responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
-  ggplot(aes(MT_solo, BITprobavg_w6)) +
+  ggplot(aes(BITprobavg_w6, MT_solo)) +
   labs(title = "Solo Media Usage vs Social Problem Score",
-       x = "Solo media use\nWave 6",
-       y = "Social problem average score") +
+       y = "Solo media use",
+       x = "Social problem average score\nWave 6") +
   geom_jitter() +
   geom_smooth(method = "lm")
 
@@ -275,8 +277,8 @@ coop_6 <- responses %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_coop, BITprobavg_w6)) +
   labs(title = "Co-op Media Usage vs Social Problem Score",
-       x = "Co-op media use\nWave 6",
-       y = "Social problem average score") +
+       y = "Co-op media use",
+       x = "Social problem average score\nWave 6") +
   geom_jitter() +
   geom_smooth(method = "lm")
 
@@ -292,5 +294,41 @@ solo_6 + coop_6
 
 ```{r}
 (solo_2 + coop_2) / (solo_6 + coop_6)
+```
+
+## daily use vs problem score - wave 2
+
+```{r}
+daily_2 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w2, MT_daily_use)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       y = "Daily media use",
+       x = "Social problem average score\nWave 2") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+daily_2
+```
+
+## daily use vs problem score - wave 6
+```{r}
+daily_6 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w6, MT_daily_use)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       y = "Daily media use",
+       x = "Social problem average score\nWave 6") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+daily_6
+```
+
+## daily use vs problem score - wave 2 and 6 comparison
+```{r}
+daily_2 + daily_6
 ```
 
