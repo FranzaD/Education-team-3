@@ -19,12 +19,82 @@ valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 # Aubree
 
 # Chandra
-
+## Bootstrap function
 ```{r}
-head(valuable_dataset)
+# bootstrap function
+bootstrap <- function(col, func, num) {
+  temp <- numeric(num)
+  for (i in 1:num) {
+    temp[i] <- func(sample(col, length(col), replace=TRUE), na.rm = TRUE)
+  }
+  ci <- quantile(temp, prob = c(0.025, 0.975), na.rm = TRUE)
+  list(est=func(temp), ci=ci)
+}
 
+# example usage
+mean_diff <- bootstrap(valuable_dataset$digital_babysitting, mean, 1000)
+
+mean_diff
+```
+
+## Subsetted datasets
+```{r}
+demographics <- valuable_dataset %>% 
+  select(-c(n_devices,
+          tv_exposure,
+          solo,
+          passive,
+          coop,
+          mealtimes,
+          behavior_management,
+          positive_beliefs_media,
+          educational_benefits,
+          digital_babysitting,
+          daily_use))
+
+head(demographics)
+
+predictors <- valuable_dataset %>% 
+  select(
+    par_id,
+    child_id,
+    MT_n_devices = n_devices, 
+    MT_tv_exposure = tv_exposure, 
+    MT_solo = solo, 
+    MT_passive = passive, 
+    MT_coop = coop, 
+    MT_mealtimes = mealtimes, 
+    MT_behavior_management = behavior_management, 
+    MT_positive_beliefs_media = positive_beliefs_media,
+    MT_educational_benefits = educational_benefits,
+    MT_digital_babysitting = digital_babysitting,
+    MT_daily_use = daily_use)
+
+head(predictors)
+
+responses <- model_w2 %>% 
+  inner_join(model_w6, by = c("par_id", "child_id"), suffix = c("_w2", "_w6")) %>% 
+  inner_join(valuable_dataset, by = c("par_id", "child_id")) %>% 
+  select(child_id, par_id, matches("^BIT", ignore.case = FALSE)) %>% 
+  mutate(BITcompavg_diff = BITcompavg_w6 - BITcompavg_w2,
+         BITprobavg_diff = BITprobavg_w6 - BITprobavg_w2)
+  
+head(responses)
 
 ```
+
+## Average difference with 95% CI
+```{r}
+# average difference of problem and competence score between wave 6 and wave 2
+# with 95% CI through bootstrap
+responses %>%
+  summarize(mean_prob_score = mean(BITprobavg_diff, na.rm = TRUE),
+            mean_comp_score = mean(BITcompavg_diff, na.rm = TRUE))
+
+bootstrap(responses$BITprobavg_diff, mean, 10000)
+bootstrap(responses$BITcompavg_diff, mean, 10000)
+```
+
 
 
 # Nick
