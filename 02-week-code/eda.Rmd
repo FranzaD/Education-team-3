@@ -6,6 +6,7 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(ggcorrplot)
 ```
 
 ```{r}
@@ -140,6 +141,56 @@ bootstrap(responses$BITprobavg_diff, mean, 10000)
 bootstrap(responses$BITcompavg_diff, mean, 10000)
 ```
 
+# Correlation matrix for problem score
+
+```{r}
+responses %>% 
+  inner_join(predictors, by = c("par_id", "child_id")) %>% 
+  select(BITprobavg_w2,
+         matches("^MT", ignore.case = FALSE)) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## Correlation matrix for competance score
+
+```{r}
+responses %>% 
+  inner_join(predictors, by = c("par_id", "child_id")) %>% 
+  select(BITcompavg_w2,
+         matches("^MT", ignore.case = FALSE)) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## daily use vs problem score - income
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~household_income_categorical)
+  
+```
+## daily use vs problem score - highest degree completed
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~highest_degree_completed)
+```
 
 
 # Nick
