@@ -1,0 +1,56 @@
+---
+title: "Exploratory Data Analysis"
+author: "James"
+date: '2022-07-07'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+BIT_w5 <- read_dta("../data/wave-5-(21-mo)/BB2_W5-BIT.dta")
+PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+```
+
+# w6 pls
+```{r}
+PLS_w6 <- clean_names(PLS_w6)
+glimpse(PLS_w6)
+```
+
+```{r}
+PLS_w6 <-  PLS_w6 %>% 
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+        language= as.factor(case_when(
+          language == 0 ~ "english",
+          language == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "UMD",
+          site == 2 ~ "UCI"
+        )))
+```
+
+
+```{r}
+PLS_w6 <- PLS_w6 %>%
+  select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
+```
+
+
+# save data back to file
+
+```{r}
+saveRDS(PLS_w6, file="../data/PLS_w6.dta")
+```
