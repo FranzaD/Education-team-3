@@ -96,6 +96,11 @@ mean_diff <- bootstrap(valuable_dataset$digital_babysitting, mean, 1000)
 
 mean_diff
 ```
+# Interpretation 
+We are 95% confident that the score assigned for the variable 
+"digital_babysitting" increases overtime between 1.52 points and 1.69 
+points. 
+
 
 ## Subsetted datasets
 ```{r}
