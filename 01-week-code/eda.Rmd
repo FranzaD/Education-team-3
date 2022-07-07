@@ -1300,17 +1300,11 @@ valuable_dataset %>%
 
 #q8: do you limit how much time the children use 
 valuable_dataset %>% 
-<<<<<<< HEAD
   ggplot(aes(x =  positive_beliefs_media,
              y = highest_degree_completed,
              fill = parenting_class_taken)) +
   geom_boxplot() + 
-=======
-  ggplot(aes(x = household_income_categorical,
-             y = positive_beliefs_media,
-             fill = q8 )) +
-  geom_boxplot()
->>>>>>> 86b682d73df1b4bc4c281502559f0aa877bd93b4
+
 
 valuable_dataset %>% 
   ggplot(aes(y = household_income_numerical,
