@@ -98,7 +98,9 @@ model_full <- full_join(model_w6, model_w2, by=c("par_id", "child_id"), suffix =
   full_join(valuable_dataset, by=c("par_id", "child_id"), suffix = c("_w62", "_w1"))
 ```
 
+
 #### numeric for w2 and w6
+
 
 ##### point for w2 and w6
 ```{r}
@@ -127,6 +129,19 @@ multiplot = function(data, list_col, plot_type){
   return(list_plot)
 }
 ```
+
+#### numeric for w1 and w2
+```{r}
+for (i in w1_num){
+  for (j in w2_num){
+    plot <- ggplot(model_full, 
+              aes_string(x = i, 
+                         y = j))
+    print(plot + geom_point())
+  }
+}
+```
+
 
 ##### compare w2 and w6
 
