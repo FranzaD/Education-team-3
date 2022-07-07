@@ -41,15 +41,19 @@ wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 # Do joins here 
 mod_2_and_income_w1 <- inner_join(model_w2, income_w1, 
                                   by=c("child_id", "par_id"))
-
-
+mod_2_and_income_w1 <- mod_2_and_income_w1 %>% 
+  mutate(bit12 = as.factor(case_when(
+						bit12 == "Not true/Rarely" ~ 0 ,
+						bit12 == "Somewhat true/Sometimes" ~ 1,
+						bit12 == "Very true/Often" ~ 2)))
 ```
 
 ```{r}
 # bill_difficulty (income_w1 data)
+counts_of_response = c(25, 126, 91, 31, 101)
   ggplot(mod_2_and_income_w1, aes(x = bit12)) + 
   geom_bar(aes(fill = bill_difficulty, position = "dodge", stat = "identity"))
-## need to make next to eachother and not stacked 
+## need to make next to each other and not stacked 
 ```
 
 ```{r}
@@ -60,6 +64,16 @@ mod_2_and_income_w1 %>%
              y = household_income_numerical)) + 
   geom_boxplot() + 
   scale_y_binned(limits = c(0, 100000)) 
+```
+
+```{r}
+# employment_status (income_w1 data)
+library(reshape2)
+
+
+mod_2_and_income_w1 %>% 
+  ggplot(aes(x = bit12, fill = employment_status)) + 
+  geom_bar()
 ```
 
 

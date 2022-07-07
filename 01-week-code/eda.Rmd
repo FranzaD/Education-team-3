@@ -182,18 +182,7 @@ income_w1 <- income_w1 %>%
 ```
 
 ### Aubree Visualization 
-```{r}
-valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
-valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
 
-valuable_dataset %>% 
-         ggplot(aes(x = positive_beliefs_media,
-             y = household_income_numerical,
-             fill = parenting_class_taken)) +
-  geom_boxplot()
-
-
-```
 
 
 
@@ -640,7 +629,18 @@ model_w6 <- model_w6 %>%
 glimpse(model_w6)
 ```
 
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
 
+valuable_dataset %>% 
+         ggplot(aes(x = positive_beliefs_media,
+             y = household_income_numerical,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
+
+
+```
 
 # Deborah's code
 ```{r}
@@ -1300,17 +1300,10 @@ valuable_dataset %>%
 
 #q8: do you limit how much time the children use 
 valuable_dataset %>% 
-<<<<<<< HEAD
   ggplot(aes(x =  positive_beliefs_media,
              y = highest_degree_completed,
              fill = parenting_class_taken)) +
-  geom_boxplot() + 
-=======
-  ggplot(aes(x = household_income_categorical,
-             y = positive_beliefs_media,
-             fill = q8 )) +
   geom_boxplot()
->>>>>>> 86b682d73df1b4bc4c281502559f0aa877bd93b4
 
 valuable_dataset %>% 
   ggplot(aes(y = household_income_numerical,
