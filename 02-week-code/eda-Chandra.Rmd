@@ -6,6 +6,8 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(ggcorrplot)
+library(patchwork)
 ```
 
 ```{r}
@@ -13,3 +15,320 @@ model_w2 <- readRDS(file="../data/model_w2.dta")
 model_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 ```
+
+
+# Chandra
+
+## Bootstrap function
+
+```{r}
+# bootstrap function
+bootstrap <- function(col, func, num) {
+  temp <- numeric(num)
+  for (i in 1:num) {
+    temp[i] <- func(sample(col, length(col), replace=TRUE), na.rm = TRUE)
+  }
+  ci <- quantile(temp, prob = c(0.025, 0.975), na.rm = TRUE)
+  list(est=func(temp), ci=ci)
+}
+
+# example usage
+mean_diff <- bootstrap(valuable_dataset$digital_babysitting, mean, 1000)
+
+mean_diff
+```
+
+## Subsetted datasets
+
+```{r}
+demographics <- valuable_dataset %>% 
+  select(-c(n_devices,
+          tv_exposure,
+          solo,
+          passive,
+          coop,
+          mealtimes,
+          behavior_management,
+          positive_beliefs_media,
+          educational_benefits,
+          digital_babysitting,
+          daily_use))
+
+head(demographics)
+
+predictors <- valuable_dataset %>% 
+  select(
+    par_id,
+    child_id,
+    MT_n_devices = n_devices, 
+    MT_tv_exposure = tv_exposure, 
+    MT_solo = solo, 
+    MT_passive = passive, 
+    MT_coop = coop, 
+    MT_mealtimes = mealtimes, 
+    MT_behavior_management = behavior_management, 
+    MT_positive_beliefs_media = positive_beliefs_media,
+    MT_educational_benefits = educational_benefits,
+    MT_digital_babysitting = digital_babysitting,
+    MT_daily_use = daily_use)
+
+head(predictors)
+
+responses <- model_w2 %>% 
+  inner_join(model_w6, by = c("par_id", "child_id"), suffix = c("_w2", "_w6")) %>% 
+  inner_join(valuable_dataset, by = c("par_id", "child_id")) %>% 
+  select(child_id, par_id, matches("^BIT", ignore.case = FALSE)) %>% 
+  mutate(BITcompavg_diff = BITcompavg_w6 - BITcompavg_w2,
+         BITprobavg_diff = BITprobavg_w6 - BITprobavg_w2)
+  
+head(responses)
+
+```
+
+## Average difference with 95% CI
+
+```{r}
+# average difference of problem and competence score between wave 6 and wave 2
+# with 95% CI through bootstrap
+responses %>%
+  summarize(mean_prob_score = mean(BITprobavg_diff, na.rm = TRUE),
+            mean_comp_score = mean(BITcompavg_diff, na.rm = TRUE))
+
+bootstrap(responses$BITprobavg_diff, mean, 10000)
+bootstrap(responses$BITcompavg_diff, mean, 10000)
+```
+
+# Correlation matrix for problem score
+
+```{r}
+responses %>% 
+  inner_join(predictors, by = c("par_id", "child_id")) %>% 
+  select(BITprobavg_w2,
+         matches("^MT", ignore.case = FALSE)) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## Correlation matrix for competance score
+
+```{r}
+responses %>% 
+  inner_join(predictors, by = c("par_id", "child_id")) %>% 
+  select(BITcompavg_w2,
+         matches("^MT", ignore.case = FALSE)) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## daily use vs problem score - income
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~household_income_categorical)
+  
+```
+
+## daily use vs problem score - highest degree completed
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~highest_degree_completed)
+```
+
+## daily use vs problem score - problem cuttoff
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  mutate(`Problem Cutoff` = case_when(
+    BITprob_cut_w2 == 0 ~ "Problem Score < 13",
+    BITprob_cut_w2 == 1 ~ "Problem Score >= 13")) %>% 
+  ggplot(aes(MT_daily_use, BITprobavg_w2, color = `Problem Cutoff`)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+## daily use vs problem score faceted by income grouped by problem cutoff
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  mutate(`Problem Cutoff` = case_when(
+    BITprob_cut_w2 == 0 ~ "Problem Score < 13",
+    BITprob_cut_w2 == 1 ~ "Problem Score >= 13")) %>% 
+  ggplot(aes(MT_daily_use, BITprobavg_w2, color = `Problem Cutoff`)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~household_income_categorical)
+```
+
+## daily use vs competence comparison
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITcompavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Competence Score",
+       x = "Daily use average score",
+       y = "Social competence average score") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+```
+
+## coop use vs competence comparison
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_coop, BITcompavg_w2)) +
+  labs(title = "Co-op Usage vs Social Competence Score",
+       x = "Co-op use average score",
+       y = "Social competence average score") +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+## solo use vs problem average score - wave 2
+
+```{r}
+solo_2 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w2, MT_solo)) +
+  labs(title = "Solo Media Usage vs Social Problem Score",
+       y = "Solo media use",
+       x = "Social problem average score\nWave 2") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+solo_2
+```
+
+## coop use vs problem average score - wave 2
+
+```{r}
+coop_2 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w2, MT_coop)) +
+  labs(title = "Co-op Media Usage vs Social Problem Score",
+       y = "Co-op media use",
+       x = "Social problem average score\nWave 2") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+coop_2
+```
+
+## solo and coop use side by side comparison - wave 2
+
+```{r}
+solo_2 + coop_2
+```
+
+## solo use vs problem average score - wave 6
+
+```{r}
+solo_6 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w6, MT_solo)) +
+  labs(title = "Solo Media Usage vs Social Problem Score",
+       y = "Solo media use",
+       x = "Social problem average score\nWave 6") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+solo_6
+```
+
+## coop use vs problem average score - wave 6
+
+```{r}
+coop_6 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_coop, BITprobavg_w6)) +
+  labs(title = "Co-op Media Usage vs Social Problem Score",
+       y = "Co-op media use",
+       x = "Social problem average score\nWave 6") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+coop_6
+```
+
+## solo and coop use side by side comparison - wave 6
+```{r}
+solo_6 + coop_6
+```
+
+## solo and coop comparisons between wave 2 and 6
+
+```{r}
+(solo_2 + coop_2) / (solo_6 + coop_6)
+```
+
+## daily use vs problem score - wave 2
+
+```{r}
+daily_2 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w2, MT_daily_use)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       y = "Daily media use",
+       x = "Social problem average score\nWave 2") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+daily_2
+```
+
+## daily use vs problem score - wave 6
+```{r}
+daily_6 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(BITprobavg_w6, MT_daily_use)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       y = "Daily media use",
+       x = "Social problem average score\nWave 6") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+daily_6
+```
+
+## daily use vs problem score - wave 2 and 6 comparison
+```{r}
+daily_2 + daily_6
+```
+
