@@ -13,6 +13,11 @@ library(ggcorrplot)
 model_w2 <- readRDS(file="../data/model_w2.dta")
 model_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+# load new data
+PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
+PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
+wave_5 <- readRDS(file="../data/wave_5.dta")
 ```
 
 # Deborah
