@@ -223,4 +223,17 @@ coop
 ```{r}
 solo + coop
 ```
+## daily use vs competence comparison
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITcompavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Competence Score",
+       x = "Daily use average score",
+       y = "Social competence average score") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+```
 
