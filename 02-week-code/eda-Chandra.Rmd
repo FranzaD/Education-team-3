@@ -186,10 +186,10 @@ responses %>%
   facet_wrap(~household_income_categorical)
 ```
 
-## solo use vs problem average score - mom and dad comparison
+## solo use vs problem average score
 
 ```{r}
-solo <- responses %>%
+solo_2 <- responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_solo, BITprobavg_w2)) +
@@ -199,13 +199,13 @@ solo <- responses %>%
   geom_jitter() +
   geom_smooth(method = "lm")
 
-solo
+solo_2
 ```
 
 ## coop use vs problem average score
 
 ```{r}
-coop <- responses %>%
+coop_2 <- responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_coop, BITprobavg_w2)) +
@@ -215,15 +215,16 @@ coop <- responses %>%
   geom_jitter() +
   geom_smooth(method = "lm")
 
-coop
+coop_2
 ```
 
-## daily use vs problem average score - coop and solo comparison
+## solo and coop use side by side comparison
 
 ```{r}
-solo + coop
+solo_2 + coop_2
 ```
 ## daily use vs competence comparison
+
 ```{r}
 responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
@@ -235,5 +236,50 @@ responses %>%
   geom_jitter() +
   geom_smooth(method = "lm")
 
+```
+
+## coop use vs competence comparison
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_coop, BITcompavg_w2)) +
+  labs(title = "Co-op Usage vs Social Competence Score",
+       x = "Co-op use average score",
+       y = "Social competence average score") +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+## solo use vs problem average score - wave 6
+
+```{r}
+solo_6 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_solo, BITprobavg_w6)) +
+  labs(title = "Solo Media Usage vs Social Problem Score",
+       x = "Solo media use",
+       y = "Social problem average score") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+solo_6
+```
+
+## coop use vs problem average score - wave 6
+
+```{r}
+coop_6 <- responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_coop, BITprobavg_w6)) +
+  labs(title = "Co-op Media Usage vs Social Problem Score",
+       x = "Co-op media use",
+       y = "Social problem average score") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+coop_6
 ```
 
