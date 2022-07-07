@@ -335,6 +335,33 @@ count(valuable_dataset, highest_degree_earned)
 ```
 
 
+```{r}
+#im gonna try and make graphs again
+
+social_problem_measures %>% 
+  ggplot(aes(x = BITprobavg.x)) +
+  geom_histogram()
+
+wa2 <- ggplot() +
+  geom_histogram(data= social_problem_measures, aes(x = BITprobavg.x), 
+                 col = "red", fill = "red")+
+  labs(x = "Social Problem Score",
+       y = "Count",
+       title = "Wave 2 BITSEA")
+wa6 <- ggplot() +
+  geom_histogram(data= social_problem_measures, aes(x = BITprobavg.y), 
+                 col = "blue", fill = "blue")+
+  labs(x = "Social Problem Score",
+       y = "Count",
+       title = "Wave 6 BITSEA")
+
+wa2 + wa6
+
+
+
+
+```
+
 
 ```{r}
 
@@ -521,6 +548,20 @@ social_problem_measures %>%
        title = "Does Increased media usage Impact Social Problems?") +
          guides(col = guide_legend("Income")) +
          theme_classic()
+
+valuable_dataset %>% 
+  filter(par_ethnicity %in% c("African American", "Asian/Asian American", 
+                              "Hispanic/Latino", "Multiracial", "White")) %>% 
+  ggplot(aes(x = par_ethnicity,
+             fill = par_ethnicity)) +
+  geom_bar()+
+  labs(x = "Parent Ethnicity",
+       title = "Spread of Ethnicity for the study") +
+         guides(col = guide_legend("Parent Ethnicity")) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.grid = element_blank()) 
 ```
 
 
