@@ -77,6 +77,22 @@ mod_2_and_income_w1 %>%
   geom_bar()
 ```
 
+# Daily Use vs. Problem Score - Parenting Class Taken (Y/N)
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score Clustered by Parenting Class",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~parenting_class_taken)
+```
+
+
+
 
 # Chandra
 ## Bootstrap function
@@ -189,7 +205,7 @@ responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_daily_use, BITprobavg_w2)) +
-  labs(title = "Daily Media Usage vs Social Problem Score",
+  labs(title = "Daily Media Usage vs Social Problem Score Clustered by Income",
        x = "Daily use average score",
        y = "Social problem average score") +
   geom_point() +
@@ -203,7 +219,7 @@ responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_daily_use, BITprobavg_w2)) +
-  labs(title = "Daily Media Usage vs Social Problem Score",
+  labs(title = "Daily Media Usage vs Social Problem Score Clustered by Education",
        x = "Daily use average score",
        y = "Social problem average score") +
   geom_point() +
