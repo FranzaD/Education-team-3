@@ -18,6 +18,51 @@ valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 
 # Aubree
 
+```{r}
+# Read in Data 
+wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
+wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
+```
+
+```{r}
+### assessing bit12 variable (response variable) (model_w2 data set)
+## possible predictors 
+# bill_difficulty (income_w1 data)
+# employment_status (income_w1 data)
+# household_income_numerical (income_w1 data)
+# recieve_childcare (access_to_childcare_w1 data)
+# household_others (access_to_childcare_w1 data)
+# assistance (public_assistance_w1)
+# highest_degree_completed (parent_edu_eng data)
+# english_level (parent_edu_eng data)
+```
+
+```{r}
+# Do joins here 
+mod_2_and_income_w1 <- inner_join(model_w2, income_w1, 
+                                  by=c("child_id", "par_id"))
+
+
+```
+
+```{r}
+# bill_difficulty (income_w1 data)
+  ggplot(mod_2_and_income_w1, aes(x = bit12)) + 
+  geom_bar(aes(fill = bill_difficulty, position = "dodge", stat = "identity"))
+## need to make next to eachother and not stacked 
+```
+
+```{r}
+# household_income_numerical (income_w1 data)
+library(RColorBrewer)
+mod_2_and_income_w1 %>% 
+  ggplot(aes(x = bit12, 
+             y = household_income_numerical)) + 
+  geom_boxplot() + 
+  scale_y_binned(limits = c(0, 100000)) 
+```
+
+
 # Chandra
 ## Bootstrap function
 ```{r}
@@ -99,6 +144,139 @@ bootstrap(responses$BITcompavg_diff, mean, 10000)
 
 # Nick
 
+predictors : n_devices, tv_exposure, digital_babysitting, daily_use, parenting_class_taken, data_site
+bitprobavg: bit02 bit03 bit04 bit06 bit07 bit08 bit09 bit11 bit12 bit14 bit16 bit17 bit18 bit21 bit23 bit24 bit26 bit27 bit28 bit30 bit32 bit33 bit34 bit35 bit36 bit37 bit38 bit39 bit40 bit41 bit42
+
+```{r}
+social_problem_measures = inner_join(valuable_dataset, model_w2, 
+                 by = c("child_id", "par_id")) %>%
+  inner_join(model_w6, by = c("child_id", "par_id")) %>%
+  select(n_devices, tv_exposure, digital_babysitting, daily_use,
+         parenting_class_taken, data_site, 
+         BITprobavg.x, BITprobavg.y, solo, passive, coop) %>% 
+  mutate(different = BITprobavg.y - BITprobavg.x)
+
+social_problem_measures %>% 
+  ggplot(aes(x = data_site,
+             y = different)) +
+  geom_boxplot()
+#No difference between the spread of data on both site,
+
+social_problem_measures %>% 
+  ggplot(aes(x = n_devices,
+             y = different)) +
+  geom_point() +
+  geom_smooth()
+#the number of devices makes no difference between on the change in development of social problems
+
+social_problem_measures %>% 
+  ggplot(aes(x = tv_exposure,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#tv exposure makes no difference between on the change in development of social problems
+
+social_problem_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#digital babysitting makes no difference between on the change in development of social problems
+
+social_problem_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#daily use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = solo,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#solo use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = coop,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#coop use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = passive,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#passive use makes no difference between on the change in development of social problems
+count(social_problem_measures, different)
+
+```
+
+
+
+```{r}
+
+social_competency_measures = inner_join(valuable_dataset, model_w2, 
+                 by = c("child_id", "par_id")) %>%
+  inner_join(model_w6, by = c("child_id", "par_id")) %>%
+  select(n_devices, tv_exposure, digital_babysitting, daily_use,
+         parenting_class_taken, data_site, 
+         BITcompavg.x, BITcompavg.y, solo, passive, coop) %>% 
+  mutate(different = BITcompavg.y - BITcompavg.x)
+
+social_competency_measures %>% 
+  ggplot(aes(x = data_site,
+             y = different)) +
+  geom_boxplot()
+#No difference between the spread of data on both site,
+
+social_competency_measures %>% 
+  ggplot(aes(x = n_devices,
+             y = different)) +
+  geom_point() +
+  geom_smooth()
+#the number of devices makes no difference between on the change in development of social competency
+
+social_competency_measures %>% 
+  ggplot(aes(x = tv_exposure,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#tv exposure makes no difference between on the change in development of social competency
+
+social_competency_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#digital babysitting makes no difference between on the change in development of social competency
+
+social_competency_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#daily use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = solo,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#solo use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = coop,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#coop use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = passive,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#passive use makes no difference between on the change in development of social competency
+```
+
+
 # James
 
 ## preparing
@@ -124,13 +302,16 @@ w1_cat <- list("degree_cert_in_prog" , "parenting_class_taken" , "highest_degree
 w2_cat <- list("BITcomp_cut_w2" , "BITprob_cut_w2")
 w6_cat <- list("BITcomp_cut_w6" , "BITprob_cut_w6")
 ```
+#### Merge all three datasets
 
 ```{r}
 model_full <- full_join(model_w6, model_w2, by=c("par_id", "child_id"), suffix = c("_w6", "_w2")) %>% 
   full_join(valuable_dataset, by=c("par_id", "child_id"), suffix = c("_w62", "_w1"))
 ```
 
+
 #### numeric for w2 and w6
+
 
 ##### point for w2 and w6
 ```{r}
@@ -159,6 +340,19 @@ multiplot = function(data, list_col, plot_type){
   return(list_plot)
 }
 ```
+
+#### numeric for w1 and w2
+```{r}
+for (i in w1_num){
+  for (j in w2_num){
+    plot <- ggplot(model_full, 
+              aes_string(x = i, 
+                         y = j))
+    print(plot + geom_point())
+  }
+}
+```
+
 
 ##### compare w2 and w6
 
