@@ -19,10 +19,11 @@ library(dplyr)
 library(janitor)
 
 BIT_w5 <- read_dta("../data/wave-5-(21-mo)/BB2_W5-BIT.dta")
+PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx")
 PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
 ```
 
-# w6 pls
+# clean w6 pls
 ```{r}
 PLS_w6 <- clean_names(PLS_w6)
 glimpse(PLS_w6)
@@ -37,8 +38,8 @@ PLS_w6 <-  PLS_w6 %>%
           language == 1 ~ "spanish"
         )),
         site = as.factor(case_when(
-          site == 1 ~ "UMD",
-          site == 2 ~ "UCI"
+          site == 1 ~ "umd",
+          site == 2 ~ "uci"
         )))
 ```
 
@@ -48,9 +49,41 @@ PLS_w6 <- PLS_w6 %>%
   select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
 ```
 
+# clean w4 pls
+
+```{r}
+PLS_w4 <- clean_names(PLS_w4)
+```
+
+```{r}
+PLS_w4 <-  PLS_w4 %>% 
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+        language= as.factor(case_when(
+          language == 0 ~ "english",
+          language == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "umd",
+          site == 2 ~ "uci"
+        )))
+```
+
+
+```{r}
+PLS_w4 <- PLS_w4 %>%
+  select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
+```
 
 # save data back to file
 
 ```{r}
 saveRDS(PLS_w6, file="../data/PLS_w6.dta")
+saveRDS(PLS_w4, file="../data/PLS_w4.dta")
+```
+
+# load data back
+```{r}
+model_w4 <- readRDS(file="../data/PLS_w4.dta")
+model_w6 <- readRDS(file="../data/PLS_w6.dta")
 ```
