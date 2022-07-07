@@ -14,6 +14,7 @@ library(patchwork)
 model_w2 <- readRDS(file="../data/model_w2.dta")
 model_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+scores_w1 <- readRDS(file="../data/scores_w1.dta")
 ```
 
 
@@ -330,5 +331,19 @@ daily_6
 ## daily use vs problem score - wave 2 and 6 comparison
 ```{r}
 daily_2 + daily_6
+```
+
+## media use vs PLS total standard score
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, total_score)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily media use\nWave 2",
+       y = "Social problem average score") +
+  geom_jitter() +
+  geom_smooth(method = "lm")
 ```
 
