@@ -7,6 +7,7 @@ library(tidyverse)
 library(dplyr)
 library(janitor)
 library(ggcorrplot)
+library(patchwork)
 ```
 
 ```{r}
@@ -188,28 +189,38 @@ responses %>%
 ## solo use vs problem average score - mom and dad comparison
 
 ```{r}
-responses %>%
+solo <- responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
-  ggplot(aes(MT_solo, BITprobavg_w2, fill = father.x)) +
+  ggplot(aes(MT_solo, BITprobavg_w2)) +
   labs(title = "Solo Media Usage vs Social Problem Score",
        x = "Solo media use",
        y = "Social problem average score") +
-  geom_point() +
+  geom_jitter() +
   geom_smooth(method = "lm")
+
+solo
 ```
 
 ## coop use vs problem average score
 
 ```{r}
-responses %>%
+coop <- responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_coop, BITprobavg_w2)) +
   labs(title = "Co-op Media Usage vs Social Problem Score",
        x = "Co-op media use",
        y = "Social problem average score") +
-  geom_point() +
+  geom_jitter() +
   geom_smooth(method = "lm")
+
+coop
+```
+
+## daily use vs problem average score - coop and solo comparison
+
+```{r}
+solo + coop
 ```
 
