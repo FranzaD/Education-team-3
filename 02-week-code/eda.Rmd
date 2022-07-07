@@ -206,7 +206,7 @@ responses %>%
   geom_point() +
   geom_smooth(method = "lm")
 ```
-
+## daily use vs problem score faceted by income grouped by problem cutoff
 ```{r}
 responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
