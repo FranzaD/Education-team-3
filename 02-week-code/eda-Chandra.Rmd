@@ -186,13 +186,28 @@ responses %>%
 ```
 
 ## solo use vs problem average score - mom and dad comparison
+
 ```{r}
 responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
   ggplot(aes(MT_solo, BITprobavg_w2, fill = father.x)) +
-  labs(title = "Daily Media Usage vs Social Problem Score",
+  labs(title = "Solo Media Usage vs Social Problem Score",
        x = "Solo media use",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+## coop use vs problem average score
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_coop, BITprobavg_w2)) +
+  labs(title = "Co-op Media Usage vs Social Problem Score",
+       x = "Co-op media use",
        y = "Social problem average score") +
   geom_point() +
   geom_smooth(method = "lm")
