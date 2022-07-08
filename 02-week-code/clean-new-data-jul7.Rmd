@@ -18,19 +18,19 @@ library(tidyverse)
 library(dplyr)
 library(janitor)
 
-wave_5 <- read_dta("../data/wave-5-(21-mo)/BB2_W5-BIT.dta")
-PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx")
-PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+bitsea_w5 <- read_dta("../data/wave-5-(21-mo)/BB2_W5-BIT.dta")
+pls_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx")
+pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
 ```
 
 # clean w6 pls
 ```{r}
-PLS_w6 <- clean_names(PLS_w6)
-glimpse(PLS_w6)
+pls_w6 <- clean_names(pls_w6)
+glimpse(pls_w6)
 ```
 
 ```{r}
-PLS_w6 <-  PLS_w6 %>% 
+pls_w6 <-  pls_w6 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
         language= as.factor(case_when(
@@ -45,18 +45,18 @@ PLS_w6 <-  PLS_w6 %>%
 
 
 ```{r}
-PLS_w6 <- PLS_w6 %>%
+pls_w6 <- pls_w6 %>%
   select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
 ```
 
 # clean w4 pls
 
 ```{r}
-PLS_w4 <- clean_names(PLS_w4)
+pls_w4 <- clean_names(pls_w4)
 ```
 
 ```{r}
-PLS_w4 <-  PLS_w4 %>% 
+pls_w4 <-  pls_w4 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
         language= as.factor(case_when(
@@ -71,7 +71,7 @@ PLS_w4 <-  PLS_w4 %>%
 
 
 ```{r}
-PLS_w4 <- PLS_w4 %>%
+pls_w4 <- pls_w4 %>%
   select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss)
 ```
 
@@ -79,7 +79,7 @@ PLS_w4 <- PLS_w4 %>%
 # clean BIT of wave 5
 
 ```{r}
-wave_5 <- wave_5 %>% 
+bitsea_w5 <- bitsea_w5 %>% 
   mutate(child_id = as.character(childid),
           par_id = as.character(parid),
           wave = as.factor(wave),
@@ -287,21 +287,21 @@ wave_5 <- wave_5 %>%
 ## remove redundant variables
 
 ```{r}
-wave_5 <- wave_5 %>% 
+bitsea_w5 <- bitsea_w5 %>% 
   select(-c(childid, parid))
 ```
 
 # save data back to file
 
 ```{r}
-saveRDS(PLS_w6, file="../data/PLS_w6.dta")
-saveRDS(PLS_w4, file="../data/PLS_w4.dta")
-saveRDS(wave_5, file="../data/wave_5.dta")
+saveRDS(pls_w6, file="../data/pls_w6.dta")
+saveRDS(pls_w4, file="../data/pls_w4.dta")
+saveRDS(bitsea_w5, file="../data/bitsea_w5.dta")
 ```
 
 # load data back
 ```{r}
-PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
-PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
-wave_5 <- readRDS(file="../data/wave_5.dta")
+pls_w4 <- readRDS(file="../data/pls_w4.dta")
+pls_w6 <- readRDS(file="../data/pls_w6.dta")
+bitsea_w5 <- readRDS(file="../data/bitsea_w5.dta")
 ```
