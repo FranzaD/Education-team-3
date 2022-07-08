@@ -27,7 +27,7 @@ wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
 wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
-#wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
+wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSEA_codebook.xls.xlsx")
 ```
 
 # Aubree's code
@@ -712,6 +712,19 @@ parent_education <- parent_education %>%
          us_education,
          education_location) %>% 
   glimpse()
+```
+
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
+
+valuable_dataset %>% 
+         ggplot(aes(x = positive_beliefs_media,
+             y = household_income_numerical,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
+
+
 ```
 ```{r}
 parent_education$highest_degree_completed %>% 
@@ -1408,6 +1421,7 @@ valuable_dataset = inner_join(valuable_dataset, parent_english_fluency,
 saveRDS(model_w2, file="../data/model_w2.dta")
 saveRDS(model_w6, file="../data/model_w6.dta")
 saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
+saveRDS(model_score, file="../data/scores_w1.dta")
 ```
 
 
