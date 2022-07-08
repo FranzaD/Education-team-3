@@ -82,10 +82,11 @@ mod_2_and_income_w1 %>%
 responses %>%
   inner_join(predictors, by = c("par_id", "child_id")) %>%
   inner_join(demographics, by = c("par_id", "child_id")) %>%
+  filter(parenting_class_taken != "NA") %>% 
   ggplot(aes(MT_daily_use, BITprobavg_w2)) +
-  labs(title = "Daily Media Usage vs Social Problem Score Clustered by Parenting Class",
-       x = "Daily use average score",
-       y = "Social problem average score") +
+  labs(title = "Media Involvment vs Social Problem Score Clustered by Parenting Class",
+       x = "Media Involvment",
+       y = "Social problem average score (BITSEA)") +
   geom_point() +
   geom_smooth(method = "lm") +
   facet_wrap(~parenting_class_taken)
