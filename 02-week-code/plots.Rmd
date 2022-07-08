@@ -1,0 +1,223 @@
+---
+title: "Exploratory Data Analysis"
+author: "Nicholas Noel"
+date: '2022-06-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+```
+
+
+
+```{r}
+# total na values per column
+colSums(is.na(media_tech_cleaned))
+
+# percentage na values per column
+colMeans(is.na(media_tech_cleaned))
+```
+
+```{r}
+# visualizing na values
+library(visdat)
+vis_miss(media_tech_cleaned)
+```
+
+```{r}
+# correlation between average score data
+library(ggcorrplot)
+average_scores <- media_tech_cleaned %>% 
+  select(!starts_with("q"), -child_id, -par_id)
+
+correlation <- cor(average_scores, use = "complete.obs")
+
+correlation
+```
+
+```{r}
+# visualizing correlation
+ggcorrplot(correlation,
+           hc.order = TRUE,
+           type = "lower",
+           outline.color = "white")
+
+```
+
+```{r}
+valuable_dataset %>% 
+         ggplot(aes(x = positive_beliefs_media,
+             y = household_income_numerical,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(data = parent_demographic, aes( 
+  x= par_ethnicity)) +
+geom_bar()
+parent_demographic %>% 
+  ggplot(aes(x = chi_par_lang)) + 
+  geom_bar()
+#most parents speak either english or spanish to their children
+parent_demographic %>% 
+  ggplot(aes(x = par_language)) + 
+  geom_bar()
+#majority parents speak english/spanish
+parent_demographic %>% 
+  ggplot(aes(x = par_us_born)) + 
+  geom_bar()
+#Slightly more than half of the parents were born outside of the U.S.
+```
+
+```{r}
+  ggplot(data= valuable_dataset, aes(x=par_ethnicity, 
+             y= total_score,
+             fill = par_ethnicity)) +
+  geom_boxplot(alpha = 0.3) +
+  labs(x= "Parent Ethnicity",
+       y= "Total Score") + 
+  theme(panel.grid.major = element_blank(), 
+                 panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_blank(),
+        legend.title = element_text(colour = "steelblue", face = "bold.italic",)) +
+  ggtitle("Spread of ACS")
+  
+valuable_dataset %>% 
+  ggplot(aes(x = par_us_born,
+             y = auditory_comprehension_score)) + 
+  geom_boxplot() +
+  labs(x = "Parent Born in U.S.",
+       y= "Auditory Comprehension Score") +
+  theme_minimal()
+
+valuable_dataset %>% 
+  ggplot(aes(x = chi_girl,
+             y = total_score)) + 
+  geom_boxplot() +
+  labs(x = "Was The form in spanish?",
+       y= "Auditory Comprehension Score") +
+  theme_minimal()
+
+valuable_dataset %>% 
+  mutate(years_school_complete = as.character(years_school_complete)) %>% 
+  ggplot(aes(x = years_school_complete,
+             y = total_score)) + 
+  geom_boxplot()
+   
+valuable_dataset %>% 
+  mutate(daily_use = as.numeric(daily_use)) %>% 
+  ggplot(aes(x = solo, 
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>%
+  ggplot(aes(x = total_score,
+             y= daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = household_income_numerical,
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = positive_beliefs_media,
+             y = total_score)) + 
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = passive,
+             y = daily_use)) + 
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = q7a,
+             y = daily_use)) +
+  geom_boxplot()
+
+valuable_dataset %>% 
+  ggplot(aes(x = tv_exposure,
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = coop,
+             y = total_score)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = coop,
+             y = daily_use)) +
+  geom_point()
+
+valuable_dataset %>% 
+  ggplot(aes(x = n_devices,
+             y = positive_beliefs_media)) + 
+  geom_point()
+
+#q8: do you limit how much time the children use 
+valuable_dataset %>% 
+  ggplot(aes(x =  positive_beliefs_media,
+             y = highest_degree_completed,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
+
+valuable_dataset %>% 
+  ggplot(aes(y = household_income_numerical,
+             x = highest_degree_completed,
+             fill = highest_degree_completed)) +
+  geom_boxplot()
+
+valuable_dataset %>% 
+  ggplot(aes(x = positive_beliefs_media,
+             y = daily_use,
+             fill = positive_beliefs_media)) +
+  geom_point()
+
+```
+
+```{r}
+model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
+```
+
+```{r}
+model_score_demographic %>% 
+  glimpse()
+```
+
+```{r}
+model_score_demographic %>% 
+  ggplot(aes(x = chi_ethnicity,
+             y = total_score))+
+  geom_col()
+```
+
+---
+
+According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
+
+* Are the English scores of the parent related to the standardized expressive or auditory comprehension scores?
+  + model_score
+  + parent_english_fluency
+  
+* are solo/passive/coop infant media measurements related to parent's education attainment?
+  + media_tech_cleaned
+  + parent_education
+  
+---
+
