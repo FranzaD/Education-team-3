@@ -181,23 +181,6 @@ income_w1 <- income_w1 %>%
 
 ```
 
-### Aubree Visualization 
-```{r}
-valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
-valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
-
-valuable_dataset %>% 
-         ggplot(aes(x = positive_beliefs_media,
-             y = household_income_numerical,
-             fill = parenting_class_taken)) +
-  geom_boxplot()
-
-
-```
-
-
-
-
 # Chandra's code
 
 ```{r}
@@ -1441,3 +1424,17 @@ According to Dr. Reich's email here are some preliminary exploratory data analys
   + parent_education
   
 ---
+
+### Aubree Visualization 
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
+
+valuable_dataset %>% 
+         ggplot(aes(x = positive_beliefs_media,
+             y = household_income_numerical,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
+
+
+```

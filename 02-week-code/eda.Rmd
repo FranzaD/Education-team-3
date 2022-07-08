@@ -6,6 +6,7 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(ggcorrplot)
 ```
 
 ```{r}
@@ -41,15 +42,19 @@ wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 # Do joins here 
 mod_2_and_income_w1 <- inner_join(model_w2, income_w1, 
                                   by=c("child_id", "par_id"))
-
-
+mod_2_and_income_w1 <- mod_2_and_income_w1 %>% 
+  mutate(bit12 = as.factor(case_when(
+						bit12 == "Not true/Rarely" ~ 0 ,
+						bit12 == "Somewhat true/Sometimes" ~ 1,
+						bit12 == "Very true/Often" ~ 2)))
 ```
 
 ```{r}
 # bill_difficulty (income_w1 data)
+counts_of_response = c(25, 126, 91, 31, 101)
   ggplot(mod_2_and_income_w1, aes(x = bit12)) + 
   geom_bar(aes(fill = bill_difficulty, position = "dodge", stat = "identity"))
-## need to make next to eachother and not stacked 
+## need to make next to each other and not stacked 
 ```
 
 ```{r}
@@ -62,69 +67,309 @@ mod_2_and_income_w1 %>%
   scale_y_binned(limits = c(0, 100000)) 
 ```
 
+```{r}
+# employment_status (income_w1 data)
+library(reshape2)
+
+
+mod_2_and_income_w1 %>% 
+  ggplot(aes(x = bit12, fill = employment_status)) + 
+  geom_bar()
+```
+
 
 # Chandra
+## Bootstrap function
+```{r}
+# bootstrap function
+bootstrap <- function(col, func, num) {
+  temp <- numeric(num)
+  for (i in 1:num) {
+    temp[i] <- func(sample(col, length(col), replace=TRUE), na.rm = TRUE)
+  }
+  ci <- quantile(temp, prob = c(0.025, 0.975), na.rm = TRUE)
+  list(est=func(temp), ci=ci)
+}
+
+# example usage
+mean_diff <- bootstrap(valuable_dataset$digital_babysitting, mean, 1000)
+
+mean_diff
+```
+
+## Subsetted datasets
+```{r}
+demographics <- valuable_dataset %>% 
+  select(-c(n_devices,
+          tv_exposure,
+          solo,
+          passive,
+          coop,
+          mealtimes,
+          behavior_management,
+          positive_beliefs_media,
+          educational_benefits,
+          digital_babysitting,
+          daily_use))
+
+head(demographics)
+
+predictors <- valuable_dataset %>% 
+  select(
+    par_id,
+    child_id,
+    MT_n_devices = n_devices, 
+    MT_tv_exposure = tv_exposure, 
+    MT_solo = solo, 
+    MT_passive = passive, 
+    MT_coop = coop, 
+    MT_mealtimes = mealtimes, 
+    MT_behavior_management = behavior_management, 
+    MT_positive_beliefs_media = positive_beliefs_media,
+    MT_educational_benefits = educational_benefits,
+    MT_digital_babysitting = digital_babysitting,
+    MT_daily_use = daily_use)
+
+head(predictors)
+
+responses <- model_w2 %>% 
+  inner_join(model_w6, by = c("par_id", "child_id"), suffix = c("_w2", "_w6")) %>% 
+  inner_join(valuable_dataset, by = c("par_id", "child_id")) %>% 
+  select(child_id, par_id, matches("^BIT", ignore.case = FALSE)) %>% 
+  mutate(BITcompavg_diff = BITcompavg_w6 - BITcompavg_w2,
+         BITprobavg_diff = BITprobavg_w6 - BITprobavg_w2)
+  
+head(responses)
+
+```
+
+## Average difference with 95% CI
+```{r}
+# average difference of problem and competence score between wave 6 and wave 2
+# with 95% CI through bootstrap
+responses %>%
+  summarize(mean_prob_score = mean(BITprobavg_diff, na.rm = TRUE),
+            mean_comp_score = mean(BITcompavg_diff, na.rm = TRUE))
+
+bootstrap(responses$BITprobavg_diff, mean, 10000)
+bootstrap(responses$BITcompavg_diff, mean, 10000)
+```
+
+# Correlation matrix for problem score
+
+```{r}
+responses %>% 
+  inner_join(predictors, by = c("par_id", "child_id")) %>% 
+  select(BITprobavg_w2,
+         matches("^MT", ignore.case = FALSE)) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## Correlation matrix for competance score
+
+```{r}
+responses %>% 
+  inner_join(predictors, by = c("par_id", "child_id")) %>% 
+  select(BITcompavg_w2,
+         matches("^MT", ignore.case = FALSE)) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## daily use vs problem score - income
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~household_income_categorical)
+  
+```
+## daily use vs problem score - highest degree completed
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~highest_degree_completed)
+```
+## daily use vs problem score - problem cuttoff
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  mutate(`Problem Cutoff` = case_when(
+    BITprob_cut_w2 == 0 ~ "Problem Score < 13",
+    BITprob_cut_w2 == 1 ~ "Problem Score >= 13")) %>% 
+  ggplot(aes(MT_daily_use, BITprobavg_w2, color = `Problem Cutoff`)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r}
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  mutate(`Problem Cutoff` = case_when(
+    BITprob_cut_w2 == 0 ~ "Problem Score < 13",
+    BITprob_cut_w2 == 1 ~ "Problem Score >= 13")) %>% 
+  ggplot(aes(MT_daily_use, BITprobavg_w2, color = `Problem Cutoff`)) +
+  labs(title = "Daily Media Usage vs Social Problem Score",
+       x = "Daily use average score",
+       y = "Social problem average score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~household_income_categorical)
+```
+
 
 # Nick
 
-```{r}
-#bitprobts aka social emotional problems are what is being measured, 
-#q5e do you give your child a phone to distract or stop crying
+predictors : n_devices, tv_exposure, digital_babysitting, daily_use, parenting_class_taken, data_site
+bitprobavg: bit02 bit03 bit04 bit06 bit07 bit08 bit09 bit11 bit12 bit14 bit16 bit17 bit18 bit21 bit23 bit24 bit26 bit27 bit28 bit30 bit32 bit33 bit34 bit35 bit36 bit37 bit38 bit39 bit40 bit41 bit42
 
-# HOW AM I SUPPOSED TO FIND THE DIFFERENCE BETWEEN THE WAVES???????
-why = inner_join(valuable_dataset, model_w2, 
+```{r}
+social_problem_measures = inner_join(valuable_dataset, model_w2, 
                  by = c("child_id", "par_id")) %>%
   inner_join(model_w6, by = c("child_id", "par_id")) %>%
-  select(BITprobts.x, BITprobts.y, child_id, par_id, solo, coop, q5e,
-         daily_use, parenting_class_taken, household_income_numerical, n_devices, wave ) %>% 
-  mutate(change = BITprobts.y - BITprobts.x)
-  
-why %>% 
-  ggplot(aes(x = change))  +
-  geom_histogram() 
+  select(n_devices, tv_exposure, digital_babysitting, daily_use,
+         parenting_class_taken, data_site, 
+         BITprobavg.x, BITprobavg.y, solo, passive, coop) %>% 
+  mutate(different = BITprobavg.y - BITprobavg.x)
 
-why %>% 
-  ggplot(aes(x = daily_use))  +
-  geom_bar() 
+social_problem_measures %>% 
+  ggplot(aes(x = data_site,
+             y = different)) +
+  geom_boxplot()
+#No difference between the spread of data on both site,
 
-
-
-ggplot(data = why, aes(x = solo,
-           y = change)) +
+social_problem_measures %>% 
+  ggplot(aes(x = n_devices,
+             y = different)) +
   geom_point() +
+  geom_smooth()
+#the number of devices makes no difference between on the change in development of social problems
 
-ggplot(data = why, aes(x = coop,
-           y = change)) +
-  geom_point()
+social_problem_measures %>% 
+  ggplot(aes(x = tv_exposure,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#tv exposure makes no difference between on the change in development of social problems
 
-ggplot(data = why, aes(x = q5e,
-           y = change,
-           fill = parenting_class_taken)) +
+social_problem_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#digital babysitting makes no difference between on the change in development of social problems
+
+social_problem_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#daily use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = solo,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#solo use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = coop,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#coop use makes no difference between on the change in development of social problems
+social_problem_measures %>% 
+  ggplot(aes(x = passive,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#passive use makes no difference between on the change in development of social problems
+count(social_problem_measures, different)
+
+```
+
+
+
+```{r}
+
+social_competency_measures = inner_join(valuable_dataset, model_w2, 
+                 by = c("child_id", "par_id")) %>%
+  inner_join(model_w6, by = c("child_id", "par_id")) %>%
+  select(n_devices, tv_exposure, digital_babysitting, daily_use,
+         parenting_class_taken, data_site, 
+         BITcompavg.x, BITcompavg.y, solo, passive, coop) %>% 
+  mutate(different = BITcompavg.y - BITcompavg.x)
+
+social_competency_measures %>% 
+  ggplot(aes(x = data_site,
+             y = different)) +
   geom_boxplot()
+#No difference between the spread of data on both site,
 
-why %>% 
-ggplot(aes(x = daily_use,
-           y = change)) +
-  geom_point()
+social_competency_measures %>% 
+  ggplot(aes(x = n_devices,
+             y = different)) +
+  geom_point() +
+  geom_smooth()
+#the number of devices makes no difference between on the change in development of social competency
 
-ggplot(data = why, aes(x = household_income_numerical,
-                       y = change)) +
-  geom_point()
+social_competency_measures %>% 
+  ggplot(aes(x = tv_exposure,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#tv exposure makes no difference between on the change in development of social competency
 
-why %>% 
-  ggplot(aes(x = n_devices, 
-             y = change)) +
-  geom_point()
+social_competency_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#digital babysitting makes no difference between on the change in development of social competency
 
-why %>% 
-  ggplot(aes(x = q5e,
-             y = change,
-             )) + 
-  geom_boxplot()
-
-count(why, daily_use)
-#The differnce
-
+social_competency_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#daily use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = solo,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#solo use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = coop,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#coop use makes no difference between on the change in development of social competency
+social_competency_measures %>% 
+  ggplot(aes(x = passive,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
+#passive use makes no difference between on the change in development of social competency
 ```
 
 
