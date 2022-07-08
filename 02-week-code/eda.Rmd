@@ -362,9 +362,6 @@ wa6 <- ggplot() +
 
 wa2 + wa6
 
-
-
-
 ```
 
 
@@ -445,6 +442,22 @@ social_competency_measures %>%
   geom_point() + 
   geom_smooth()
 #passive use makes no difference between on the change in development of social competency
+
+wa2 <- ggplot() +
+  geom_histogram(data= social_competency_measures, aes(x = BITcompavg.x), 
+                 col = "red", fill = "red")+
+  labs(x = "Social Competence Score",
+       y = "Count",
+       title = "Wave 2 BITSEA")
+wa6 <- ggplot() +
+  geom_histogram(data= social_competency_measures, aes(x = BITcompavg.y), 
+                 col = "blue", fill = "blue")+
+  labs(x = "Social Competence Score",
+       y = "Count",
+       title = "Wave 6 BITSEA")
+
+wa2 + wa6
+
 ```
 
 ```{r}
@@ -567,6 +580,8 @@ valuable_dataset %>%
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         panel.grid = element_blank()) 
+
+
 ```
 
 

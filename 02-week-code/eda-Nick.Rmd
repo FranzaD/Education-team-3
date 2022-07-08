@@ -1,15 +1,85 @@
 
 
-```{r}
-readxl::read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-pls_w2 <- readxl::read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
-
+```{r include=FALSE}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
 ```
 
 
+```{r include=FALSE}
+bitsea_w2 <- readRDS(file="../data/model_w2.dta")
+bitsea_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+# load new data
+PLS_w1 <- readRDS(file = "../data/scores_w1.dta")
+PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
+PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
+bitsea_w5 <- readRDS(file="../data/wave_5.dta")
+
+```
+
+My question is do we continue to use the children that drop out of the study as our first sample has 420 people but the last wave retained only 114 for PLS score
+
+we need to better organize the PLS data sheets 
+
+#PLS score summary
 ```{r}
-model_score %>% 
+PLS_w1 %>% 
+  filter(total_score > 0, father == TRUE) %>%
+  summarise(mean(expressive_communication_score))
+PLS_w1 %>% 
+  filter(total_score > 0, father == FALSE) %>%
+  summarise(mean(expressive_communication_score))
+
+PLS_w4 %>%
+  filter(total_score > 0, par_id > 22000) %>%
+  summarise(mean(expressive_communication_score))
+PLS_w4 %>%
+  filter(total_score > 0, par_id < 22000) %>%
+  summarise(mean(expressive_communication_score))
+
+PLS_w6 %>%
+  filter(total_score > 0, par_id > 22000) %>%
+  summarise(mean(expressive_communication_score))
+PLS_w6 %>%
+  filter(total_score > 0, par_id < 22000) %>%
+  summarise(mean(expressive_communication_score))
+```
+##PLS Summary to my understanding
+
+_number of children:_
+wave 1: 210
+wave 4: 69
+wave 6: 57
+
+_mean auditory comprehension score_
+wave 1: 92.59048	
+wave 4: 85.64493
+wave 6: 87.07018
+
+_mean expressive communication score_
+wave 1: 100.4286	
+wave 4: 97.17391
+wave 6: 88.96491
+
+_total score:_
+wave 1: 96.88571
+wave 4: 90.56522	
+wave 6: 86.10526
+
+```{r}
+PLS_w1 %>% 
+    filter(total_score > 0) %>% 
   ggplot(aes(x = total_score)) +
   geom_histogram(bins = 40,
                  fill = "pink",
@@ -18,11 +88,13 @@ model_score %>%
        y = "Count",
        title = "Wave 2 Infant Language Scores")+
   xlim(50, 200) +
-  theme_bw()
+  theme_bw() +
+  labs(caption = "Average Score is 'summarise(model_score, total_score)'")
+  
   
 
 PLS_w4 %>% 
-  filter(auditory_comprehension_score > 0) %>% 
+  filter(total_score > 0) %>% 
   ggplot(aes(x = total_score)) +
   geom_histogram(bins = 40,
                  fill = "gold",
@@ -34,7 +106,7 @@ PLS_w4 %>%
   theme_bw()
 
  PLS_w6 %>% 
-    filter(auditory_comprehension_score > 0) %>% 
+    filter(total_score > 0) %>% 
   ggplot(aes(x = total_score)) +
   geom_histogram(bins = 40,
                  color = "black",
@@ -44,16 +116,65 @@ PLS_w4 %>%
        title = "Wave 6 Infant Language Scores")+
   xlim(50, 200) +
   theme_bw()
- 
- full_join(PLS_w6, PLS_w4) %>%
-   ggplot(aes(x = total_score,
-              fill = wave)) +
-   geom_boxplot()
-   
+```
+
+#BITSEA Summarization   
+```{r}
+bitsea_w2 %>% 
+  na.omit() %>% 
+  filter(pargen == 0) %>% 
+summarise(mean(BITprobavg))
+
+bitsea_w2 %>% 
+  na.omit() %>% 
+  filter(pargen ==1) %>% 
+summarise(mean(BITprobavg))
+
+bitsea_w2 %>% 
+  na.omit() %>% 
+  filter(pargen == 0) %>% 
+summarise(mean(BITcompavg))
+
+bitsea_w2 %>% 
+  na.omit() %>% 
+  filter(pargen ==1) %>% 
+summarise(mean(BITcompavg))
 
 
+bitsea_w6 %>% 
+  na.omit() %>% 
+  filter(pargen == 0) %>% 
+summarise(mean(BITprobavg))
 
+bitsea_w6 %>% 
+  na.omit() %>% 
+  filter(pargen ==1) %>% 
+summarise(mean(BITprobavg))
+
+bitsea_w6 %>% 
+  na.omit() %>% 
+  filter(pargen == 0) %>% 
+summarise(mean(BITcompavg))
+
+bitsea_w6 %>% 
+  na.omit() %>% 
+  filter(pargen ==1) %>% 
+summarise(mean(BITcompavg))
 
 
 ```
+
+with just the simplest form being
+
+outcome: 
+change in BITSEA and PLS scores across waves.
+
+repeated measure: 
+change in daily use across waves
+
+predictors and independent variables: 
+parent gender, parent education, ethnicity etc.
+
+
+After watching the three videos I think I understand how our model is going to work but I still need to hash out the details. In theory though, what we are going to do is build an unconditional means model in order to have a baseline, or more specifically look at the data without any of our predictors (if I were to guess, we will be building many different models as we would like to see not just media as a predictor but also as a response. )
 
