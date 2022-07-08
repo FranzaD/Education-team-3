@@ -22,7 +22,8 @@ Education-3
 
 1. open `./01-week-code/eda.Rmd` and run all chunk
 2. open `./02-week-code/clean-new-data-jul7.Rmd` and run all chunk
-3. import new data by:
+3. Run 1 and 2 only ONCE. never run it again!
+4. import new data by:
 ```{r}
 PLS_data <- readRDS(file="../data/PLS_data.dta")
 BIT_data <- readRDS(file="../data/BIT_data.dta")
