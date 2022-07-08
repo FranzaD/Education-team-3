@@ -10,14 +10,14 @@ library(ggcorrplot)
 ```
 
 ```{r}
-model_w2 <- readRDS(file="../data/model_w2.dta")
-model_w6 <- readRDS(file="../data/model_w6.dta")
+bitsea_w2 <- readRDS(file="../data/model_w2.dta")
+bitsea_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 
 # load new data
-PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
-PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
-wave_5 <- readRDS(file="../data/wave_5.dta")
+pls_w4 <- readRDS(file="../data/pls_w4.dta")
+pls_w6 <- readRDS(file="../data/pls_w6.dta")
+bitsea_w5 <- readRDS(file="../data/bitsea_w5.dta")
 ```
 
 # Deborah

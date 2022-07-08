@@ -23,10 +23,10 @@ overall_background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 scores_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
 w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
-wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
+bitsea_w2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
-wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
+bitsea_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
 wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSEA_codebook.xls.xlsx")
 ```
 
@@ -1014,15 +1014,15 @@ model_w2 <- model_w2 %>%
 # clean data w1
 
 ```{r}
-scores_w1 <- clean_names(scores_w1)
+pls_w1 <- clean_names(scores_w1)
 
-scores_w1 <-  scores_w1 %>% 
+pls_w1 <-  scores_w1 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
          father = pargen == 1,
-        language_26_PLS_w1 = as.factor(case_when(
-          language_26_pls_w1 == 0 ~ "english",
-          language_26_pls_w1 == 1 ~ "spanish"
+        language_26_pls_w1 = as.factor(case_when(
+          language_26_PLS_w1 == 0 ~ "english",
+          language_26_PLS_w1 == 1 ~ "spanish"
         )),
         site = as.factor(case_when(
           site == 1 ~ "UMD",
@@ -1140,8 +1140,8 @@ valuable_dataset = inner_join(valuable_dataset, parent_english_fluency,
 # save data back to file
 
 ```{r}
-saveRDS(model_w2, file="../data/model_w2.dta")
-saveRDS(model_w6, file="../data/model_w6.dta")
+saveRDS(bitsea_w2, file="../data/model_w2.dta")
+saveRDS(bitsea_w6, file="../data/model_w6.dta")
 saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
 saveRDS(model_score, file="../data/scores_w1.dta")
 ```
