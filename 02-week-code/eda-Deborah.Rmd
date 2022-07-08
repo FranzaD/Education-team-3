@@ -13,3 +13,49 @@ model_w2 <- readRDS(file="../data/model_w2.dta")
 model_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 ```
+
+
+```{r}
+## daily use vs problem score - highest degree completed
+
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w2)) +
+  labs(title = "Wave 2: Daily Media Usage vs Social Problem Score For Mothers & Fathers",
+       x = "Daily Media Use Average Score",
+       y = "Infant's Social Problem Average Score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~father)
+```
+```{r}
+##
+
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  ggplot(aes(MT_daily_use, BITprobavg_w6)) +
+  labs(title = "Wave 6: Daily Media Usage vs Social Problem Score For Mothers & Fathers",
+       x = "Daily Media Use Average Score",
+       y = "Infant's Social Problem Average Score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~father)
+```
+```{r}
+#socioeconomic status (qual/quant) and daily use (quant) & parenting class (qual)
+
+responses %>%
+  inner_join(predictors, by = c("par_id", "child_id")) %>%
+  inner_join(demographics, by = c("par_id", "child_id")) %>%
+  join
+  ggplot(aes(MT_daily_use, household_income_numerical)) +
+  labs(title = "Wave 6: Daily Media Usage vs Social Problem Score For Mothers & Fathers",
+       x = "Daily Media Use Average Score",
+       y = "Infant's Social Problem Average Score") +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~parenting_class_taken)
+```
+

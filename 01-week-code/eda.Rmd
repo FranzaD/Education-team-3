@@ -23,14 +23,14 @@ overall_background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 scores_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
 w1_codebook <- read_excel("../data/wave-1-(9-mo)/BB2_w1_codebook.xls.xlsx")
 
-wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
+bitsea_w2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
-wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
-#wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
+bitsea_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
+wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSEA_codebook.xls.xlsx")
 ```
 
-# Aubree's code
+# background
 
 ```{r}
 
@@ -181,13 +181,7 @@ income_w1 <- income_w1 %>%
 
 ```
 
-### Aubree Visualization 
-
-
-
-
-
-# Chandra's code
+# media technology
 
 ```{r}
 glimpse(media_tech)
@@ -343,41 +337,8 @@ media_tech_cleaned <- media_tech %>%
 )
 ```
 
-```{r}
-# total na values per column
-colSums(is.na(media_tech_cleaned))
 
-# percentage na values per column
-colMeans(is.na(media_tech_cleaned))
-```
-
-```{r}
-# visualizing na values
-library(visdat)
-vis_miss(media_tech_cleaned)
-```
-
-
-```{r}
-# correlation between average score data
-library(ggcorrplot)
-average_scores <- media_tech_cleaned %>% 
-  select(!starts_with("q"), -child_id, -par_id)
-
-correlation <- cor(average_scores, use = "complete.obs")
-
-correlation
-```
-
-
-```{r}
-# visualizing correlation
-ggcorrplot(correlation,
-           hc.order = TRUE,
-           type = "lower",
-           outline.color = "white")
-
-```
+# translation
 
 ```{r}
 # wave 6 translations
@@ -421,9 +382,9 @@ for (i in 1:length(model_w6$bit42txt)) {
   }
 }
 
-glimpse(model_w6)
-
 ```
+
+# bits wave 6
 
 ```{r}
 # wave 6 cleaning
@@ -625,17 +586,9 @@ model_w6 <- model_w6 %>%
           BITprobavg = as.double(BITprobavg),
           BITcomp_cut = as.integer(BITcomp_cut),
           BITprob_cut = as.integer(BITprob_cut),)
-
-glimpse(model_w6)
 ```
 
-
-
-# Deborah's code
-```{r}
-overall_background$bg14 %>% 
-  glimpse()
-```
+# background
 
 ```{r}
 # parent education table
@@ -716,22 +669,15 @@ parent_education <- parent_education %>%
          highest_degree_completed,
          years_school_complete,
          us_education,
-         education_location) %>% 
-  glimpse()
+         education_location)
 ```
 
 ```{r}
 valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
 valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
-
-valuable_dataset %>% 
-         ggplot(aes(x = positive_beliefs_media,
-             y = household_income_numerical,
-             fill = parenting_class_taken)) +
-  geom_boxplot()
-
-
 ```
+
+
 ```{r}
 parent_education$highest_degree_completed %>% 
   fct_relevel()
@@ -741,8 +687,7 @@ parent_education$highest_degree_completed %>%
 #Creating parent English Fluency Table
 
 parent_english_fluency <- overall_background %>% 
-  select(parid, childid, wave, pargen, bg25r, bg26r, bg27r, bg28r, englishlanguage) %>%  
-  glimpse()
+  select(parid, childid, wave, pargen, bg25r, bg26r, bg27r, bg28r, englishlanguage)
 ```
 
 ```{r}
@@ -792,20 +737,16 @@ parent_english_fluency <- overall_background %>%
          writing_english,
          understanding_english,
          english_level
-         ) %>% 
-  glimpse()
+         )
 
 ```
 
-# James' code
-
-## clean wave_2
+# pls score
 
 ```{r}
 wave_2 <- wave_2 %>% 
   select(-version_31_BIT_w2)
-```
-```{r}
+
 model_w2 <- wave_2 %>% 
   mutate(child_id = as.character(childid),
           par_id = as.character(parid),
@@ -1018,7 +959,7 @@ model_w2 <- wave_2 %>%
           BITprob_cut = as.integer(BITprob_cut))
 ```
 
-### Removed non-english text responses - Chandra
+# translation - wave 2 pls
 
 ```{r}
 # wave 2 translations
@@ -1061,33 +1002,27 @@ for (i in 1:length(model_w2$bit42txt)) {
     model_w2$bit42txt[i] = model_w2$bit42txt_e[i]
   }
 }
-
-glimpse(model_w2)
-
 ```
 
-remove redundant variables
+# remove redundant variables
 
 ```{r}
 model_w2 <- model_w2 %>% 
   select(-c(bit08txt_r,bit08txt_e,bit36txt_r, bit36txt_e,bit37txt_r,bit37txt_e,bit41txt_r,bit41txt_e,bit42txt_e,bit42txt_r, childid, parid))
 ```
 
-
-## clean data w1
+# clean data w1
 
 ```{r}
-scores_w1 <- clean_names(scores_w1)
-glimpse(scores_w1)
-```
-```{r}
-scores_w1 <-  scores_w1 %>% 
+pls_w1 <- clean_names(scores_w1)
+
+pls_w1 <-  scores_w1 %>% 
   mutate(child_id = as.character(childid),
          par_id = as.character(parid),
          father = pargen == 1,
-        language_26_PLS_w1 = as.factor(case_when(
-          language_26_pls_w1 == 0 ~ "english",
-          language_26_pls_w1 == 1 ~ "spanish"
+        language_26_pls_w1 = as.factor(case_when(
+          language_26_PLS_w1 == 0 ~ "english",
+          language_26_PLS_w1 == 1 ~ "spanish"
         )),
         site = as.factor(case_when(
           site == 1 ~ "UMD",
@@ -1182,24 +1117,7 @@ parent_demographic <- demographic_background %>%
 
 ```
 
-```{r}
-  
-ggplot(data = parent_demographic, aes( 
-  x= par_ethnicity)) +
-geom_bar()
-parent_demographic %>% 
-  ggplot(aes(x = chi_par_lang)) + 
-  geom_bar()
-#most parents speak either english or spanish to their children
-parent_demographic %>% 
-  ggplot(aes(x = par_language)) + 
-  geom_bar()
-#majority parents speak english/spanish
-parent_demographic %>% 
-  ggplot(aes(x = par_us_born)) + 
-  geom_bar()
-#Slightly more than half of the parents were born outside of the U.S.
-```
+# joinng data
 
 ```{r}
 valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
@@ -1209,207 +1127,6 @@ valuable_dataset = inner_join(valuable_dataset, public_assistance_w1, by=c("chil
 valuable_dataset = inner_join(valuable_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
 valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id")) 
 
-
-```
-
-```{r}
-  ggplot(data= valuable_dataset, aes(x=par_ethnicity, 
-             y= total_score,
-             fill = par_ethnicity)) +
-  geom_boxplot(alpha = 0.3) +
-  labs(x= "Parent Ethnicity",
-       y= "Total Score") + 
-  theme(panel.grid.major = element_blank(), 
-                 panel.grid.minor = element_blank(),
-        panel.background = element_blank(), 
-        axis.line = element_line(colour = "black"),
-        axis.text.x=element_blank(),
-        legend.title = element_text(colour = "steelblue", face = "bold.italic",)) +
-  ggtitle("Spread of ACS")
-  
-valuable_dataset %>% 
-  ggplot(aes(x = par_us_born,
-             y = auditory_comprehension_score)) + 
-  geom_boxplot() +
-  labs(x = "Parent Born in U.S.",
-       y= "Auditory Comprehension Score") +
-  theme_minimal()
-
-valuable_dataset %>% 
-  ggplot(aes(x = chi_girl,
-             y = total_score)) + 
-  geom_boxplot() +
-  labs(x = "Was The form in spanish?",
-       y= "Auditory Comprehension Score") +
-  theme_minimal()
-
-valuable_dataset %>% 
-  mutate(years_school_complete = as.character(years_school_complete)) %>% 
-  ggplot(aes(x = years_school_complete,
-             y = total_score)) + 
-  geom_boxplot()
-   
-valuable_dataset %>% 
-  mutate(daily_use = as.numeric(daily_use)) %>% 
-  ggplot(aes(x = solo, 
-             y = daily_use)) +
-  geom_point()
-
-valuable_dataset %>%
-  ggplot(aes(x = total_score,
-             y= daily_use)) +
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = household_income_numerical,
-             y = daily_use)) +
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = positive_beliefs_media,
-             y = total_score)) + 
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = passive,
-             y = daily_use)) + 
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = q7a,
-             y = daily_use)) +
-  geom_boxplot()
-
-valuable_dataset %>% 
-  ggplot(aes(x = tv_exposure,
-             y = daily_use)) +
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = coop,
-             y = total_score)) +
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = coop,
-             y = daily_use)) +
-  geom_point()
-
-valuable_dataset %>% 
-  ggplot(aes(x = n_devices,
-             y = positive_beliefs_media)) + 
-  geom_point()
-
-#q8: do you limit how much time the children use 
-valuable_dataset %>% 
-  ggplot(aes(x =  positive_beliefs_media,
-             y = highest_degree_completed,
-             fill = parenting_class_taken)) +
-  geom_boxplot()
-
-valuable_dataset %>% 
-  ggplot(aes(y = household_income_numerical,
-             x = highest_degree_completed,
-             fill = highest_degree_completed)) +
-  geom_boxplot()
-
-valuable_dataset %>% 
-  ggplot(aes(x = positive_beliefs_media,
-             y = daily_use,
-             fill = positive_beliefs_media)) +
-  geom_point()
-
-```
-
-
-# James'
-
-```{r}
-model_score_demographic = full_join(model_score, parent_demographic, by=c("child_id", "par_id"))
-```
-
-```{r}
-model_score_demographic %>% 
-  glimpse()
-```
-
-```{r}
-model_score_demographic %>% 
-  ggplot(aes(x = chi_ethnicity,
-             y = total_score))+
-  geom_col()
-```
-
-
----
-
-# Deborah's Preliminary EDA
-Just based off my tables is there a relationship between English proficiency and education?
-* parent_english_fluency: english_level & parent_education: highest_degree_completed
-  + summary with quantitative and categorical variable = bar graph
-
-##### Bar Graph of Parents Education and whether or not they've taken a parenting class
-```{r}
-# join the parent education and parent english fluency tables 
-parent_edu_eng <- left_join(parent_education, parent_english_fluency, by = c("par_id", "child_id", "wave"))
-
-#this plot didn't quite work because the labels were squished
-
-#g <- ggplot(parent_edu_eng, aes(highest_degree_completed))
-#g + geom_bar(aes(fill = parenting_class_taken))
-
-#plotting parents education with the number who have taken a parenting class
-ggplot(parent_edu_eng, aes(y = highest_degree_completed)) +
- geom_bar(aes(fill = parenting_class_taken), position = position_stack(reverse = TRUE)) +
- theme(legend.position = "top")
-```
-This graph is interesting because it shows that the majority of parents in every education category have taken a parenting class, hence suggesting that education may be independent of the status of whether a parent has taken an education class.
-
-##### Bar Graph showing Education level of English Comprehension in Parents
-```{r}
-#parent_edu_eng %>% 
-#  glimpse()
-
-ggplot(parent_edu_eng) +       # reference to data
-  geom_bar(                 # geometry - a shape
-    aes(x = understanding_english,   # aesthetics - x, y, and color values
-        fill = highest_degree_completed)   
-  )
-```
-
-No surprises here, the parents who understood English very well were also the parents who had more education than other categories. Although there are many NA responses in terms of education for the parents who understood English very well, this may suggest that english speakers were more self conscious of reporting their education achievement.
-
-##### Bar Graph of English Level and Whether a Parent has taken a Parenting Class
-```{r}
-#violin plots show ddensity
-ggplot(parent_edu_eng,
-       aes(x = parenting_class_taken,
-           y = english_level))  +
-  geom_violin()
-```
-
-
-This is an interesting visualization, it seems to suggest that parents who had lower levels of english were also less likely to have taken a parenting class, as the neck of the false violin plot is thicker than that of the true violin plot. Additionally, the NA plot is somewhat constant across all levels of english suggesting that it wasn't english proficiency that dictated whether a parent took a parenting class.
-
-##### Bar Graph of highest parent education, parent child language and media use
-```{r}
-edu_demo <- full_join(parent_education, parent_demographic, by = c("par_id", "child_id"))
-
-edu_demo_media <- full_join(edu_demo, media_tech_cleaned, by = c("par_id", "child_id"))
-
-#edu_demo_media %>% 
-#  glimpse()
-
-#create vertical side-by-side boxplots
-ggplot(edu_demo_media, 
-       aes(x = daily_use, 
-           y = highest_degree_completed, 
-           fill=chi_par_lang)) +
-  geom_boxplot() +
-  ggtitle('Child Daily Media Use and Highest Degree Completed by Parents') 
-```
-
-```{r}
 valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
 valuable_dataset= inner_join(valuable_dataset, parent_demographic, by=c("child_id", "par_id"))  
 valuable_dataset  = inner_join(valuable_dataset, model_score, by=c("child_id", "par_id"))
@@ -1423,23 +1140,8 @@ valuable_dataset = inner_join(valuable_dataset, parent_english_fluency,
 # save data back to file
 
 ```{r}
-saveRDS(model_w2, file="../data/model_w2.dta")
-saveRDS(model_w6, file="../data/model_w6.dta")
+saveRDS(bitsea_w2, file="../data/model_w2.dta")
+saveRDS(bitsea_w6, file="../data/model_w6.dta")
 saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
 saveRDS(model_score, file="../data/scores_w1.dta")
 ```
-
-
----
-
-According to Dr. Reich's email here are some preliminary exploratory data analysis here are some relationships that may be of interest:
-
-* Are the English scores of the parent related to the standardized expressive or auditory comprehension scores?
-  + model_score
-  + parent_english_fluency
-  
-* are solo/passive/coop infant media measurements related to parent's education attainment?
-  + media_tech_cleaned
-  + parent_education
-  
----

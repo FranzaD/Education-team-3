@@ -9,7 +9,39 @@ library(janitor)
 ```
 
 ```{r}
-model_w2 <- readRDS(file="../data/model_w2.dta")
-model_w6 <- readRDS(file="../data/model_w6.dta")
+bitsea_w2 <- readRDS(file="../data/model_w2.dta")
+bitsea_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+pls_w1
+# load new data
+pls_w4 <- readRDS(file="../data/pls_w4.dta")
+pls_w6 <- readRDS(file="../data/pls_w6.dta")
+bitsea_w5 <- readRDS(file="../data/bitsea_w5.dta")
+
+
+
+pls_w1 <- clean_names(scores_w1)
+
+pls_w1 <-  scores_w1 %>% 
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+         father = pargen == 1,
+        language_26_pls_w1 = as.factor(case_when(
+          language_26_PLS_w1 == 0 ~ "english",
+          language_26_PLS_w1 == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "UMD",
+          site == 2 ~ "UCI"
+        )))
+```
+
+
+## Xy plots 
+```{r}
+#XY plot for PLS score 
+library(lattice)
+xyplot(total_score ~ wave.x, data = valuable_dataset,
+       group = child_id)
 ```
