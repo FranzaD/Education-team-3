@@ -172,3 +172,10 @@ model_full %>%
        y = "BITSEA average score")+
   facet_grid(~par_ethnicity)
 ```
+
+# join all pls
+```{r}
+PLS_all %>% <- full_join(PLS_w4, PLS_w6, by=c("par_id", "child_id"), suffix = c("_w4", "_w6")) %>% 
+  full_join(valuable_dataset, by=c("par_id", "child_id"), suffix = c("_w46", "_w1"))
+```
+

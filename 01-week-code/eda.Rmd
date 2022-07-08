@@ -1418,8 +1418,7 @@ valuable_dataset = inner_join(valuable_dataset, parent_english_fluency,
 # save data back to file
 # join all demograph
 ```{r}
-demographic_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
-demographic_dataset = inner_join(demographic_dataset, parent_demographic, by=c("child_id", "par_id"))  
+demographic_dataset = inner_join(parent_education, parent_demographic, by=c("child_id", "par_id"))  
 demographic_dataset = inner_join(demographic_dataset, public_assistance_w1, by=c("child_id", "par_id"))
 demographic_dataset = inner_join(demographic_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
 demographic_dataset = inner_join(demographic_dataset, income_w1, by=c("child_id", "par_id")) 
@@ -1442,6 +1441,8 @@ model_score <- model_score %>%
 saveRDS(model_w2, file="../data/BITSEA_wave_2.dta")
 saveRDS(model_w6, file="../data/BITSEA_wave_6.dta")
 saveRDS(model_score, file="../data/PLS_wave_1.dta")
+saveRDS(media_tech_cleaned, file="../data/media_wave_1.dta")
+
 saveRDS(demographic_dataset, file="../data/demographic_dataset.dta")
 
 # nick's

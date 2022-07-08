@@ -291,17 +291,69 @@ wave_5 <- wave_5 %>%
   select(-c(childid, parid))
 ```
 
-# save data back to file
+# Join all data base on PLS and BITSEA
+
+## Import data
 
 ```{r}
-saveRDS(PLS_w6, file="../data/PLS_w6.dta")
-saveRDS(PLS_w4, file="../data/PLS_w4.dta")
-saveRDS(wave_5, file="../data/wave_5.dta")
+BIT_w2 <- readRDS(file="../data/BITSEA_wave_2.dta")
+BIT_w6 <- readRDS(file="../data/BITSEA_wave_6.dta")
+PLS_w1 <- readRDS(file="../data/PLS_wave_1.dta")
+media_w1 <- readRDS(file="../data/PLS_wave_1.dta")
+demography <- readRDS(file="../data/demographic_dataset.dta")
+```
+
+## join them
+
+```{r}
+PLS_w4 <- PLS_w4 %>% 
+  mutate(wave = as.factor(4))
+PLS_w6 <- PLS_w6 %>% 
+  mutate(wave = as.factor(6))
+```
+
+#### clean demography
+```{r}
+demography <- demography %>% 
+  select(-matches(".*\\.(x|y)")) %>% 
+  glimpse()
+```
+### join PLS
+
+```{r}
+PLS_data <- full_join(PLS_w1,PLS_w4) %>%
+            full_join(PLS_w6) %>% 
+            select(-language, -father)
+```
+### join BITSEA
+
+```{r}
+BIT_data <- full_join(BIT_w2,BIT_w6) %>%
+            full_join(wave_5)
+```
+
+### join Media tech
+
+```{r}
+media_data <- media_w1
+```
+
+
+
+# save data back to file
+
+
+```{r}
+saveRDS(PLS_data, file="../data/PLS_data.dta")
+saveRDS(BIT_data, file="../data/BIT_data.dta")
+saveRDS(media_data, file="../data/media_data.dta")
+saveRDS(demography, file="../data/demography.dta")
 ```
 
 # load data back
 ```{r}
-PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
-PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
-wave_5 <- readRDS(file="../data/wave_5.dta")
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
 ```
