@@ -33,7 +33,7 @@ demography <- readRDS(file="../data/demography.dta")
 
 ## what does those data means?
 
-- **BITSEA**  include all **BITSEA** include ONLY BITSEA scores in all waves
-- **PLS**  include all **PLS**  include ONLY PLS scores in all waves
-- **Media**  include all **media info** without include ONLY media info in all waves **has only media from wave 1**
+- **BITSEA**  include ONLY **BITSEA** scores in all waves
+- **PLS**  include include ONLY **PLS** scores in all waves
+- **Media**  include include ONLY  **media info** media data in all waves **has only media from wave 1 for now**
 - **Demographic dataset** include ONLY demography (assuming that it doesn't change)
