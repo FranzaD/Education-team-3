@@ -13,6 +13,11 @@ library(ggcorrplot)
 model_w2 <- readRDS(file="../data/model_w2.dta")
 model_w6 <- readRDS(file="../data/model_w6.dta")
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+# load new data
+PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
+PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
+wave_5 <- readRDS(file="../data/wave_5.dta")
 ```
 
 # Deborah
@@ -271,7 +276,8 @@ social_problem_measures = inner_join(valuable_dataset, model_w2,
   inner_join(model_w6, by = c("child_id", "par_id")) %>%
   select(n_devices, tv_exposure, digital_babysitting, daily_use,
          parenting_class_taken, data_site, 
-         BITprobavg.x, BITprobavg.y, solo, passive, coop) %>% 
+         BITprobavg.x, BITprobavg.y, solo, passive, coop, 
+         educational_benefits, father.x, household_income_categorical) %>% 
   mutate(different = BITprobavg.y - BITprobavg.x)
 
 social_problem_measures %>% 
@@ -325,10 +331,42 @@ social_problem_measures %>%
   geom_point() + 
   geom_smooth()
 #passive use makes no difference between on the change in development of social problems
-count(social_problem_measures, different)
+social_problem_measures %>% 
+  ggplot(aes(x = educational_benefits,
+             y = different)) +
+  geom_point() + 
+  geom_smooth()
 
+count(valuable_dataset, highest_degree_earned)
 ```
 
+
+```{r}
+#im gonna try and make graphs again
+
+social_problem_measures %>% 
+  ggplot(aes(x = BITprobavg.x)) +
+  geom_histogram()
+
+wa2 <- ggplot() +
+  geom_histogram(data= social_problem_measures, aes(x = BITprobavg.x), 
+                 col = "red", fill = "red")+
+  labs(x = "Social Problem Score",
+       y = "Count",
+       title = "Wave 2 BITSEA")
+wa6 <- ggplot() +
+  geom_histogram(data= social_problem_measures, aes(x = BITprobavg.y), 
+                 col = "blue", fill = "blue")+
+  labs(x = "Social Problem Score",
+       y = "Count",
+       title = "Wave 6 BITSEA")
+
+wa2 + wa6
+
+
+
+
+```
 
 
 ```{r}
@@ -338,60 +376,198 @@ social_competency_measures = inner_join(valuable_dataset, model_w2,
   inner_join(model_w6, by = c("child_id", "par_id")) %>%
   select(n_devices, tv_exposure, digital_babysitting, daily_use,
          parenting_class_taken, data_site, 
-         BITcompavg.x, BITcompavg.y, solo, passive, coop) %>% 
+         BITcompavg.x, BITcompavg.y, solo, passive, coop, 
+         educational_benefits, father.x, par_ethnicity) %>% 
   mutate(different = BITcompavg.y - BITcompavg.x)
 
 social_competency_measures %>% 
   ggplot(aes(x = data_site,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_boxplot()
 #No difference between the spread of data on both site,
 
 social_competency_measures %>% 
   ggplot(aes(x = n_devices,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_point() +
   geom_smooth()
 #the number of devices makes no difference between on the change in development of social competency
 
 social_competency_measures %>% 
   ggplot(aes(x = tv_exposure,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_point() + 
   geom_smooth()
 #tv exposure makes no difference between on the change in development of social competency
 
 social_competency_measures %>% 
   ggplot(aes(x = digital_babysitting,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_point() + 
   geom_smooth()
 #digital babysitting makes no difference between on the change in development of social competency
 
 social_competency_measures %>% 
   ggplot(aes(x = daily_use,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_point() + 
   geom_smooth()
 #daily use makes no difference between on the change in development of social competency
 social_competency_measures %>% 
   ggplot(aes(x = solo,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_point() + 
   geom_smooth()
 #solo use makes no difference between on the change in development of social competency
 social_competency_measures %>% 
   ggplot(aes(x = coop,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
   geom_point() + 
   geom_smooth()
 #coop use makes no difference between on the change in development of social competency
 social_competency_measures %>% 
   ggplot(aes(x = passive,
-             y = different)) +
+             y = different,
+             fill = father.x)) +
+  geom_point() + 
+  geom_smooth()
+
+social_competency_measures %>% 
+  ggplot(aes(x = educational_benefits,
+             y = different,
+             fill = par_ethnicity)) +
   geom_point() + 
   geom_smooth()
 #passive use makes no difference between on the change in development of social competency
+```
+
+```{r}
+install.packages("patchwork")
+library(patchwork)
+social_competency_measures %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different,
+             fill = father.x)) +
+  geom_point() + 
+  geom_smooth() +
+  labs(x = "Media Babysitting",
+       y = "Development of Social Competency",
+       title = "Does Increased Media Babysitting Impact Social Competency?")
+
+
+social_competency_measures %>% 
+  filter(father.x == FALSE) %>% 
+  ggplot(aes(x = digital_babysitting,
+             y = different)) +
+  geom_point() + 
+  geom_smooth() +
+  labs(x = "Media Babysitting",
+       y = "Development of Social Competency",
+       title = "Does Increased Media Babysitting Impact Social Competency?")
+
+comp <- social_competency_measures %>% 
+  mutate(parent_gender = as.character(case_when(
+    father.x == TRUE ~ "Father",
+    father.x == FALSE ~ "Mother"
+  ))) %>%
+  ggplot(aes(x = daily_use,
+             y = different,
+             fill = parent_gender,
+             shape = parent_gender)) +
+  geom_point() +
+  geom_smooth() +
+  labs(x = "Media Involvement",
+       y = "Social Competency",
+       title = "Does Increased media usage Impact Social Competency?") +
+  guides(col = guide_legend("Father")) +
+theme_classic()
+
+prob <- social_problem_measures %>% 
+  mutate(parent_gender = as.character(case_when(
+    father.x == TRUE ~ "Father",
+    father.x == FALSE ~ "Mother"
+  ))) %>%
+  ggplot(aes(x = daily_use,
+             y = different,
+             fill = parent_gender,
+             shape = parent_gender)) +
+  geom_point() +
+  geom_smooth() +
+  labs(x = "Media Involvement",
+       y = "Social Problems",
+       title = "Does Increased media usage Impact Social Problems?") +
+  guides(col = guide_legend("Father")) +
+  theme_classic() 
+
+prob / comp
+
+valuable_dataset %>% 
+  filter(par_ethnicity %in% c("African American", "Asian/Asian American", 
+                              "Hispanic/Latino", "Multiracial", "White", 
+                              "Other") ) %>% 
+  ggplot(aes(x = par_ethnicity,
+             y = household_income_numerical,
+             fill = par_ethnicity)) +
+  geom_boxplot() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.grid = element_blank()) +
+  guides(fill=guide_legend(title="Parent Ethnicity")) +
+  labs(y = "Household Income",
+       title = "Ethnicity and Income",
+       caption = "The average household income with this dataset is 39,652") +
+geom_line(y = 39652)
+
+valuable_dataset %>% 
+  filter(par_ethnicity == "Middle Eastern") %>% 
+  nrow()
+  summarise(mean(household_income_numerical, na.rm = TRUE))
+  
+social_problem_measures %>% 
+  filter(father.x == FALSE) %>% 
+summarise(mean(daily_use, na.rm = TRUE))
+  ggplot(aes(x = daily_use,
+         y = different,
+         shape = father.x)) +
+  geom_point()
+```
+
+
+```{r}
+#this graph is pretty useless
+social_problem_measures %>% 
+  ggplot(aes(x = daily_use,
+             y = different,
+             color = household_income_categorical))+
+           geom_point() +
+           geom_smooth(formula = y ~x, se = FALSE) +
+           labs(x = "Media Involvement",
+       y = "Social Problems",
+       title = "Does Increased media usage Impact Social Problems?") +
+         guides(col = guide_legend("Income")) +
+         theme_classic()
+
+valuable_dataset %>% 
+  filter(par_ethnicity %in% c("African American", "Asian/Asian American", 
+                              "Hispanic/Latino", "Multiracial", "White")) %>% 
+  ggplot(aes(x = par_ethnicity,
+             fill = par_ethnicity)) +
+  geom_bar()+
+  labs(x = "Parent Ethnicity",
+       title = "Spread of Ethnicity for the study") +
+         guides(col = guide_legend("Parent Ethnicity")) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.grid = element_blank()) 
 ```
 
 

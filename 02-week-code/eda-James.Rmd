@@ -28,7 +28,6 @@ valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
   * w2: BITcomp_cut, BITprob_cut
   * w6: BITcomp_cut, BITprob_cut
 
-## For loop
 
 ```{r}
 w1_num <- list("n_devices" , "tv_exposure" , "solo" , "passive" , "coop" , "mealtimes" , "behavior_management" , "positive_beliefs_media" , "educational_benefits" , "digital_babysitting" , "daily_use" , "auditory_comprehension_score" , "expressive_communication_score" , "total_score" , "household_income_numerical")
@@ -39,13 +38,14 @@ w1_cat <- list("degree_cert_in_prog" , "parenting_class_taken" , "highest_degree
 w2_cat <- list("BITcomp_cut_w2" , "BITprob_cut_w2")
 w6_cat <- list("BITcomp_cut_w6" , "BITprob_cut_w6")
 ```
-#### Merge all three datasets
+## Merge all three datasets
 
 ```{r}
 model_full <- full_join(model_w6, model_w2, by=c("par_id", "child_id"), suffix = c("_w6", "_w2")) %>% 
   full_join(valuable_dataset, by=c("par_id", "child_id"), suffix = c("_w62", "_w1"))
 ```
 
+## For loop
 
 #### numeric for w2 and w6
 
@@ -105,5 +105,70 @@ for (i in 1:length(w2_num)) {
 
 ```
 
-#### something
 
+## daily use vs BITSEA - government assistance
+
+```{r}
+model_full %>%
+  mutate(BITprobavg = BITprobavg_w6 - BITprobavg_w2) %>% 
+  ggplot(aes(daily_use,
+             BITprobavg,
+             color = `assistance`)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Daily Media Usage vs BITSEA",
+       x = "Daily use average score",
+       y = "BITSEA average score")
+  
+```
+
+with mutated
+```{r}
+model_full %>%
+  mutate(BITprobavg = BITprobavg_w6 - BITprobavg_w2) %>% 
+  mutate(assistance = as.integer(assistance)) %>% 
+  mutate(`assistance range` = case_when(
+    assistance <= 2 ~ "assistance <= 2",
+    assistance <= 4 ~ "assistance <= 4",
+    assistance <= 6 ~ "assistance <= 6",
+    assistance <= 8 ~ "assistance <= 8")) %>%
+  ggplot(aes(daily_use,
+             BITprobavg,
+             color = `assistance range`)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Daily Media Usage vs BITSEA by government assistance and parent gender",
+       x = "Daily use average score",
+       y = "BITSEA average score")+
+  facet_grid(~father.x.x)
+```
+
+## daily use vs BIT - highest degree completed
+
+```{r}
+model_full %>%
+  mutate(BITprobavg = BITprobavg_w6 - BITprobavg_w2) %>% 
+  ggplot(aes(daily_use,
+             BITprobavg,
+             color = par_ethnicity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Daily Media Usage vs BITSEA by ethnicity and parent gender",
+       x = "Daily use average score",
+       y = "BITSEA average score")+
+  facet_grid(~father.x.x)
+```
+
+```{r}
+model_full %>%
+  mutate(BITprobavg = BITprobavg_w6 - BITprobavg_w2) %>% 
+  ggplot(aes(daily_use,
+             BITprobavg,
+             color = father.x.x)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Daily Media Usage vs BITSEA by ethnicity and parent gender",
+       x = "Daily use average score",
+       y = "BITSEA average score")+
+  facet_grid(~par_ethnicity)
+```
