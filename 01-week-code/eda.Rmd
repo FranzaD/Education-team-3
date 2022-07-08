@@ -629,18 +629,7 @@ model_w6 <- model_w6 %>%
 glimpse(model_w6)
 ```
 
-```{r}
-valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
-valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
 
-valuable_dataset %>% 
-         ggplot(aes(x = positive_beliefs_media,
-             y = household_income_numerical,
-             fill = parenting_class_taken)) +
-  geom_boxplot()
-
-
-```
 
 # Deborah's code
 ```{r}
@@ -729,6 +718,19 @@ parent_education <- parent_education %>%
          us_education,
          education_location) %>% 
   glimpse()
+```
+
+```{r}
+valuable_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+valuable_dataset = inner_join(valuable_dataset, income_w1, by=c("child_id", "par_id"))
+
+valuable_dataset %>% 
+         ggplot(aes(x = positive_beliefs_media,
+             y = household_income_numerical,
+             fill = parenting_class_taken)) +
+  geom_boxplot()
+
+
 ```
 ```{r}
 parent_education$highest_degree_completed %>% 
@@ -1424,6 +1426,7 @@ valuable_dataset = inner_join(valuable_dataset, parent_english_fluency,
 saveRDS(model_w2, file="../data/model_w2.dta")
 saveRDS(model_w6, file="../data/model_w6.dta")
 saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
+saveRDS(model_score, file="../data/scores_w1.dta")
 ```
 
 
