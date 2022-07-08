@@ -1295,18 +1295,18 @@ valuable_dataset %>%
   geom_point()
 
 #q8: do you limit how much time the children use 
-valuable_dataset %>% 
-  ggplot(aes(x =  positive_beliefs_media,
-             y = highest_degree_completed,
-             fill = parenting_class_taken)) +
-  geom_boxplot() + 
-
-
-valuable_dataset %>% 
-  ggplot(aes(y = household_income_numerical,
-             x = highest_degree_completed,
-             fill = highest_degree_completed)) +
-  geom_boxplot()
+# valuable_dataset %>% 
+#   ggplot(aes(x =  positive_beliefs_media,
+#              y = highest_degree_completed,
+#              fill = parenting_class_taken)) +
+#   geom_boxplot() + 
+# 
+# 
+# valuable_dataset %>% 
+#   ggplot(aes(y = household_income_numerical,
+#              x = highest_degree_completed,
+#              fill = highest_degree_completed)) +
+#   geom_boxplot()
 
 valuable_dataset %>% 
   ggplot(aes(x = positive_beliefs_media,
@@ -1416,12 +1416,36 @@ valuable_dataset = inner_join(valuable_dataset, parent_english_fluency,
 ```
 
 # save data back to file
+# join all demograph
+```{r}
+demographic_dataset = inner_join(media_tech_cleaned, parent_education, by=c("child_id", "par_id")) 
+demographic_dataset = inner_join(demographic_dataset, parent_demographic, by=c("child_id", "par_id"))  
+demographic_dataset = inner_join(demographic_dataset, public_assistance_w1, by=c("child_id", "par_id"))
+demographic_dataset = inner_join(demographic_dataset, access_to_childcare_w1, by=c("child_id", "par_id")) 
+demographic_dataset = inner_join(demographic_dataset, income_w1, by=c("child_id", "par_id")) 
+demographic_dataset = inner_join(demographic_dataset, parent_english_fluency, 
+                              by = c("child_id", "par_id"))
+```
+
+
+## add wave column
+```{r}
+model_score <- model_score %>% 
+  mutate(wave = as.factor(1))
+```
+
+
+## save data
 
 ```{r}
-saveRDS(model_w2, file="../data/model_w2.dta")
-saveRDS(model_w6, file="../data/model_w6.dta")
+# main dataset James'
+saveRDS(model_w2, file="../data/BITSEA_wave_2.dta")
+saveRDS(model_w6, file="../data/BITSEA_wave_6.dta")
+saveRDS(model_score, file="../data/PLS_wave_1.dta")
+saveRDS(demographic_dataset, file="../data/demographic_dataset.dta")
+
+# nick's
 saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
-saveRDS(model_score, file="../data/scores_w1.dta")
 ```
 
 
