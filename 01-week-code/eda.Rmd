@@ -27,7 +27,7 @@ wave_2 <- read_dta("../data/wave-2-(12-mo)/31_BIT_w2.dta")
 #wave_2_codebook <- read_excel("../data/wave-2-(12-mo)/BB2_w2_codebook.xls.xlsx")
 
 wave_6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6_BIT.dta")
-#wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSE_codebook.xls.xlsx")
+wave_6_codebook <- read_excel("../data/wave-6-(24-mo)/BB2_w6_BITSEA_codebook.xls.xlsx")
 ```
 
 # background
@@ -182,6 +182,11 @@ income_w1 <- income_w1 %>%
 ```
 
 # media technology
+
+```{r}
+glimpse(media_tech)
+
+```
 
 ```{r}
 media_tech_cleaned <- media_tech %>%
@@ -1140,4 +1145,3 @@ saveRDS(model_w6, file="../data/model_w6.dta")
 saveRDS(valuable_dataset, file="../data/valuable_dataset.dta")
 saveRDS(model_score, file="../data/scores_w1.dta")
 ```
-
