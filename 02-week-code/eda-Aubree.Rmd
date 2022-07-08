@@ -40,8 +40,14 @@ pls_w1 <-  scores_w1 %>%
 
 ## Xy plots 
 ```{r}
+# combine all pls data 
+pls_data <- full_join(pls_w1, pls_w4, group_by = c("child_id", "par_id"))
+pls_data <- full_join(pls_data, pls_w6, group_by = c("child_id", "par_id"))
+
 #XY plot for PLS score 
-library(lattice)
-xyplot(total_score ~ wave.x, data = valuable_dataset,
-       group = child_id)
+pls_data %>% 
+  ggplot() + 
+  aes( x = wave, y = total_score, group = child_id) + 
+  geom_point() + 
+  geom_line()
 ```
