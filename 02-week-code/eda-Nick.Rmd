@@ -1,0 +1,59 @@
+
+
+```{r}
+readxl::read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+
+pls_w2 <- readxl::read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+
+```
+
+
+```{r}
+model_score %>% 
+  ggplot(aes(x = total_score)) +
+  geom_histogram(bins = 40,
+                 fill = "pink",
+                 color = "black") +
+  labs(x = "Total Score",
+       y = "Count",
+       title = "Wave 2 Infant Language Scores")+
+  xlim(50, 200) +
+  theme_bw()
+  
+
+PLS_w4 %>% 
+  filter(auditory_comprehension_score > 0) %>% 
+  ggplot(aes(x = total_score)) +
+  geom_histogram(bins = 40,
+                 fill = "gold",
+                 color = "black")+
+  labs(x = "Total Score",
+       y = "Count",
+       title = "Wave 4Infant Language Scores")+
+  xlim(50, 200) +
+  theme_bw()
+
+ PLS_w6 %>% 
+    filter(auditory_comprehension_score > 0) %>% 
+  ggplot(aes(x = total_score)) +
+  geom_histogram(bins = 40,
+                 color = "black",
+                 fill = "light blue")+
+  labs(x = "Total Score",
+       y = "Count",
+       title = "Wave 6 Infant Language Scores")+
+  xlim(50, 200) +
+  theme_bw()
+ 
+ full_join(PLS_w6, PLS_w4) %>%
+   ggplot(aes(x = total_score,
+              fill = wave)) +
+   geom_boxplot()
+   
+
+
+
+
+
+```
+
