@@ -336,8 +336,7 @@ BIT_data <- full_join(BIT_w2,BIT_w6) %>%
 ### join Media tech
 ```{r}
 media_w1 %>% 
-  glimpse()
-  select(-matches(".*\\.(x|y)")) %>% 
+  select(-matches(".*\\.(x|y)"))
 ```
 
 
@@ -346,6 +345,7 @@ media_data <- media_w1
 
 media_data <- media_data %>% 
   select(-matches("^q\\d.*"))
+
 glimpse(media_data)
 ```
 
