@@ -370,7 +370,7 @@ demography <- readRDS(file="../data/demography.dta")
 
 # Convert data to long type
 
-## BITSEA to long DOES NOT WORK
+## BITSEA to long DOES NOT WORK because of duplicate child_id
 
 ```{r}
 BIT_long <- BIT_data %>% 
@@ -476,4 +476,3 @@ PLS_long_exComm <- reshape(PLS_tmp,
 ```
 
 
-# longitudinal analysis
