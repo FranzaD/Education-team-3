@@ -1,0 +1,32 @@
+---
+title: "Clean wave 6 media data"
+author: "Chandra Lindy"
+date: '2022-06-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+mt_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6-MT.dta")
+
+mt_w6_cleaned <- mt_w6 %>% 
+  select(n_devices = MTndevices,
+         tv_exposure = MTtvexposure,
+         solo = MTsolomedia,
+         passive = MTpassive,
+         coop = MTcouse,
+         mealtimes = MTmealtimes,
+         discipline_behavior_management = MTdcbhv1,
+         behavior_management = MTdcbhv2,
+         positive_beliefs_media = MTbeliefs,
+         educational_benefits = MTeduc,
+         digital_babysitting = MTbabysit,
+         daily_use = MTdailyuse)
+
+saveRDS(mt_w6_cleaned, file = "../data/media_wave_6.dta")
+```
+
