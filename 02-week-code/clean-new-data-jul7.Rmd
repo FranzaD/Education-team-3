@@ -393,8 +393,31 @@ BIT_long <- filter(BIT_long,wave == 2) %>%
 
 BIT_long <- BIT_long %>%
   select(par_id, child_id, everything())
+```
+
+#### BITSEA for FATHER/mother and avg scores only
+```{r}
+BIT_long_father <- BIT_long %>% 
+  filter(par_id >= 30000) %>% 
+  select(matches(".+_id$"), matches(".+avg.+"))
+
+BIT_long_mother <- BIT_long %>% 
+  filter(par_id < 30000) %>% 
+  select(matches(".+_id$"), matches(".+avg.+"))
+```
+
+#### BITSEA for avg of parents and avg scores only
+```{r}
+temp <- BIT_long %>%
+  select(matches(".+_id$"), matches(".+avg.+")) %>% 
+  group_by(child_id) %>% 
+  summarize_if(is.numeric, mean, na.rm = TRUE)
+
+```
 
 
+
+```{r}
 tmp <- BIT_long %>% 
   select(child_id, matches(".*BITprobavg.*")) %>% 
   reshape(idvar = "child_id",
