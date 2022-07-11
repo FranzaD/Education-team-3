@@ -39,6 +39,7 @@ BIT_data <- readRDS(file="../data/BIT_data.dta")
 
 
 ```{r}
+glimpse(BIT_data)
 bruh <- full_join(media_w6, BIT_data, by = c("child_id", "par_id")) %>% 
 plot(bruh$daily_use, bruh$BITprobavg, main = "Social Problem Score versus media involvment",
 xlab = "Media involvment", ylab = "Social Problem score")
