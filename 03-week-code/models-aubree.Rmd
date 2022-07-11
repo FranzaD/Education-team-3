@@ -1,0 +1,191 @@
+---
+title: "models-aubree"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(ggcorrplot)
+```
+
+
+
+```{r}
+## Run to get all data
+
+bitsea_w2 <- readRDS(file="../data/model_w2.dta")
+bitsea_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+
+pls_w1 <- readRDS(file="../data/PLS_wave_1.dta")
+pls_w4 <- readRDS(file="../data/PLS_w4.dta")
+pls_w6 <- readRDS(file="../data/PLS_w6.dta")
+
+bitsea_w2 <- readRDS(file="../data/BITSEA_wave_2.dta")
+bitsea_w5 <- readRDS(file="../data/bitsea_w5.dta")
+bitsea_w6 <- readRDS(file="../data/BITSEA_wave_6.dta")
+
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+pls_long <- readRDS(file="../data/PLS_long.dta")
+demography <- readRDS(file="../data/demography.dta")
+bitsea_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+
+```
+
+
+```{r}
+library(leaps)
+
+pls_and_media <- full_join(media_data, pls_long, by = c("par_id", "child_id"))
+head(pls_and_media)
+
+pls_and_media <- 
+  pls_and_media %>% 
+  mutate(total_score = as.integer(total_score),
+         id = as.character(id),
+         auditory_comprehension_score = as.integer(auditory_comprehension_score),
+         daily_use = as.integer(daily_use),
+         educational_benefits = as.integer(educational_benefits),
+         positive_beliefs_media = as.integer(positive_beliefs_media),
+         ) %>% 
+  filter(total_score != -666,
+         total_score != -777,
+         total_score != -888,
+         total_score != -999)
+
+#income_variable <- select(valuable_dataset, c("household_income_numerical", "par_id", "child_id"))
+#pls_and_media <- full_join(pls_and_media, income_variable, by = c("child_id", "par_id"))
+
+pls_and_media <- select(pls_and_media, -c("expressive_communication_score", "child_id", "par_id","id"))
+
+#pls_and_media <- 
+#na.omit(pls_and_media$household_income_numerical)
+
+glimpse(pls_and_media)
+
+
+
+
+sapply(lapply(pls_and_media, unique), length)
+
+regfit.full = regsubsets(total_score ~., pls_and_media, method = "forward") 
+reg.summary = summary(regfit.full)
+names(reg.summary)
+
+
+par(mfrow = c(2,2))
+plot(reg.summary$rss, xlab = "Models", 
+     ylab = "RSS", type= "l")
+which.min(reg.summary$rss)
+points(9, reg.summary$rss[9], col="red",cex=2 ,pch =20)
+
+
+plot( reg.summary$adjr2, xlab = "Models", 
+      ylab = "Adjusted RSQ", type= "l")
+
+which.max(reg.summary$adjr2)
+points(8, reg.summary$adjr2[8], col="red",cex=2 ,pch =20)
+
+plot(reg.summary$cp, xlab= "Models", ylab= "CP"
+     , type = 'l')
+which.min(reg.summary$cp)
+points(8, reg.summary$cp[8], col="red", cex=2, pch =20)
+
+
+
+plot(reg.summary$bic, xlab= "Models", ylab= "BIC"
+     , type = 'l')
+which.min(reg.summary$bic)
+points(8, reg.summary$bic[8], col="red", cex=2, pch =20)
+
+coef(regfit.full, 8)
+
+
+train = sample(c(TRUE,FALSE), nrow(pls_and_media), rep =TRUE)
+test= (!train)
+regfit.best=regsubsets(total_score~., data = pls_and_media[train,])
+test.mat=model.matrix(total_score~ ., data = pls_and_media[test,])
+val.errors= rep(NA, 9)
+for(i in 1:9){
+  coefi=coef(regfit.best, id=i)
+  pred =test.mat[, names(coefi)]%*%coefi
+  val.errors[i]= mean((pls_and_media$total_score[test]-pred)^2)
+}
+
+## dimensions are not the same... cant figure out how to fix. 
+
+
+head(pls_and_media$total_score[test])
+coefi=coef(regfit.best, id=i)
+  pred =test.mat[, names(coefi)]%*%coefi
+dim(pred)
+
+log(val.errors)
+which.min(val.errors)
+```
+
+```{r}
+library(leaps)
+regfit.full =regsubsets(PRICE ~., Fullerton.1)
+summary(regfit.full)
+reg.summary = summary(regfit.full)
+names(reg.summary)
+
+reg.summary$rsq
+par(mfrow = c(2,2))
+#par(mfrow= c(1,1))
+mtext("Results from Eight Models in Regsubsets", side = 3, line = -2, 
+      cex= 2, font =2, outer = TRUE)
+plot(reg.summary$rss, xlab = "Models", 
+     ylab = "RSS", type= "l")
+which.min(reg.summary$rss)
+points(8, reg.summary$rss[8], col="red",cex=2 ,pch =20)
+plot( reg.summary$adjr2, xlab = "Models", 
+      ylab = "Adjusted RSQ", type= "l")
+
+which.max(reg.summary$adjr2)
+points(3, reg.summary$adjr2[3], col="red",cex=2 ,pch =20)
+
+plot(reg.summary$cp, xlab= "Models", ylab= "CP"
+     , type = 'l')
+which.min(reg.summary$cp)
+points(3, reg.summary$cp[3], col="red", cex=2, pch =20)
+which.min(reg.summary$bic)
+plot(reg.summary$bic, xlab= "Models", ylab= "BIC"
+     , type = 'l')
+points(2, reg.summary$bic[2], col="red", cex=2, pch =20)
+
+##notice 2/3 tests said 3 was best model 1/3 said model 2
+
+coef(regfit.full, 5)
+coef(regfit.full, 3)
+
+## CROSS VALIDATION
+
+train = sample(c(TRUE,FALSE), nrow(Fullerton.1), rep =TRUE)
+test= (!train)
+regfit.best=regsubsets(PRICE~., data = Fullerton.1[train,])
+test.mat=model.matrix(PRICE~ ., data = Fullerton.1[test,])
+val.errors= rep(NA, 8)
+for(i in 1:8){
+  coefi=coef(regfit.best, id=i)
+  pred =test.mat[, names(coefi)]%*%coefi
+  val.errors[i]= mean((Fullerton.1$PRICE[test]-pred)^2)
+}
+
+log(val.errors)
+which.min(val.errors)
+coef(regfit.best, 3)
+coef(regfit.best, 8)
+```
+
