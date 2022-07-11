@@ -25,7 +25,9 @@ mt_w6_cleaned <- mt_w6 %>%
          positive_beliefs_media = MTbeliefs,
          educational_benefits = MTeduc,
          digital_babysitting = MTbabysit,
-         daily_use = MTdailyuse)
+         daily_use = MTdailyuse,
+         child_id = childid,
+         par_id = parid)
 
 saveRDS(mt_w6_cleaned, file = "../data/media_wave_6.dta")
 ```
