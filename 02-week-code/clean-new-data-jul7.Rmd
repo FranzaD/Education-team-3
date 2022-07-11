@@ -299,7 +299,7 @@ wave_5 <- wave_5 %>%
 BIT_w2 <- readRDS(file="../data/BITSEA_wave_2.dta")
 BIT_w6 <- readRDS(file="../data/BITSEA_wave_6.dta")
 PLS_w1 <- readRDS(file="../data/PLS_wave_1.dta")
-media_w1 <- readRDS(file="../data/PLS_wave_1.dta")
+media_w1 <- readRDS(file="../data/media_wave_1.dta")
 demography <- readRDS(file="../data/demographic_dataset.dta")
 ```
 
@@ -329,15 +329,25 @@ PLS_data <- full_join(PLS_w1,PLS_w4) %>%
 
 ```{r}
 BIT_data <- full_join(BIT_w2,BIT_w6) %>%
-            full_join(wave_5)
+            full_join(wave_5) %>% 
+            select(-matches("^bit\\d"), -c("svdt","version","language"))
 ```
 
 ### join Media tech
+```{r}
+media_w1 %>% 
+  select(-matches(".*\\.(x|y)"))
+```
+
 
 ```{r}
 media_data <- media_w1
-```
 
+media_data <- media_data %>% 
+  select(-matches("^q\\d.*"))
+
+glimpse(media_data)
+```
 
 
 # save data back to file
@@ -357,3 +367,112 @@ BIT_data <- readRDS(file="../data/BIT_data.dta")
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
 ```
+
+# Convert data to long type
+
+## BITSEA to long DOES NOT WORK because of duplicate child_id
+
+```{r}
+BIT_long <- BIT_data %>% 
+  select(-c(svdt_31_BIT_w2,language_31_BIT_w2,BITcompnic,BITprobnic,site,wave5_bit_notes))
+
+
+tmp <- filter(BIT_long, wave == 6) %>%
+  select(-c(wave,pargen)) %>% 
+  rename_at(vars(-par_id, -child_id), ~ paste0(., '.3'))
+
+BIT_long <- filter(BIT_long,wave == 2) %>% 
+        full_join(
+            filter(BIT_long, wave == 5),
+            by=c("par_id", "child_id"),
+            suffix = c(".1", ".2")) %>% 
+        select(-matches("(wave|pargen).*")) %>% 
+        full_join(tmp, 
+            by=c("par_id", "child_id"), 
+            suffix = c(".error", ".error"))
+
+BIT_long <- BIT_long %>%
+  select(par_id, child_id, everything())
+
+
+tmp <- BIT_long %>% 
+  select(child_id, matches(".*BITprobavg.*")) %>% 
+  reshape(idvar = "child_id",
+          varying = list(2:4),
+          direction = "long")
+
+BIT_long <- reshape(BIT_long, varying=c("BITcompts" , "BITcompavg","BITprobts" , "BITprobavg"), 
+               idvar="child_id", direction="long", v.names = c("f", "u",))
+```
+```{r}
+hsb2 <- read.table('https://stats.idre.ucla.edu/stat/r/faq/hsb2.csv', header=T, sep=",") %>% 
+  mutate(write = as.double(write)*1.1,
+         id = as.character(id))
+
+tmp <- reshape(hsb2, 
+  varying = c("read", "write", "math", "science", "socst"), 
+  v.names = "score",
+  timevar = "subj", 
+  direction = "long")
+```
+
+
+
+## PLS to long data
+
+```{r}
+PLS_tmp <- PLS_data
+
+tmp <- filter(PLS_tmp, wave == 6) %>%
+  select(-c(wave)) %>% 
+  rename_at(vars(-par_id, -child_id), ~ paste0(., '.6'))
+
+PLS_tmp <- filter(PLS_tmp,wave == 1) %>% 
+        full_join(
+            filter(PLS_tmp, wave == 4),
+            by=c("par_id", "child_id"),
+            suffix = c(".1", ".4")) %>% 
+        select(-matches("(wave).*")) %>% 
+        full_join(tmp, 
+            by=c("par_id", "child_id"), 
+            suffix = c(".error", ".error"))
+
+PLS_tmp <- as.data.frame(PLS_tmp) %>% 
+  filter(par_id < 30000)
+```
+
+### by total score
+
+```{r}
+PLS_long_total <- reshape(PLS_tmp,
+  varying = c("total_score.1", "total_score.4", "total_score.6"), 
+  v.names = "total_score",
+  timevar = "wave",
+  times = c("1","4","6"),
+  direction = "long")
+```
+
+### by auditory_comprehension_score
+
+```{r}
+PLS_long_auComp <- reshape(PLS_tmp,
+  varying = c("auditory_comprehension_score.1", "auditory_comprehension_score.4", "auditory_comprehension_score.6"),
+  v.names = "auditory_comprehension_score",
+  timevar = "wave",
+  times = c("1","4","6"),
+  direction = "long")
+
+```
+
+### by expressive_communication_score
+
+```{r}
+PLS_long_exComm <- reshape(PLS_tmp,
+  varying = c("expressive_communication_score.1", "expressive_communication_score.4", "expressive_communication_score.6"),
+  v.names = "expressive_communication_score",
+  timevar = "wave",
+  times = c("1","4","6"),
+  direction = "long")
+```
+
+
