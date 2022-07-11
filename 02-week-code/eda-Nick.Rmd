@@ -14,6 +14,13 @@ library(dplyr)
 library(janitor)
 ```
 
+```{r}
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+glimpse(BIT_data)
+```
 
 ```{r include=FALSE}
 bitsea_w2 <- readRDS(file="../data/model_w2.dta")
@@ -177,4 +184,11 @@ parent gender, parent education, ethnicity etc.
 
 
 After watching the three videos I think I understand how our model is going to work but I still need to hash out the details. In theory though, what we are going to do is build an unconditional means model in order to have a baseline, or more specifically look at the data without any of our predictors (if I were to guess, we will be building many different models as we would like to see not just media as a predictor but also as a response. )
+
+```{r}
+
+```
+
+
+
 
