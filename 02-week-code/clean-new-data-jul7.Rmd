@@ -379,13 +379,13 @@ BIT_long <- BIT_data %>%
 
 tmp <- filter(BIT_long, wave == 6) %>%
   select(-c(wave,pargen)) %>% 
-  rename_at(vars(-par_id, -child_id), ~ paste0(., '.3'))
+  rename_at(vars(-par_id, -child_id), ~ paste0(., '.6'))
 
 BIT_long <- filter(BIT_long,wave == 2) %>% 
         full_join(
             filter(BIT_long, wave == 5),
             by=c("par_id", "child_id"),
-            suffix = c(".1", ".2")) %>% 
+            suffix = c(".2", ".5")) %>% 
         select(-matches("(wave|pargen).*")) %>% 
         full_join(tmp, 
             by=c("par_id", "child_id"), 
@@ -406,40 +406,31 @@ BIT_long_mother <- BIT_long %>%
   select(matches(".+_id$"), matches(".+avg.+"))
 ```
 
+```{r}
+tmp_f <- function(df){
+  df <- as.data.frame(df) %>% 
+    reshape(varying = c("BITcompavg.2", "BITcompavg.5", "BITcompavg.6", "BITprobavg.2", "BITprobavg.5", "BITprobavg.6"),
+    v.names = c("BITcompavg","BITprobavg"),
+    timevar = "wave",
+    times = c("2","5","6"),
+    direction = "long")
+  return (df)
+}
+BIT_long_father <-  tmp_f(BIT_long_father)
+BIT_long_mother <-  tmp_f(BIT_long_mother)
+```
+
+
 #### BITSEA for avg of parents and avg scores only
 ```{r}
-temp <- BIT_long %>%
+BIT_long_par <- BIT_long %>%
   select(matches(".+_id$"), matches(".+avg.+")) %>% 
   group_by(child_id) %>% 
   summarize_if(is.numeric, mean, na.rm = TRUE)
-
-```
-
-
-
-```{r}
-tmp <- BIT_long %>% 
-  select(child_id, matches(".*BITprobavg.*")) %>% 
-  reshape(idvar = "child_id",
-          varying = list(2:4),
-          direction = "long")
-
-BIT_long <- reshape(BIT_long, varying=c("BITcompts" , "BITcompavg","BITprobts" , "BITprobavg"), 
-               idvar="child_id", direction="long", v.names = c("f", "u",))
 ```
 ```{r}
-hsb2 <- read.table('https://stats.idre.ucla.edu/stat/r/faq/hsb2.csv', header=T, sep=",") %>% 
-  mutate(write = as.double(write)*1.1,
-         id = as.character(id))
-
-tmp <- reshape(hsb2, 
-  varying = c("read", "write", "math", "science", "socst"), 
-  v.names = "score",
-  timevar = "subj", 
-  direction = "long")
+BIT_long_par <- tmp_f(BIT_long_par)
 ```
-
-
 
 ## PLS to long data
 
