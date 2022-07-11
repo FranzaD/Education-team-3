@@ -14,6 +14,13 @@ library(dplyr)
 library(janitor)
 ```
 
+```{r}
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+glimpse(BIT_data)
+```
 
 ```{r include=FALSE}
 bitsea_w2 <- readRDS(file="../data/model_w2.dta")
@@ -25,8 +32,40 @@ PLS_w1 <- readRDS(file = "../data/scores_w1.dta")
 PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
 PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
 bitsea_w5 <- readRDS(file="../data/wave_5.dta")
+media_w6 <- readRDS(file="../data/media_wave_6.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
 
 ```
+
+
+```{r}
+glimpse(BIT_data)
+bruh <- full_join(media_w6, BIT_data, by = c("child_id", "par_id")) %>% 
+plot(bruh$daily_use, bruh$BITprobavg, main = "Social Problem Score versus media involvment",
+xlab = "Media involvment", ylab = "Social Problem score")
+
+bruh %>% 
+ggplot(aes(x = daily_use,
+                        y = BITprobavg)) +
+         geom_point() +
+         geom_smooth(method = "lm") +
+  facet_wrap(~wave)
+```
+
+```{r}
+## Normal Quantile-Quantile Plot
+qqnorm(lm_mod$residuals)
+qqline(lm_mod$residuals, col = "dark green")
+```
+
+
+constant variance?
+```{r}
+std_resid <- rstandard(lm_mod) # standardized residuals
+plot(lm_mod$fitted.values, std_resid, ylim = c(-3.5, 3.5))
+abline(h=0)
+```
+
 
 My question is do we continue to use the children that drop out of the study as our first sample has 420 people but the last wave retained only 114 for PLS score
 
@@ -177,4 +216,96 @@ parent gender, parent education, ethnicity etc.
 
 
 After watching the three videos I think I understand how our model is going to work but I still need to hash out the details. In theory though, what we are going to do is build an unconditional means model in order to have a baseline, or more specifically look at the data without any of our predictors (if I were to guess, we will be building many different models as we would like to see not just media as a predictor but also as a response. )
+
+
+
+```{r}
+library(nlme)
+```
+
+```{r}
+data_mod1 <- full_join(PLS_data, media_data, by = c("child_id")) %>% 
+  mutate(score_change = )
+```
+
+```{r}
+mod1 <- lme(score_change ~ 1 | child_id, data = data_mod1, method = "ML")
+summary(mod1)
+#We are looking at loglik, (Ideally we want loglik to be decreasing), stddiv, fixed effects (intercept value )
+```
+
+```{r}
+intervals(mod1)
+#we then need to calculate intra-class correlation coefficient
+```
+
+
+--------------------------------------------------------
+unconditional growth model
+```{r}
+library(lattice)
+```
+
+```{r}
+xyplot(score_change ~ media_change | child_id, data = data_mod1, type = c("p", "r"))
+```
+
+
+fixed slope model 
+```{r}
+mod2 <- lme(score_change ~ media_change, random = 1 | child_id, data= data_mod1, method = "ML")
+summary(mod2)
+
+intervals(mod2)
+```
+
+random slope model 
+```{r}
+mod3 <- lme(score_change ~ media_change, random = ~media_change | child_id, data= data_mod1, method = "ML")
+summary(mod3)
+
+intervals(mod3)
+```
+
+```{r}
+mod1 <- lme(score_change ~ 1, random = ~1 | child_id, data= data_mod1, method = "ML")
+summary(mod1)
+
+intervals(mod1)
+```
+
+```{r}
+results <- anova(mod1, mod2)
+results$'p-value'
+```
+
+```{r}
+results <- anova(mod1, mod3)
+results$'p-value'
+```
+
+Calculate the Contra-correlation coefficients 
+
+--------------------------------------------------------------
+
+```{r}
+mod4 <- lme(score_change ~ media_change, highest_degree_earned, income, INSERT OTHER PREDICTORS THAT MAY REDUCE CLUSTERING
+            
+            random = ~media_change | child_id, data= data_mod1, method = "ML")
+
+Summary(mod4)
+
+intervals(mod4)
+```
+
+```{r}
+interaction.plot(data_mod1$ media_change, data_mod1 $ parent_gender,
+                 data_mod1$ score_chagne)
+
+
+```
+
+
+
+
 
