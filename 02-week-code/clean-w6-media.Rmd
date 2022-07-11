@@ -14,7 +14,7 @@ library(tidyverse)
 mt_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6-MT.dta")
 
 mt_w6_cleaned <- mt_w6 %>% 
-  select(n_devices = MTndevices,
+  transmute(n_devices = MTndevices,
          tv_exposure = MTtvexposure,
          solo = MTsolomedia,
          passive = MTpassive,
