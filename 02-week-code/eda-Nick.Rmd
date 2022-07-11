@@ -32,12 +32,14 @@ PLS_w1 <- readRDS(file = "../data/scores_w1.dta")
 PLS_w4 <- readRDS(file="../data/PLS_w4.dta")
 PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
 bitsea_w5 <- readRDS(file="../data/wave_5.dta")
+media_w6 <- readRDS(file="../data/media_wave_6.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
 
 ```
 
 
 ```{r}
-bruh <- full_join(media_data, BIT_data, by = c("child_id", "par_id")) %>% 
+bruh <- full_join(media_w6, BIT_data, by = c("child_id", "par_id")) %>% 
 plot(bruh$daily_use, bruh$BITprobavg, main = "Social Problem Score versus media involvment",
 xlab = "Media involvment", ylab = "Social Problem score")
 
