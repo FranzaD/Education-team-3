@@ -26,8 +26,8 @@ mt_w6_cleaned <- mt_w6 %>%
          educational_benefits = MTeduc,
          digital_babysitting = MTbabysit,
          daily_use = MTdailyuse,
-         child_id = childid,
-         par_id = parid)
+         child_id = as.character(childid),
+         par_id = as.character(parid))
 
 saveRDS(mt_w6_cleaned, file = "../data/media_wave_6.dta")
 ```
