@@ -350,24 +350,6 @@ glimpse(media_data)
 ```
 
 
-# save data back to file
-
-
-```{r}
-saveRDS(PLS_data, file="../data/PLS_data.dta")
-saveRDS(BIT_data, file="../data/BIT_data.dta")
-saveRDS(media_data, file="../data/media_data.dta")
-saveRDS(demography, file="../data/demography.dta")
-```
-
-# load data back
-```{r}
-PLS_data <- readRDS(file="../data/PLS_data.dta")
-BIT_data <- readRDS(file="../data/BIT_data.dta")
-media_data <- readRDS(file="../data/media_data.dta")
-demography <- readRDS(file="../data/demography.dta")
-```
-
 # Convert data to long type
 
 ## BITSEA to long DOES NOT WORK because of duplicate child_id
@@ -469,4 +451,26 @@ PLS_long <- reshape(PLS_tmp,
   timevar = "wave",
   times = c("1","4","6"),
   direction = "long")
+```
+
+# save data back to file
+
+
+```{r}
+saveRDS(PLS_long, file="../data/PLS_long.dta")
+saveRDS(BIT_long_par, file="../data/BIT_long_par.dta")
+saveRDS(BIT_long_father, file="../data/BIT_long_father.dta")
+saveRDS(BIT_long_mother, file="../data/BIT_long_mother.dta")
+saveRDS(media_data, file="../data/media_data.dta")
+saveRDS(demography, file="../data/demography.dta")
+```
+
+# load data back
+```{r}
+PLS_long <- readRDS(file="../data/PLS_long.dta")
+BIT_long_par <- readRDS(file="../data/BIT_long_par.dta")
+BIT_long_father <- readRDS(file="../data/BIT_long_father.dta")
+BIT_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
 ```
