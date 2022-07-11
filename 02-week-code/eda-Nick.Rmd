@@ -35,6 +35,35 @@ bitsea_w5 <- readRDS(file="../data/wave_5.dta")
 
 ```
 
+
+```{r}
+bruh <- full_join(media_data, BIT_data, by = c("child_id", "par_id")) %>% 
+plot(bruh$daily_use, bruh$BITprobavg, main = "Social Problem Score versus media involvment",
+xlab = "Media involvment", ylab = "Social Problem score")
+
+bruh %>% 
+ggplot(aes(x = daily_use,
+                        y = BITprobavg)) +
+         geom_point() +
+         geom_smooth(method = "lm") +
+  facet_wrap(~wave)
+```
+
+```{r}
+## Normal Quantile-Quantile Plot
+qqnorm(lm_mod$residuals)
+qqline(lm_mod$residuals, col = "dark green")
+```
+
+
+constant variance?
+```{r}
+std_resid <- rstandard(lm_mod) # standardized residuals
+plot(lm_mod$fitted.values, std_resid, ylim = c(-3.5, 3.5))
+abline(h=0)
+```
+
+
 My question is do we continue to use the children that drop out of the study as our first sample has 420 people but the last wave retained only 114 for PLS score
 
 we need to better organize the PLS data sheets 
