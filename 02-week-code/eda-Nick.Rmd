@@ -17,7 +17,7 @@ library(janitor)
 ```{r}
 PLS_data <- readRDS(file="../data/PLS_data.dta")
 BIT_data <- readRDS(file="../data/BIT_data.dta")
-media_data <- readRDS(file="../data/media_data.dta")
+media_w1 <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
 glimpse(BIT_data)
 ```
@@ -57,6 +57,7 @@ ggplot( aes(x = daily_use))+
 
 
 ```{r}
+library(lattice)
 oh_boy <- full_join(media_w1, media_w6, by = c("child_id", "par_id")) %>% 
   mutate(media_change = daily_use.y - daily_use.x)
 oh_yeah <- full_join(bitsea_w2, bitsea_w6, by = c("child_id", "par_id")) %>% 
@@ -262,13 +263,40 @@ After watching the three videos I think I understand how our model is going to w
 library(nlme)
 ```
 
+Linear Regression Model Time
+
+Part 2 baby
+
+```{r}
+media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"), 
+                          suffix = c("_w1", "_w6"))
+
+pls_w1_w6 <- inner_join(PLS_w1, PLS_w6, by = c("par_id", "child_id"), 
+                        suffix = c("_w1", "_w6"))
+
+media_pls_w1_w6 <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0 )
+
+mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
+summary(mod1)
+
+mod2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6)
+summary(mod2)
+```
+
+
+
+
 ```{r}
 data_mod1 <- full_join(PLS_data, media_data, by = c("child_id")) %>% 
   mutate(score_change = )
+
+
 ```
 
 ```{r}
-mod1 <- lme(score_change ~ 1 | child_id, data = data_mod1, method = "ML")
+mod1 <- lme(total_score ~ 1 | child_id, data = data_mod1, method = "ML")
 summary(mod1)
 #We are looking at loglik, (Ideally we want loglik to be decreasing), stddiv, fixed effects (intercept value )
 ```
