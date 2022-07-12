@@ -158,8 +158,32 @@ even though we see it is not significant since the p-value is grater than .05.
 
 ```{r}
 ##
-model
+model2_data <- inner_join(pls_w6, pls_w1, by = c("child_id"), suffix = c("_w6", "_w1"))
 
 
+
+model2_data <- inner_join(model2_data, media_data, by = c("child_id"))
+
+model2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6)
+summary(model2)
+```
+
+Nick's Models
+```{r}
+media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"), 
+                          suffix = c("_w1", "_w6"))
+
+pls_w1_w6 <- inner_join(PLS_w1, PLS_w6, by = c("par_id", "child_id"), 
+                        suffix = c("_w1", "_w6"))
+
+media_pls_w1_w6 <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0 )
+
+mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
+summary(mod1)
+
+mod2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6)
+summary(mod2)
 ```
 
