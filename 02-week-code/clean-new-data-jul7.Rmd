@@ -465,6 +465,9 @@ saveRDS(BIT_long_father, file="../data/BIT_long_father.dta")
 saveRDS(BIT_long_mother, file="../data/BIT_long_mother.dta")
 saveRDS(media_data, file="../data/media_data.dta")
 saveRDS(demography, file="../data/demography.dta")
+
+saveRDS(PLS_tmp, file="../data/PLS_wide.dta")
+saveRDS(BIT_long, file="../data/BIT_wide.dta")
 ```
 
 # load data back
@@ -475,4 +478,7 @@ BIT_long_father <- readRDS(file="../data/BIT_long_father.dta")
 BIT_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
+
+PLS_wide <- readRDS(file="../data/PLS_wide.dta")
+BIT_wide <- readRDS(file="../data/BIT_wide.dta")
 ```

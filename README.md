@@ -25,12 +25,15 @@ Education-3
 3. Run 1 and 2 only ONCE. never run it again!
 4. import new data by:
 ```{r}
-PLS_long <- readRDS(file="../data/PLS_long.dta")
-BIT_long_par <- readRDS(file="../data/BIT_long_par.dta")
-BIT_long_father <- readRDS(file="../data/BIT_long_father.dta")
-BIT_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+pls_long <- readRDS(file="../data/PLS_long.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
 ```
 
 ## what does those data means?
