@@ -86,7 +86,7 @@ pls_media_w6 <- wave6 %>%
 #this may have done it, just joining with child and parent ids
 anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
 
-#now there are missing value codes and NAs I need to get rid of:
+#now there are missing value codes, NAs, and wave 4 data for some reason, I need to get rid of:
 anova_table <- anova_table %>% 
   na.omit() %>% 
   filter( 
@@ -98,11 +98,18 @@ anova_table <- anova_table %>%
     total_score != -666,
     total_score != -777,
     total_score != -888,
-    total_score != -999
+    total_score != -999,
+    wave != 4
     )
 
 #now we need the same number of child ids for wave 6 and wave 1
 anova_table %>% 
+  summary()
+
+#need to only include parent ids that exist both in wave 1 and in wave 6
+anova_table <- anova_table %>% 
+  group_by(par_id) %>% 
+  filter(n() == 2) %>% 
   summary()
 ```
 
