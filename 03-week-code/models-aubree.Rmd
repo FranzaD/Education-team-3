@@ -1,0 +1,233 @@
+---
+title: "models-aubree"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(ggcorrplot)
+```
+
+
+
+```{r}
+## Run to get all data
+
+bitsea_w2 <- readRDS(file="../data/model_w2.dta")
+bitsea_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+
+pls_w1 <- readRDS(file="../data/PLS_wave_1.dta")
+pls_w4 <- readRDS(file="../data/PLS_w4.dta")
+pls_w6 <- readRDS(file="../data/PLS_w6.dta")
+
+bitsea_w2 <- readRDS(file="../data/BITSEA_wave_2.dta")
+bitsea_w5 <- readRDS(file="../data/bitsea_w5.dta")
+bitsea_w6 <- readRDS(file="../data/BITSEA_wave_6.dta")
+
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+
+pls_long <- readRDS(file="../data/PLS_long.dta")
+demography <- readRDS(file="../data/demography.dta")
+bitsea_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+
+```
+
+
+```{r}
+## Predicting Model (PLS score)
+library(leaps)
+
+pls_and_media <- full_join(media_data, pls_long, by = c("par_id", "child_id"))
+head(pls_and_media)
+
+pls_and_media <- 
+  pls_and_media %>% 
+  mutate(total_score = as.integer(total_score),
+         id = as.character(id),
+         auditory_comprehension_score = as.integer(auditory_comprehension_score),
+         daily_use = as.integer(daily_use),
+         educational_benefits = as.integer(educational_benefits),
+         positive_beliefs_media = as.integer(positive_beliefs_media),
+         ) %>% 
+  filter(total_score != -666,
+         total_score != -777,
+         total_score != -888,
+         total_score != -999)
+
+#income_variable <- select(valuable_dataset, c("household_income_numerical", "par_id", "child_id"))
+#pls_and_media <- full_join(pls_and_media, income_variable, by = c("child_id", "par_id"))
+
+pls_and_media <- select(pls_and_media, -c("expressive_communication_score", "child_id", "par_id","id"))
+
+#pls_and_media <- 
+#na.omit(pls_and_media$household_income_numerical)
+
+glimpse(pls_and_media)
+
+
+
+
+sapply(lapply(pls_and_media, unique), length)
+
+regfit.full = regsubsets(total_score ~., pls_and_media, method = "forward") 
+reg.summary = summary(regfit.full)
+names(reg.summary)
+
+
+par(mfrow = c(2,2))
+plot(reg.summary$rss, xlab = "Models", 
+     ylab = "RSS", type= "l")
+which.min(reg.summary$rss)
+points(9, reg.summary$rss[9], col="red",cex=2 ,pch =20)
+
+
+plot( reg.summary$adjr2, xlab = "Models", 
+      ylab = "Adjusted RSQ", type= "l")
+
+which.max(reg.summary$adjr2)
+points(8, reg.summary$adjr2[8], col="red",cex=2 ,pch =20)
+
+plot(reg.summary$cp, xlab= "Models", ylab= "CP"
+     , type = 'l')
+which.min(reg.summary$cp)
+points(8, reg.summary$cp[8], col="red", cex=2, pch =20)
+
+
+
+plot(reg.summary$bic, xlab= "Models", ylab= "BIC"
+     , type = 'l')
+which.min(reg.summary$bic)
+points(8, reg.summary$bic[8], col="red", cex=2, pch =20)
+
+coef(regfit.full, 8)
+
+
+train = sample(c(TRUE,FALSE), nrow(pls_and_media), rep =TRUE)
+test= (!train)
+regfit.best=regsubsets(total_score~., data = pls_and_media[train,])
+test.mat=model.matrix(total_score~ ., data = pls_and_media[test,])
+val.errors= rep(NA, 9)
+for(i in 1:9){
+  coefi=coef(regfit.best, id=i)
+  pred =test.mat[, names(coefi)]%*%coefi
+  val.errors[i]= mean((pls_and_media$total_score[test]-pred)^2)
+}
+
+## dimensions are not the same... cant figure out how to fix. 
+
+
+head(pls_and_media$total_score[test])
+coefi=coef(regfit.best, id=i)
+  pred =test.mat[, names(coefi)]%*%coefi
+dim(pred)
+
+log(val.errors)
+which.min(val.errors)
+```
+
+cross lag models 
+```{r}
+## compared daily use from wave 1 to PLS score from wave 4. Note that we cannot
+## account for media wave 4. This model will have to be updated. We seperated
+## between mom and dad.
+model1_data <- inner_join(pls_w4, pls_w1, by = c("child_id"), suffix = c("_w4", "_w1"))
+
+model1_data <- inner_join(model1_data, media_data, by = c("child_id"))
+
+model1_data <- filter(model1_data, 
+                      total_score_w4 > 0)
+
+model1_data_mom <- filter(model1_data, 
+                          father == "FALSE")
+
+model1_data_dad <- filter(model1_data, 
+                          father == "TRUE")
+
+model1_mom <- lm(total_score_w4 ~ daily_use + total_score_w1, data = model1_data_mom)
+summary(model1_mom)
+
+model1_dad <- lm(total_score_w4 ~ daily_use + total_score_w1, data = model1_data_dad)
+summary(model1_dad)
+```
+From this model we see that media use from wave 1 (media_use) is a viable 
+predictor when we are predicting PLS scores from wave 4 (total_score_w4), 
+for both moms and dads. 
+We know this because the p-value is less than .05. We accounted for the 
+individual themselves by adding on the PLS score from wave 1(total_score_w1), 
+even though we see it is not significant since the p-value is grater than .05. 
+
+
+```{r}
+##compared daily use from wave 1 to PLS score from wave 6. We seperated
+## between mom and dad.
+media_pls_w1_w6_mom <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="FALSE")
+
+media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="TRUE")
+
+mod2_mom <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6_mom)
+summary(mod2_mom)
+
+mod2_dad <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6_dad)
+summary(mod2_dad)
+```
+From this model we see that media use from wave 1 (media_use) is a viable 
+predictor when we are predicting PLS scores from wave 6 (total_score_w6), 
+only for moms!  
+We know this because the p-value is less than .05. We accounted for the 
+individual themselves by adding on the PLS score from wave 1(total_score_w1), 
+even though we see it is not significant since the p-value is grater than .05. 
+This implies that dad's assessment of media use is NOT a viable predictor for 
+PLS scores from wave 6. 
+
+
+
+Linear Mixed Effects model 
+```{r}
+library(lattice)
+library(nlme)
+lme(total_score ~ 1 | child_id, data = data_mod1, method = "ML")
+```
+
+
+
+Nick's Models I copies over 
+```{r}
+media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"), 
+                          suffix = c("_w1", "_w6"))
+
+pls_w1_w6 <- inner_join(PLS_w1, PLS_w6, by = c("par_id", "child_id"), 
+                        suffix = c("_w1", "_w6"))
+
+media_pls_w1_w6_mom <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="FALSE")
+
+media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="TRUE")
+
+mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
+summary(mod1)
+
+
+
+```
+
