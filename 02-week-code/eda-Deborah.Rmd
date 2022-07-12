@@ -21,14 +21,14 @@ media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
 ```
 
-### Creating a preliminary linear models
+### Creating tables
 
 Thoughts/Ideas:
 * explore an ANOVA model to see if the hypothesized predictors that have factors are actually significant
 * definitely check out the most efficient linear model according to Aubree's ML code that optimized for certain parameters
 * ANCOVA model is mixes linear regression with anova, this ultimately may be a good idea to implement since MEDIA, PLS, BITSEA, Income are quantitative (numerical) and Ethnicity, Education are qualitative (categorical)
 
-##### CREATING WAVE 6 DATA
+##### creating wave6 data for linear models
 
 Here I've just started by creating a complete dataset for wave 6 for 3 datasets:
 1. media
@@ -49,6 +49,8 @@ wave6 %>%
   glimpse()
 ```
 
+##### creating table for ANOVA model
+
 Here I added education to try and create an ANOVA model to see if we get a better quality model.
 
 ```{r}
@@ -67,7 +69,43 @@ wave6 <- wave6 %>%
   glimpse()
 
 ```
-##### First ONE-WAY ANOVA model:
+
+```{r}
+# this table as many different wave variables - gross, let's just go for wave.y.y 
+#valuable_dataset %>% 
+#  glimpse()
+
+#need to add a wave variable, factor all 6
+#mt_w6_cleaned %>% 
+#  glimpse()
+
+#nice wave variable HUZZAH
+PLS_data %>% 
+  glimpse()
+```
+
+
+```{r}
+# ideally only keep observations that completed the study
+# pls & media, wave 1 & wave 6
+
+#media wave6 + media wave6 + pls wave 1
+anova_table <- full_join(valuable_dataset,mt_w6_cleaned, key = c(child_id, parent_id))
+
+#media wave6 + media wave6 + pls wave 1 + pls wave 6
+anova_table <- full_join(anova_table, PLS_data, key = c(child_id, parent_id))
+
+anova_table %>% 
+  glimpse()
+
+#selecting what variables I want
+#anova_table %>% 
+#  select(total_score, daily_use) %>% 
+#  filter( wave == 6 & wave == 1)
+```
+
+
+### First ONE-WAY ANOVA model:
 
 __ANOVA takes into account variability within groups and between groups, by comparing means among groups.__
 One-way ANOVA is appropriate when there are multiple measurements of the same treatment or thing across different groups...maybe we may want to group by wave?
@@ -77,7 +115,8 @@ Look at the _mean_ PLS, Media scores for each wave (1, 4, 6) in boxplots.
 So then maybe the appropriate question would be (LEC9 - STATS120C):
 Are the means of PLS scores different among different groups of media usage (low, med, high) across different waves? 
 
-Since each group will not have the same size this one-way ANOVA is for _unbalanced groups_(LEC11, LEC12 -120C).
+Since each group will not have the same size this one-way ANOVA is for _unbalanced groups_(LEC11, LEC12 -120C). 
+^ ANOVA may still be balanced since 1. we are looking at the mean of means for PLS scores and 2. we might bootstrap pls scores so CLT applies, hence sample sizes will be made the same for each media use group.
 
 _Assumptions are consistent regardless of whether ANOVA is balanced or not:_
 1. responses follow a normal distribution 
@@ -86,7 +125,7 @@ _Assumptions are consistent regardless of whether ANOVA is balanced or not:_
 2. Observations are independent within and between groups
   * questionable as media usage and receptive and expressive communication skills are likely dependent (or are they? potential HYPOTHESIS TEEESTT BBBAABBYYY) 
 
-3. errors/residuals are normally distributed with a constant variance
+3. errors/residuals are normally distributed with a constant variance, expectation 0
   * totally unknown
 
 Estimated coefficient is not significant, for an example look at 120C discussion 6 for ONE WAY ANOVA
@@ -97,9 +136,14 @@ aov_model <- aov(total_score ~ highest_degree_completed, wave6)
 
 summary(aov_model)
 ```
+
+
+
 ##### Linear Regression Models are Trash:
 
 _Need to put notes on how we quantify the quality of a linear model here._
+!!!read this later!!!!:
+https://www.investopedia.com/ask/answers/012615/whats-difference-between-rsquared-and-adjusted-rsquared.asp
 
 Multiple Linear regression doesn't get an adjusted r-squared larger than ~0.040. In otherwords these models have no predictive power since the data isn't linear.
 
