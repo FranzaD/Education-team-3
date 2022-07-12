@@ -25,15 +25,22 @@ Education-3
 3. Run 1 and 2 only ONCE. never run it again!
 4. import new data by:
 ```{r}
-PLS_data <- readRDS(file="../data/PLS_data.dta")
-BIT_data <- readRDS(file="../data/BIT_data.dta")
+pls_long <- readRDS(file="../data/PLS_long.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
 ```
 
 ## what does those data means?
 
-- **BITSEA**  include ONLY **BITSEA** scores in all waves
-- **PLS**  include include ONLY **PLS** scores in all waves
+- **BIT_long_par**  include ONLY **BITSEA** scores in all waves (avg score of parents)
+- **BIT_long_father**  include ONLY **BITSEA** scores in all waves (of father)
+- **BIT_long_mother**  include ONLY **BITSEA** scores in all waves (of mother)
+- **PLS_long**  include include ONLY **PLS** scores in all waves
 - **Media**  include include ONLY  **media info** media data in all waves **has only media from wave 1 for now**
 - **Demographic dataset** include ONLY demography (assuming that it doesn't change)
