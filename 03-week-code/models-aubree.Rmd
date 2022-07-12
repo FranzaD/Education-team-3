@@ -138,7 +138,8 @@ which.min(val.errors)
 cross lag models 
 ```{r}
 ## compared daily use from wave 1 to PLS score from wave 4. Note that we cannot
-## account for media wave 4. This model will have to be updated
+## account for media wave 4. This model will have to be updated. We seperated
+## between mom and dad.
 model1_data <- inner_join(pls_w4, pls_w1, by = c("child_id"), suffix = c("_w4", "_w1"))
 
 model1_data <- inner_join(model1_data, media_data, by = c("child_id"))
@@ -146,29 +147,66 @@ model1_data <- inner_join(model1_data, media_data, by = c("child_id"))
 model1_data <- filter(model1_data, 
                       total_score_w4 > 0)
 
-model1 <- lm(total_score_w4 ~ daily_use + total_score_w1, data = model1_data)
-summary(model1)
+model1_data_mom <- filter(model1_data, 
+                          father == "FALSE")
+
+model1_data_dad <- filter(model1_data, 
+                          father == "TRUE")
+
+model1_mom <- lm(total_score_w4 ~ daily_use + total_score_w1, data = model1_data_mom)
+summary(model1_mom)
+
+model1_dad <- lm(total_score_w4 ~ daily_use + total_score_w1, data = model1_data_dad)
+summary(model1_dad)
 ```
 From this model we see that media use from wave 1 (media_use) is a viable 
-predictor when we are predicting PLS scores from wave 4 (total_score_w4). 
+predictor when we are predicting PLS scores from wave 4 (total_score_w4), 
+for both moms and dads. 
 We know this because the p-value is less than .05. We accounted for the 
 individual themselves by adding on the PLS score from wave 1(total_score_w1), 
 even though we see it is not significant since the p-value is grater than .05. 
 
 
 ```{r}
-##
-model2_data <- inner_join(pls_w6, pls_w1, by = c("child_id"), suffix = c("_w6", "_w1"))
+##compared daily use from wave 1 to PLS score from wave 6. We seperated
+## between mom and dad.
+media_pls_w1_w6_mom <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="FALSE")
+
+media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="TRUE")
+
+mod2_mom <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6_mom)
+summary(mod2_mom)
+
+mod2_dad <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6_dad)
+summary(mod2_dad)
+```
+From this model we see that media use from wave 1 (media_use) is a viable 
+predictor when we are predicting PLS scores from wave 6 (total_score_w6), 
+only for moms!  
+We know this because the p-value is less than .05. We accounted for the 
+individual themselves by adding on the PLS score from wave 1(total_score_w1), 
+even though we see it is not significant since the p-value is grater than .05. 
+This implies that dad's assessment of media use is NOT a viable predictor for 
+PLS scores from wave 6. 
 
 
 
-model2_data <- inner_join(model2_data, media_data, by = c("child_id"))
-
-model2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6)
-summary(model2)
+Linear Mixed Effects model 
+```{r}
+library(lattice)
+library(nlme)
+lme(total_score ~ 1 | child_id, data = data_mod1, method = "ML")
 ```
 
-Nick's Models
+
+
+Nick's Models I copies over 
 ```{r}
 media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"), 
                           suffix = c("_w1", "_w6"))
@@ -176,14 +214,20 @@ media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"),
 pls_w1_w6 <- inner_join(PLS_w1, PLS_w6, by = c("par_id", "child_id"), 
                         suffix = c("_w1", "_w6"))
 
-media_pls_w1_w6 <- inner_join(media_w1_w6, pls_w1_w6, 
+media_pls_w1_w6_mom <- inner_join(media_w1_w6, pls_w1_w6, 
                               by = c("par_id", "child_id")) %>% 
-  filter(total_score_w6 > 0 )
+  filter(total_score_w6 > 0,
+         father =="FALSE")
+
+media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0,
+         father =="TRUE")
 
 mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
 summary(mod1)
 
-mod2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6)
-summary(mod2)
+
+
 ```
 
