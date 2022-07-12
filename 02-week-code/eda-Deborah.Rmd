@@ -74,18 +74,20 @@ One-way ANOVA is appropriate when there are multiple measurements of the same tr
 
 Look at the _mean_ PLS, Media scores for each wave (1, 4, 6) in boxplots.
 
-So then maybe the appropriate question would be:
+So then maybe the appropriate question would be (LEC9 - STATS120C):
 Are the means of PLS scores different among different groups of media usage (low, med, high) across different waves? 
 
 Since each group will not have the same size this one-way ANOVA is for _unbalanced groups_(LEC11, LEC12 -120C).
 
 _Assumptions are consistent regardless of whether ANOVA is balanced or not:_
 1. responses follow a normal distribution 
-  * PLS scores histograms look approx. normal (check out ppt for wk2)
+  * PLS scores histograms look approx. normal, but if take the sample means of pls scores in each media category and bootstrap then according to CLT we should be able to say that the sample means follow a approx normal distribution (check out ppt for wk2 for origial histogram of pls scores (not means of scores))
+
 2. Observations are independent within and between groups
-  * in terms of education, yes
+  * questionable as media usage and receptive and expressive communication skills are likely dependent (or are they? potential HYPOTHESIS TEEESTT BBBAABBYYY) 
+
 3. errors/residuals are normally distributed with a constant variance
-  * unsure of this
+  * totally unknown
 
 Estimated coefficient is not significant, for an example look at 120C discussion 6 for ONE WAY ANOVA
 
