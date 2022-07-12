@@ -34,6 +34,7 @@ PLS_w6 <- readRDS(file="../data/PLS_w6.dta")
 bitsea_w5 <- readRDS(file="../data/wave_5.dta")
 media_w6 <- readRDS(file="../data/media_wave_6.dta")
 BIT_data <- readRDS(file="../data/BIT_data.dta")
+#media_w4 <- readRDS(file= "../data/")
 
 ```
 
@@ -265,8 +266,39 @@ library(nlme)
 
 Linear Regression Model Time
 
-Part 2 baby
+just by wave 
 
+```{r}
+#dad
+media_pls_w1 <- inner_join(PLS_w1, media_w1, by = c("par_id", "child_id")) %>% 
+  filter(par_id > 25000)
+
+mod3d <- lm(total_score ~ daily_use, data = media_pls_w1)
+summary(mod3d)
+#mom
+media_pls_w1 <- inner_join(PLS_w1, media_w1, by = c("par_id", "child_id")) %>% 
+  filter(par_id < 25000)
+
+mod3m <- lm(total_score ~ daily_use, data = media_pls_w1)
+summary(mod3m)
+
+#dad
+media_pls_w6 <- inner_join(PLS_w6, media_w6, by = c("par_id", "child_id"))%>% 
+  filter(par_id > 25000)
+
+mod4d <- lm(total_score ~ daily_use, data = media_pls_w6)
+summary(mod4d)
+
+#mom
+media_pls_w6 <- inner_join(PLS_w6, media_w6, by = c("par_id", "child_id"))%>% 
+  filter(par_id < 25000)
+
+mod4m <- lm(total_score ~ daily_use, data = media_pls_w6)
+summary(mod4m)
+```
+
+Part 2 baby
+wave 1 and 6
 ```{r}
 media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"), 
                           suffix = c("_w1", "_w6"))
@@ -281,19 +313,61 @@ media_pls_w1_w6 <- inner_join(media_w1_w6, pls_w1_w6,
 mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
 summary(mod1)
 
-mod2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w6)
+mod2 <- lm(total_score_w6 ~ daily_use_w1 + total_score_w1 , data = media_pls_w1_w6)
+summary(mod2)
+
+```
+
+wave 1 and 4
+```{r}
+media_w1_w4 <- inner_join(media_w1, media_w4, by = c("par_id", "child_id"), 
+                          suffix = c("_w1", "_w4"))
+
+pls_w1_w4 <- inner_join(PLS_w1, PLS_w4, by = c("par_id", "child_id"), 
+                        suffix = c("_w1", "_w4"))
+
+media_pls_w1_w4 <- inner_join(media_w1_w4, pls_w1_w4, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w4 > 0 )
+
+mod1 <- lm(daily_use_w4 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w4)
+summary(mod1)
+
+mod2 <- lm(total_score_w4 ~ daily_use_w1 + total_score_w1, data = media_pls_w1_w4)
+summary(mod2)
+
+```
+
+wave 4 and 6
+```{r}
+media_w4_w6 <- inner_join(media_w4, media_w6, by = c("par_id", "child_id"), 
+                          suffix = c("_w4", "_w6"))
+
+pls_w4_w6 <- inner_join(PLS_w4, PLS_w6, by = c("par_id", "child_id"), 
+                        suffix = c("_w4", "_w6"))
+
+media_pls_w4_w6 <- inner_join(media_w4_w6, pls_w4_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(total_score_w6 > 0 )
+
+mod1 <- lm(daily_use_w6 ~ total_score_w4 + daily_use_w4,  data = media_pls_w4_w6)
+summary(mod1)
+
+mod2 <- lm(total_score_w6 ~ daily_use_w4 + total_score_w4, data = media_pls_w4_w6)
 summary(mod2)
 ```
 
 
 
 
+-------------------------------
+
 ```{r}
 data_mod1 <- full_join(PLS_data, media_data, by = c("child_id")) %>% 
   mutate(score_change = )
-
-
 ```
+
+
 
 ```{r}
 mod1 <- lme(total_score ~ 1 | child_id, data = data_mod1, method = "ML")
