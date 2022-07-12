@@ -44,6 +44,7 @@ media_data <- readRDS(file="../data/media_data.dta")
 
 
 ```{r}
+## Predicting Model (PLS score)
 library(leaps)
 
 pls_and_media <- full_join(media_data, pls_long, by = c("par_id", "child_id"))
@@ -134,58 +135,31 @@ log(val.errors)
 which.min(val.errors)
 ```
 
+cross lag models 
 ```{r}
-library(leaps)
-regfit.full =regsubsets(PRICE ~., Fullerton.1)
-summary(regfit.full)
-reg.summary = summary(regfit.full)
-names(reg.summary)
+## compared daily use from wave 1 to PLS score from wave 4. Note that we cannot
+## account for media wave 4. This model will have to be updated
+model1_data <- inner_join(pls_w4, pls_w1, by = c("child_id"), suffix = c("_w4", "_w1"))
 
-reg.summary$rsq
-par(mfrow = c(2,2))
-#par(mfrow= c(1,1))
-mtext("Results from Eight Models in Regsubsets", side = 3, line = -2, 
-      cex= 2, font =2, outer = TRUE)
-plot(reg.summary$rss, xlab = "Models", 
-     ylab = "RSS", type= "l")
-which.min(reg.summary$rss)
-points(8, reg.summary$rss[8], col="red",cex=2 ,pch =20)
-plot( reg.summary$adjr2, xlab = "Models", 
-      ylab = "Adjusted RSQ", type= "l")
+model1_data <- inner_join(model1_data, media_data, by = c("child_id"))
 
-which.max(reg.summary$adjr2)
-points(3, reg.summary$adjr2[3], col="red",cex=2 ,pch =20)
+model1_data <- filter(model1_data, 
+                      total_score_w4 > 0)
 
-plot(reg.summary$cp, xlab= "Models", ylab= "CP"
-     , type = 'l')
-which.min(reg.summary$cp)
-points(3, reg.summary$cp[3], col="red", cex=2, pch =20)
-which.min(reg.summary$bic)
-plot(reg.summary$bic, xlab= "Models", ylab= "BIC"
-     , type = 'l')
-points(2, reg.summary$bic[2], col="red", cex=2, pch =20)
+model1 <- lm(total_score_w4 ~ daily_use + total_score_w1, data = model1_data)
+summary(model1)
+```
+From this model we see that media use from wave 1 (media_use) is a viable 
+predictor when we are predicting PLS scores from wave 4 (total_score_w4). 
+We know this because the p-value is less than .05. We accounted for the 
+individual themselves by adding on the PLS score from wave 1(total_score_w1), 
+even though we see it is not significant since the p-value is grater than .05. 
 
-##notice 2/3 tests said 3 was best model 1/3 said model 2
 
-coef(regfit.full, 5)
-coef(regfit.full, 3)
+```{r}
+##
+model
 
-## CROSS VALIDATION
 
-train = sample(c(TRUE,FALSE), nrow(Fullerton.1), rep =TRUE)
-test= (!train)
-regfit.best=regsubsets(PRICE~., data = Fullerton.1[train,])
-test.mat=model.matrix(PRICE~ ., data = Fullerton.1[test,])
-val.errors= rep(NA, 8)
-for(i in 1:8){
-  coefi=coef(regfit.best, id=i)
-  pred =test.mat[, names(coefi)]%*%coefi
-  val.errors[i]= mean((Fullerton.1$PRICE[test]-pred)^2)
-}
-
-log(val.errors)
-which.min(val.errors)
-coef(regfit.best, 3)
-coef(regfit.best, 8)
 ```
 
