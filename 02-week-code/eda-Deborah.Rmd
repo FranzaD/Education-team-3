@@ -86,7 +86,7 @@ pls_media_w6 <- wave6 %>%
 #this may have done it, just joining with child and parent ids
 anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
 
-#now there are missing value codes, NAs, and wave 4 data for some reason, I need to get rid of:
+#now there are missing value codes, NAs, and wave 4 data (for some reason??), I need to get rid of:
 anova_table <- anova_table %>% 
   na.omit() %>% 
   filter( 
@@ -109,37 +109,16 @@ anova_table %>%
 #need to only include parent ids that exist both in wave 1 and in wave 6
 anova_table <- anova_table %>% 
   group_by(par_id) %>% 
-  filter(n() == 2) %>% 
-  summary()
+  filter(n() == 2)
+
+# now i need to create a new column factor that puts a daily score measurement as low, med high
+#but first I need to see the distribution of daily media usage
+ggplot(data = anova_table,
+       aes(x = daily_use)) +
+  geom_histogram(color = "white",
+                 fill = "darkred")
 ```
 
-
-```{r}
-# ideally only keep observations that completed the study
-# pls & media, wave 1 & wave 6
-
-#media wave6 + media wave6 + pls wave 1
-anova_table <- full_join(valuable_dataset,model_w6, key = c(child_id, parent_id))
-
-anova_table <- anova_table %>% 
-  select( par_id, child_id, wave, wave.y.y, daily_use, total_score)
-
-#media wave6 + media wave6 + pls wave 1 + pls wave 6
-anova_table <- full_join(anova_table, PLS_data, key = c(child_id, parent_id))
-
-anova_table <- anova_table %>% 
-  filter(wave == 6 | wave == 1) %>% 
-  select(par_id, child_id, wave, daily_use, total_score) %>% 
-  na.omit()
-
-#selecting what variables I want
-#anova_table %>% 
-#  select(total_score, daily_use) %>% 
-#  filter( wave == 6 & wave == 1)
-```
-```{r}
-unique(anova_table$wave)
-```
 
 
 ### First ONE-WAY ANOVA model:
