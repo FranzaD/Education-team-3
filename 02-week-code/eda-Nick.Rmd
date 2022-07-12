@@ -37,6 +37,45 @@ BIT_data <- readRDS(file="../data/BIT_data.dta")
 
 ```
 
+```{r}
+#to get media 1 data set
+
+media_w1 <- valuable_dataset %>% 
+  select(n_devices, tv_exposure, solo, passive, coop, mealtimes, behavior_management, positive_beliefs_media, educational_benefits, digital_babysitting, daily_use, child_id, par_id)
+
+```
+
+```{r}
+media_w1 %>% 
+ggplot( aes(x = daily_use))+
+  geom_histogram()
+media_w6 %>% 
+ggplot( aes(x = daily_use))+
+  geom_histogram()
+
+```
+
+
+```{r}
+oh_boy <- full_join(media_w1, media_w6, by = c("child_id", "par_id")) %>% 
+  mutate(media_change = daily_use.y - daily_use.x)
+oh_yeah <- full_join(bitsea_w2, bitsea_w6, by = c("child_id", "par_id")) %>% 
+  mutate(bitsea_change = BITprobavg.y - BITprobavg.x)
+oh_baby <- full_join(oh_boy, oh_yeah, by = c("child_id", "par_id"))
+
+BIT_data_mom <- BIT_data %>% 
+  mutate(wave = fct_relevel(wave, 
+                            "2", "5", "6")) %>% 
+  filter(pargen == 0)
+xyplot(BITprobavg ~ wave | child_id, data = BIT_data_mom, type = c("p", "r"))
+
+oh_baby %>% 
+  ggplot(aes(x = media_change,
+             y = bitsea_change)) +
+  geom_point() +
+  geom_smooth() 
+```
+
 
 ```{r}
 glimpse(BIT_data)
