@@ -70,18 +70,20 @@ wave6 <- wave6 %>%
 
 ```
 
+AH YES CLARITY:
+
 ```{r}
-# this table as many different wave variables - gross, let's just go for wave.y.y 
-#valuable_dataset %>% 
-#  glimpse()
+# wave 1 media and pls 
+pls_media_w1 <- valuable_dataset %>% 
+  filter(wave.y.y == 1) %>% 
+  mutate(wave = as.factor(wave.y.y)) %>% 
+  select(wave, child_id, par_id, total_score, daily_use) 
 
-#need to add a wave variable, factor all 6
-#mt_w6_cleaned %>% 
-#  glimpse()
+# wave 6 media and pls 
+pls_media_w6 <- wave6 %>% 
+  select(wave, child_id, par_id, total_score, daily_use)
 
-#nice wave variable HUZZAH
-PLS_data %>% 
-  glimpse()
+
 ```
 
 
@@ -90,18 +92,26 @@ PLS_data %>%
 # pls & media, wave 1 & wave 6
 
 #media wave6 + media wave6 + pls wave 1
-anova_table <- full_join(valuable_dataset,mt_w6_cleaned, key = c(child_id, parent_id))
+anova_table <- full_join(valuable_dataset,model_w6, key = c(child_id, parent_id))
+
+anova_table <- anova_table %>% 
+  select( par_id, child_id, wave, wave.y.y, daily_use, total_score)
 
 #media wave6 + media wave6 + pls wave 1 + pls wave 6
 anova_table <- full_join(anova_table, PLS_data, key = c(child_id, parent_id))
 
-anova_table %>% 
-  glimpse()
+anova_table <- anova_table %>% 
+  filter(wave == 6 | wave == 1) %>% 
+  select(par_id, child_id, wave, daily_use, total_score) %>% 
+  na.omit()
 
 #selecting what variables I want
 #anova_table %>% 
 #  select(total_score, daily_use) %>% 
 #  filter( wave == 6 & wave == 1)
+```
+```{r}
+unique(anova_table$wave)
 ```
 
 
