@@ -174,7 +174,8 @@ daily use from wave 1 IS a good predictor of total score in wave 6 but only for 
 Now we need long format
 ```{r}
 media_long <- media_long %>% 
-  filter(par_id < 25000)
+  filter(par_id < 25000) %>% 
+  mutate(wave = as.factor(wave))
 pls_long
 long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")) %>% 
   filter(wave != 4,
@@ -185,11 +186,41 @@ long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")
   #aubrees idea for moms
 library(lme4)
 library(lmerTest)
-model <- lmer(total_score ~ daily_use * wave + (daily_use|child_id), data = long_boi)
+model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
 summary(model)
 
+long_boi[sample(nrow(long_boi), 5),]
+
+
+id: 1099, 1304, 1404, 1240, 1384
+
+
+score = 96.579  
 
 ```
+
+score = 96.579 + 2.388*(daily use wave 1) -1.782 (wave 6) -26.733 (difference between daily use and wave 6)
+
+child id: 1099
+observed 77
+predicted 84.77213
+
+child id: 1304
+observed(wave 1) = 101
+predicted: 96.92014
+
+child id: 1404
+observed(wave 1) = 85
+predicted: 97.773
+
+child id: 1240
+observed = 97
+predicted: 85.59064
+
+child id: 1384
+observed(wave 1) = 87
+predicted: 96.579
+
 
 ```{r}
 library(lattice)
