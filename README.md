@@ -30,16 +30,19 @@ Education-3
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
 
-pls_long <- readRDS(file="../data/PLS_long.dta")
 bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
 bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
 bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
 
-pls_wide <- readRDS(file="../data/PLS_wide.dta")
 bit_wide <- readRDS(file="../data/BIT_wide.dta")
 
 media_long <- readRDS(file="../data/media_long.dta")
 media_wide <- readRDS(file="../data/media_wide.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
 ```
 
 ## what does those data means?
