@@ -171,5 +171,9 @@ daily use from wave 1 IS a good predictor of total score in wave 6 but only for 
 
 #Linear Mixed Effects Model
 
+Now we need long format
+```{r}
+
+```
 
 
