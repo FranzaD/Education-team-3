@@ -1,0 +1,110 @@
+```{r}
+library(tidyverse)
+library(haven)
+
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_wave_1 <- readRDS(file="../data/media_wave_1.dta")
+media_wave_6 <- readRDS(file="../data/media_wave_6.dta")
+demography <- readRDS(file="../data/demography.dta")
+media_long <- readRDS(file="../data/media_long.dta")
+```
+
+## wave 1 to wave 6 media to pls - for mom and dad
+
+### subsetting data
+```{r}
+pls_mom_1 <- PLS_data %>% 
+  filter(par_id < 30000, wave == 1) %>%
+  select(par_id, total_score)
+
+pls_mom_6 <- PLS_data %>% 
+  filter(par_id < 30000, wave == 6) %>%
+  select(par_id, total_score)
+
+pls_mom <- pls_mom_1 %>% 
+  inner_join(pls_mom_6, by = c("par_id"), suffix = c("_w1", "_w6"))
+
+
+  
+pls_dad_1 <- PLS_data %>%
+  filter(par_id > 30000, wave == 1) %>%
+  select(par_id, total_score)
+  
+pls_dad_6 <- PLS_data %>%
+  filter(par_id > 30000, wave == 6) %>%
+  select(par_id, total_score)
+
+pls_dad <- pls_dad_1 %>% 
+  inner_join(pls_dad_6, by = c("par_id"), suffix = c("_w1", "_w6"))
+
+
+
+media_mom_1 <- media_long %>%
+  filter(par_id < 30000, wave == 1) %>% 
+  select(par_id, daily_use)
+
+media_mom_6 <- media_long %>%
+  filter(par_id < 30000, wave == 6) %>% 
+  select(par_id, daily_use)
+
+media_mom <- media_mom_1 %>% 
+  inner_join(media_mom_6, by = c("par_id"), suffix = c("_w1", "_w6"))
+
+
+
+media_dad_1 <- media_long %>% 
+  filter(par_id > 30000, wave == 1) %>% 
+  select(par_id, daily_use)
+
+media_dad_6 <- media_long %>% 
+  filter(par_id > 30000, wave == 6) %>% 
+  select(par_id, daily_use)
+
+media_dad <- media_dad_1 %>% 
+  inner_join(media_dad_6, by = c("par_id"), suffix = c("_w1", "_w6"))
+
+
+mom_data <- pls_mom %>%
+  inner_join(media_mom) %>% 
+  na.omit()
+
+dad_data <- pls_dad %>%
+  inner_join(media_dad) %>% 
+  na.omit()
+
+mom_data
+
+dad_data
+```
+
+## mom - media vs pls - wave 1 to wave 6 - cross lag linear regression model
+
+```{r}
+# linear relationship between wave 1 media involvement vs wave 6 total score
+# controlling for total score
+summary(lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = mom_data))
+```
+
+```{r}
+# linear relationship between wave 1 total score vs wave 6 media involvement
+# controlling for media involvement
+summary(lm(daily_use_w6 ~ total_score_w1 + daily_use_w1, data = mom_data))
+```
+
+
+## dad - media vs pls - wave 1 to wave 6 - cross lag linear regression model
+
+```{r}
+# linear relationship between wave 1 media involvement vs wave 6 total score
+# controlling for total score
+summary(lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = dad_data))
+```
+
+```{r}
+# linear relationship between wave 1 total score vs wave 6 media involvement
+# controlling for media involvement
+summary(lm(daily_use_w6 ~ total_score_w1 + daily_use_w1, data = dad_data))
+```
+
+
