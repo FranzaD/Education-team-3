@@ -201,7 +201,9 @@ Linear Mixed Effects model
 ```{r}
 library(lattice)
 library(nlme)
-lme(total_score ~ 1 | child_id, data = data_mod1, method = "ML")
+
+
+
 ```
 
 
@@ -226,8 +228,6 @@ media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6,
 
 mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
 summary(mod1)
-
-
 
 ```
 

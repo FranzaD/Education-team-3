@@ -187,8 +187,10 @@ install.packages("lme4")
 install.packages("lmerTest")
 library(lme4)
 library(lmerTest)
-model <- lmer(total_score ~ daily_use * wave + (daily_use|child_id), data = long_boi)
+model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
 summary(model)
+
+
 ```
 
 ```{r}
