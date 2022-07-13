@@ -36,6 +36,8 @@ media_w6 <- readRDS(file="../data/media_wave_6.dta")
 BIT_data <- readRDS(file="../data/BIT_data.dta")
 #media_w4 <- readRDS(file= "../data/")
 
+media_data <- readRDS(file="../data/media_data.dta")
+
 ```
 
 ```{r}
@@ -358,6 +360,24 @@ summary(mod2)
 ```
 
 
+--------
+
+
+```{r}
+PLS_data
+media_data
+
+PLS_data <- PLS_data %>% 
+  filter(wave != 4,
+         total_score > 0)
+
+
+model1 <- lme(total_score ~ daily_use * wave, 
+              random = ~daily_use | child_id,
+              data = media_pls_data)
+summary(model1)
+
+```
 
 
 -------------------------------
