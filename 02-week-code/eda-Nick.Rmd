@@ -15,6 +15,23 @@ library(janitor)
 ```
 
 ```{r}
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+pls_long <- readRDS(file="../data/PLS_long.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+```
+
+
+```{r}
 PLS_data <- readRDS(file="../data/PLS_data.dta")
 BIT_data <- readRDS(file="../data/BIT_data.dta")
 media_w1 <- readRDS(file="../data/media_data.dta")
@@ -364,17 +381,17 @@ summary(mod2)
 
 
 ```{r}
-PLS_data
-media_data
-
-PLS_data <- PLS_data %>% 
+pls_long <- pls_long %>% 
   filter(wave != 4,
          total_score > 0)
 
+pls_media <- full_join(pls_long, media_long, by = c("child_id", "par_id", "wave"))
 
-model1 <- lme(total_score ~ daily_use * wave, 
-              random = ~daily_use | child_id,
-              data = media_pls_data)
+library(nlme)
+ctrl <- lmeControl(opt='optim');
+
+model1 <- lme(total_score ~ daily_use, random = ~daily_use | child_id,
+              data = pls_media, na.action = na.pass, control = ctrl)
 summary(model1)
 
 ```
