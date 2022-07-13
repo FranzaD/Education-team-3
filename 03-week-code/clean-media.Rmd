@@ -28,8 +28,7 @@ media_w6 <- readRDS(file = "../data/media_wave_6.dta")
 media_wide <- inner_join(mutate(media_w1),
            mutate(media_w6),
            by = c("child_id", "par_id"),
-           suffix = c(".1", ".6")) %>%
-        select(matches("_id"), matches("daily_use"))
+           suffix = c(".1", ".6"))
 ```
 
 # create all media in long format
