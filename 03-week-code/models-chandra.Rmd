@@ -8,17 +8,18 @@ media_wave_1 <- readRDS(file="../data/media_wave_1.dta")
 media_wave_6 <- readRDS(file="../data/media_wave_6.dta")
 demography <- readRDS(file="../data/demography.dta")
 media_long <- readRDS(file="../data/media_long.dta")
+pls_long <- readRDS(file="../data/PLS_long.dta")
 ```
 
 ## wave 1 to wave 6 media to pls - for mom and dad
 
 ### subsetting data
 ```{r}
-pls_mom_1 <- PLS_data %>% 
+pls_mom_1 <- pls_long %>% 
   filter(par_id < 30000, wave == 1) %>%
   select(par_id, total_score)
 
-pls_mom_6 <- PLS_data %>% 
+pls_mom_6 <- pls_long %>% 
   filter(par_id < 30000, wave == 6) %>%
   select(par_id, total_score)
 
@@ -27,11 +28,11 @@ pls_mom <- pls_mom_1 %>%
 
 
   
-pls_dad_1 <- PLS_data %>%
+pls_dad_1 <- pls_long %>%
   filter(par_id > 30000, wave == 1) %>%
   select(par_id, total_score)
   
-pls_dad_6 <- PLS_data %>%
+pls_dad_6 <- pls_long %>%
   filter(par_id > 30000, wave == 6) %>%
   select(par_id, total_score)
 
@@ -66,11 +67,11 @@ media_dad <- media_dad_1 %>%
 
 
 mom_data <- pls_mom %>%
-  inner_join(media_mom) %>% 
+  inner_join(media_mom, by = c("par_id")) %>% 
   na.omit()
 
 dad_data <- pls_dad %>%
-  inner_join(media_dad) %>% 
+  inner_join(media_dad, by = c("par_id")) %>% 
   na.omit()
 
 mom_data
@@ -107,4 +108,255 @@ summary(lm(total_score_w6 ~ daily_use_w1 + total_score_w1, data = dad_data))
 summary(lm(daily_use_w6 ~ total_score_w1 + daily_use_w1, data = dad_data))
 ```
 
+## multi unconditional means model
+
+### grand means (null) model (step 1): checking response without any predictors
+
+model:
+
+logLik: model fit - lower the better
+Random effects: 
+  StdDev Intercept and residual 
+  - helps calculates intra-class correlation coefficient??
+    - intercept^2 / (intercept^2 + residual^2)
+    - percentage of variability
+      - flush it out by selecting a proper slope
+      - add predictors to see if we can account for the variability
+    - larger values means more clustering
+    - more clustering is a sign to use multilevel modeling
+  - shows how much clustering exists within our data
+  - multilevel analysis
+Fixed effects:
+  - check difference between intercept vs p-value which is (0)
+
+
+intervals(model)
+
+fixed effects:
+- shows estimate + lower and upper bound of 95% CI
+- estimate of intercept along with it's CI
+
+random effects:
+- shows how individuals vary
+- ensure lower bound is not the only negative value
+
+
+```{r}
+library(nlme)
+pls_long <- readRDS(file="../data/PLS_long.dta")
+
+pls_long <- pls_long %>%
+  mutate(wave = case_when(
+    wave == "1" ~ 0,
+    wave == "4" ~ 1,
+    wave == "6" ~ 2
+  )) %>%
+  filter(if_all(where(is.numeric), ~ .x > 0))
+
+mod0 <- lme(total_score ~ 1, random = ~ 1 | child_id, data = pls_combined, method = "ML")
+
+# Log-like: -3576.387
+# estimated intercept 94.31003
+mod0
+
+# intercept 94.3 compared to 0
+summary(mod0)
+
+intervals(mod0)
+
+# ICC (intraclass correlation coefficient) = 63%
+(12.17565^2) / (12.17565^2 + 9.13523^2)
+```
+
+## Unconditional growth model (setting up slope)
+
+### checking xyplot for variability in slope accross individuals
+
+```{r}
+library(lattice)
+
+xyplot(total_score ~ wave | child_id, data = pls_long, type = c("p", "r"))
+
+```
+
+```{r}
+# unconditional growth with time as a fixed slope
+
+mod_fs <- lme(total_score ~ wave, random = ~ 1 | child_id, data = pls_combined, method = "ML")
+
+# log-like: -469.2703
+mod_fs
+
+# intercept 95 vs 0
+summary(mod_fs)
+
+# wave is significant as a fixed effect
+intervals(mod_fs)
+
+# ICC (intraclass correlation coefficient) = 100% ????????????
+(12.44946^2) / (12.44946^2 + 4.880886e-15^2)
+```
+
+```{r}
+# unconditional growth with time as a random slope
+
+media_long <- readRDS(file="../data/media_long.dta")
+
+combined_data <- media_long %>%
+  filter(par_id < 30000) %>%
+  select(par_id, daily_use) %>%
+  inner_join(pls_long, by = c("par_id")) %>%
+  na.omit()
+
+mod_fs <- lme(total_score ~ wave, random = ~ wave | child_id, data = pls_combined, method = "ML")
+
+# log-like: -3536.516
+mod_fs
+
+# intercept 96.62
+summary(mod_fs)
+
+
+intervals(mod_fs)
+
+# ICC - 65%
+(11.95052^2) / (11.95052^2 + 8.696666^2)
+```
+
+
+## lme4 - unconditional mean
+
+```{r}
+library(lme4)
+library(lmerTest)
+
+# null model
+mod_null <- lmer(total_score + 1 ~ (1 | child_id), data = data_combined)
+
+summary(mod_null)
+  
+```
+
+
+
+```{r}
+mod_1 <- lmer(total_score ~ wave * daily_use + (1 | child_id), data = data_combined)
+
+summary(mod_1)
+```
+
+
+```{r}
+# distribution of total score
+
+pls_long %>%
+  ggplot(aes(total_score)) +
+  geom_histogram(binwidth = 1)
+
+```
+
+```{r}
+# negative values
+pls_long %>%
+  filter(if_any(where(is.numeric), ~ .x < 0))
+```
+
+```{r}
+# distribution of total score without negative values
+pls_long %>%
+  filter(if_all(where(is.numeric), ~ .x > 0)) %>%
+  ggplot(aes(total_score)) +
+  geom_histogram(binwidth = 1)
+
+```
+
+```{r}
+# why don't we have data from wave 1?
+pls_long %>%
+  filter(if_all(where(is.numeric), ~ .x > 0))
+```
+
+```{r}
+# show na values
+pls_long %>%
+  filter_all(any_vars(is.na(.)))
+```
+
+```{r}
+pls1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+pls4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx", sheet = 4)
+pls6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx", sheet = 3)
+media1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
+media6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6-MT.dta")
+
+pls1 <- pls1 %>% 
+  transmute(child_id = as.character(childid),
+            par_id = as.character(parid),
+            wave = as.character(wave),
+            auditory_score = plsacss,
+            expressive_score = plsecss,
+            total_score = plsss)
+
+pls4 <- pls4 %>%
+  transmute(child_id = as.character(childid),
+            par_id = as.character(parid),
+            wave = as.character(wave),
+            auditory_score = plsacss,
+            expressive_score = plsecss,
+            total_score = plsss) %>%
+  filter(if_all(where(is.numeric), ~ .x > 0))
+
+pls6 <- pls6 %>%
+  transmute(child_id = as.character(childid),
+            par_id = as.character(parid),
+            wave = as.character(wave),
+            auditory_score = plsacss,
+            expressive_score = plsecss,
+            total_score = plsss) %>%
+  filter(if_all(where(is.numeric), ~ .x > 0))
+
+pls_combined <- rbind(pls1, pls4, pls6) %>%
+  mutate(wave = case_when(
+    wave == "1" ~ 0,
+    wave == "6" ~ 1
+  ))
+
+media1 <- media1 %>%
+  transmute(child_id = as.character(childid),
+            par_id = as.character(parid),
+            wave = as.character(wave),
+            daily_use = MTdailyuse) %>%
+  group_by(child_id) %>%
+  mutate(daily_use = mean(daily_use)) %>%
+  ungroup()
+
+media6 <- media6 %>%
+  transmute(child_id = as.character(childid),
+            par_id = as.character(parid),
+            wave = as.character(wave),
+            daily_use = MTdailyuse) %>%
+  group_by(child_id) %>%
+  mutate(daily_use = mean(daily_use)) %>%
+  ungroup()
+
+media_combined <- rbind(media1, media6) %>%
+  #filter(par_id < 30000) %>%
+  mutate(wave = case_when(
+    wave == "1" ~ 0,
+    wave == "62" ~ 1,
+  ))
+
+data_combined <- pls_combined %>%
+  inner_join(media_combined, by = c("par_id", "child_id", "wave")) %>%
+  na.omit()
+
+nrow(pls_combined)
+
+# no na values
+sum(is.na(pls_combined))
+
+# no negative values
+pls_combined %>%
+  filter(if_any(where(is.numeric), ~ .x < 0))
+```
 

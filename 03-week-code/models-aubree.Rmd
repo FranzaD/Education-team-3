@@ -35,10 +35,25 @@ bitsea_w6 <- readRDS(file="../data/BITSEA_wave_6.dta")
 
 valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
 
-pls_long <- readRDS(file="../data/PLS_long.dta")
+
 demography <- readRDS(file="../data/demography.dta")
 bitsea_data <- readRDS(file="../data/BIT_data.dta")
 media_data <- readRDS(file="../data/media_data.dta")
+
+
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+pls_long <- readRDS(file="../data/PLS_long.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
 
 ```
 
@@ -199,9 +214,21 @@ PLS scores from wave 6.
 
 Linear Mixed Effects model 
 ```{r}
-library(lattice)
-library(nlme)
-lme(total_score ~ 1 | child_id, data = data_mod1, method = "ML")
+media_long <- media_long %>% 
+  filter(par_id < 25000)
+pls_long
+long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")) %>% 
+  filter(wave != 4,
+         total_score > 0)
+
+
+
+  #aubrees idea
+library(lme4)
+library(lmerTest)
+model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
+summary(model)
+
 ```
 
 
@@ -226,8 +253,6 @@ media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6,
 
 mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
 summary(mod1)
-
-
 
 ```
 
