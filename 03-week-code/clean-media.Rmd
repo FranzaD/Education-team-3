@@ -1,0 +1,56 @@
+---
+title: "Exploratory Data Analysis"
+author: "James"
+date: '2022-07-07'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+media_w1 <- readRDS(file="../data/media_data.dta") # which contain cleaned media_w1
+media_w6 <- readRDS(file = "../data/media_wave_6.dta")
+```
+
+# create all media in wide format
+
+```{r}
+media_wide <- inner_join(mutate(media_w1),
+           mutate(media_w6),
+           by = c("child_id", "par_id"),
+           suffix = c(".1", ".6")) %>%
+        select(matches("_id"), matches("daily_use"))
+```
+
+# create all media in long format
+
+```{r}
+media_long <- reshape(as.data.frame(media_wide),
+  varying = c("daily_use.1",
+              "daily_use.6"), 
+  v.names = c("daily_use"),
+  timevar = "wave",
+  times = c("1","6"),
+  direction = "long")
+```
+
+# save data
+```{r}
+saveRDS(media_long, file="../data/media_long.dta")
+saveRDS(media_wide, file="../data/media_wide.dta")
+```
+# load data back
+```{r}
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+```
