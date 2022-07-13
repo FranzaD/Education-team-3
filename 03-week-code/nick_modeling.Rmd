@@ -77,6 +77,7 @@ media_pls_w6 <- inner_join(PLS_w6, media_w6, by = c("par_id", "child_id"))%>%
 
 mod4m <- lm(total_score ~ daily_use, data = media_pls_w6)
 summary(mod4m)
+
 ```
 
 #wave 1 and 4 media/pls
@@ -189,14 +190,11 @@ library(lmerTest)
 model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
 summary(model)
 
+
+```
+
+```{r}
 long_boi[sample(nrow(long_boi), 5),]
-
-
-id: 1099, 1304, 1404, 1240, 1384
-
-
-score = 96.579  
-
 ```
 
 score = 96.579 + 2.388*(daily use wave 1) -1.782 (wave 6) -26.733 (difference between daily use and wave 6)
@@ -220,16 +218,4 @@ predicted: 85.59064
 child id: 1384
 observed(wave 1) = 87
 predicted: 96.579
-
-
-```{r}
-library(lattice)
-library(nlme)
-ctrl <- lmeControl(opt='optim');
-
-model1 <- lme(total_score ~ daily_use, random = ~daily_use | child_id,
-              data = long_boi, na.action = na.pass, control = ctrl)
-summary(model1)
-
-```
 
