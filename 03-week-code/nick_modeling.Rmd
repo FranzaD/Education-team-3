@@ -182,12 +182,10 @@ long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")
 
 
 
-  #aubrees idea
-install.packages("lme4")
-install.packages("lmerTest")
+  #aubrees idea for moms
 library(lme4)
 library(lmerTest)
-model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
+model <- lmer(total_score ~ daily_use * wave + (daily_use|child_id), data = long_boi)
 summary(model)
 
 
