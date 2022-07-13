@@ -215,6 +215,7 @@ PLS scores from wave 6.
 Linear Mixed Effects model 
 ```{r}
 media_long <- media_long %>% 
+  mutate(wave = as.factor(wave)) %>% 
   filter(par_id < 25000)
 pls_long
 long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")) %>% 
@@ -230,7 +231,13 @@ model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
 summary(model)
 
 ```
+## finding residual for model
+```{r}
+residual_model = predict(model) - long_boi$total_score
+plot(residual_model, xlab = "child_id")
 
+
+```
 
 
 Nick's Models I copies over 
