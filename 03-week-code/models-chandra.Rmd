@@ -325,16 +325,22 @@ media1 <- media1 %>%
   transmute(child_id = as.character(childid),
             par_id = as.character(parid),
             wave = as.character(wave),
-            daily_use = MTdailyuse)
+            daily_use = MTdailyuse) %>%
+  group_by(child_id) %>%
+  mutate(daily_use = mean(daily_use)) %>%
+  ungroup()
 
 media6 <- media6 %>%
   transmute(child_id = as.character(childid),
             par_id = as.character(parid),
             wave = as.character(wave),
-            daily_use = MTdailyuse)
+            daily_use = MTdailyuse) %>%
+  group_by(child_id) %>%
+  mutate(daily_use = mean(daily_use)) %>%
+  ungroup()
 
 media_combined <- rbind(media1, media6) %>%
-  filter(par_id >= 30000) %>%
+  #filter(par_id < 30000) %>%
   mutate(wave = case_when(
     wave == "1" ~ 0,
     wave == "62" ~ 1,
