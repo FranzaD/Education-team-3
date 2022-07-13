@@ -29,8 +29,7 @@ media_wide <- inner_join(mutate(media_w1),
            mutate(media_w6),
            by = c("child_id", "par_id"),
            suffix = c(".1", ".6")) %>% 
-          select(-discipline_behavior_management) %>% 
-        filter(par_id >= 30000)
+          select(-discipline_behavior_management)
 ```
 
 # create all media in long format
