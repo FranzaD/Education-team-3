@@ -44,9 +44,9 @@ media_wide <- readRDS(file="../data/media_wide.dta")
 
 ## what does those data means?
 
-- **BIT_long_par**  include ONLY **BITSEA** scores in all waves (avg score of parents)
-- **BIT_long_father**  include ONLY **BITSEA** scores in all waves (of father)
-- **BIT_long_mother**  include ONLY **BITSEA** scores in all waves (of mother)
-- **PLS_long**  include include ONLY **PLS** scores in all waves
+- **bit_long_par**  include ONLY **BITSEA** scores in all waves (avg score of parents)
+- **bit_long_father**  include ONLY **BITSEA** scores in all waves (of father)
+- **bit_long_mother**  include ONLY **BITSEA** scores in all waves (of mother)
+- **pls_long**  include include ONLY **PLS** scores in all waves
 - **Media**  include include ONLY  **media info** media data in all waves **has only media from wave 1 for now**
 - **Demographic dataset** include ONLY demography (assuming that it doesn't change)
