@@ -28,26 +28,29 @@ media_w6 <- readRDS(file = "../data/media_wave_6.dta")
 media_wide <- inner_join(mutate(media_w1),
            mutate(media_w6),
            by = c("child_id", "par_id"),
-           suffix = c(".1", ".6"))
+           suffix = c(".1", ".6")) %>% 
+          select(-discipline_behavior_management) %>% 
+        filter(par_id >= 30000)
 ```
 
 # create all media in long format
-
 ```{r}
-media_long <- reshape(as.data.frame(media_wide),
-  varying = c("n_devices.1", "n_devices.6", "tv_exposure.1", "tv_exposure.6",
-              "solo.1", "solo.6", "passive.1", "passive.6", "coop.1", "coop.6",
-              "mealtimes.1", "mealtimes.6", "behavior_management.1", 
-              "behavior_management.6", "positive_beliefs_media.1",
-              "positive_beliefs_media.6", "educational_benefits.1",
-              "educational_benefits.6", "digital_babysitting.1",
-              "digital_babysitting.6", "daily_use.1", "daily_use.6"), 
-  v.names = c("n_devices", "tv_exposure", "solo", "passive", "coop", "mealtimes",
-              "behavior_management", "positive_beliefs_media", 
-              "educational_benefits", "digital_babysitting", "daily_use"),
-  timevar = "wave",
-  times = c("1","6"),
-  direction = "long")
+media_long <- full_join(mutate(media_w1, wave = 1),
+          mutate(media_w6, wave = 6))
+
+# media_long <- reshape(as.data.frame(media_wide),
+#   varying = c("n_devices.1", "tv_exposure.1", "solo.1", "passive.1", "coop.1",
+#               "mealtimes.1", "behavior_management.1", "positive_beliefs_media.1",
+#               "educational_benefits.1", "digital_babysitting.1", "daily_use.1",
+#               "n_devices.6", "tv_exposure.6", "solo.6", "passive.6", "coop.6",
+#               "mealtimes.6", "behavior_management.6", "positive_beliefs_media.6",
+#               "educational_benefits.6", "digital_babysitting.6", "daily_use.6"), 
+#   v.names = c("n_devices", "tv_exposure", "solo", "passive", "coop", "mealtimes",
+#               "behavior_management", "positive_beliefs_media", 
+#               "educational_benefits", "digital_babysitting", "daily_use"),
+#   timevar = "wave",
+#   times = c("1","6"),
+#   direction = "long")
 ```
 
 # save data
