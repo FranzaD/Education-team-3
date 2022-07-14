@@ -263,7 +263,7 @@ long_boi %>%
        y = "Predicted PLS Score",
        title = "Actual vs Predicted")
 
-ength(predict(model))
+length(predict(model))
 
 length(long_boi$total_score)
 
