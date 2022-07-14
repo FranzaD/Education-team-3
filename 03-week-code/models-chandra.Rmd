@@ -360,3 +360,146 @@ pls_combined %>%
   filter(if_any(where(is.numeric), ~ .x < 0))
 ```
 
+## Bit vs Media - longitudinal model exploration
+### mother data
+
+```{r}
+bit <- readRDS("../data/BIT_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+
+str(bit)
+str(media)
+
+media_mother <- media %>%
+  filter(par_id < 30000, daily_use > 0) %>%
+  mutate(wave = case_when(
+    wave == 1 ~ 0,
+    wave == 6 ~ 1
+  )) %>% 
+  select(child_id, daily_use, wave)
+
+bit <- bit %>%
+  filter(BITprobavg > 0, wave %in% c(2, 6)) %>%
+  mutate(wave = case_when(
+    wave == 2 ~ 0,
+    wave == 6 ~ 1
+  )) %>% 
+  select(child_id, BITprobavg, wave)
+
+bit_media_data <- bit %>%
+  inner_join(media_mother, by = c("child_id", "wave"))
+
+mod_2 <- lmer(daily_use ~ BITprobavg * wave + (1 | child_id), data = bit_media_data)
+
+summary(mod_2)
+```
+
+### father data
+
+```{r}
+bit_father <- readRDS("../data/BIT_long_father.dta")
+media <- readRDS("../data/media_long.dta")
+
+media_father <- media %>%
+  filter(par_id >= 30000, daily_use > 0) %>%
+  mutate(wave = case_when(
+    wave == 1 ~ 0,
+    wave == 6 ~ 1
+  )) %>% 
+  select(child_id, daily_use, wave) %>%
+  na.omit()
+
+bit_father <- bit_father %>%
+  filter(BITprobavg > 0, wave %in% c(2, 6)) %>%
+  mutate(wave = case_when(
+    wave == 2 ~ 0,
+    wave == 6 ~ 1
+  )) %>% 
+  select(child_id, BITprobavg, wave)
+
+bit_media_data_father <- bit_father %>%
+  inner_join(media_father, by = c("child_id", "wave"))
+
+mod_3 <- lmer(daily_use ~ BITprobavg * wave + (1 | child_id), data = bit_media_data_father)
+
+summary(mod_3)
+
+```
+
+### combined (average mother vs father) data
+```{r}
+bit_par <- readRDS("../data/BIT_long_par.dta")
+media <- readRDS("../data/media_long.dta")
+
+bit_par <- bit_par %>%
+  filter(BITprobavg > 0) %>%
+  mutate(wave = case_when(
+    wave == "2" ~ 0,
+    wave == "6" ~ 1
+  )) %>%
+  select(child_id, BITprobavg, wave)
+
+media_par <- media %>%
+  group_by(child_id) %>%
+  mutate(daily_use_avg = mean(daily_use)) %>% 
+  ungroup() %>%
+  distinct(child_id, daily_use_avg, wave) %>%
+  mutate(wave = case_when(
+    wave == 1 ~ 0,
+    wave == 6 ~ 1)) %>%
+  filter(daily_use_avg > 0)
+
+bit_media_par <- bit_par %>%
+  inner_join(media_par, by = c("child_id", "wave"))
+
+mod_4 <- lmer(daily_use_avg ~ BITprobavg * wave + (1 | child_id), data = bit_media_par)
+
+summary(mod_4)
+```
+
+## media vs pls - longitudinal model
+
+```{r}
+pls_father <- readRDS("../data/PLS_long_father.dta")
+media <- readRDS("../data/media_long.dta")
+
+str(pls_father)
+
+pls_father <- pls_father %>%
+  filter(total_score > 0) %>%
+  select(child_id, wave, total_score)
+
+media <- media %>%
+  filter(daily_use > 0, par_id >= 30000) %>%
+  mutate(wave = as.character(wave)) %>%
+  select(child_id, wave, daily_use)
+
+media_pls_father <- media %>%
+  inner_join(pls_father, by = c("child_id", "wave"))
+
+mod_5 <- lmer(total_score ~ daily_use * wave + (1 | child_id), data = media_pls_father)
+
+summary(mod_5)
+```
+
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+
+pls_mother <- pls_mother %>%
+  filter(total_score > 0) %>%
+  select(child_id, wave, total_score)
+
+media <- media %>%
+  filter(daily_use > 0, par_id < 30000) %>%
+  mutate(wave = as.character(wave)) %>%
+  select(child_id, wave, daily_use)
+
+media_pls_father <- media %>%
+  inner_join(pls_father, by = c("child_id", "wave"))
+
+mod_6 <- lmer(total_score ~ daily_use * wave + (1 | child_id), data = media_pls_father)
+
+summary(mod_6)
+```
+
