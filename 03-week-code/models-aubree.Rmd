@@ -236,11 +236,17 @@ summary(model)
 residual_model = predict(model) - long_boi$total_score
 plot(residual_model, xlab = "child_id")
 
-long_boi %>% 
-  filter(wave ==6) %>% 
-plot(long_boi$total_score, predict(model))
+plot(total_score_pred, total_score_obs)
+
+total_score_obs = long_boi %>% 
+  select(total_score) %>% 
+  na.omit
 
 
+total_score_pred = (predict(model)
+
+dim(total_score_obs)
+total_score_pred$num
 ```
 
 
