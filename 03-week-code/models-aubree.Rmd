@@ -234,20 +234,31 @@ summary(model)
 ## finding residual for model
 ```{r}
 residual_model = predict(model) - long_boi$total_score
+
 plot(residual_model, xlab = "child_id")
 
-plot(total_score_pred, total_score_obs)
+#plot(total_score_pred, total_score_obs)
 
-total_score_obs = long_boi %>% 
+total_score_obs <- long_boi %>% 
   select(total_score) %>% 
-  na.omit
+  na.omit()
 
+total_score_pred <- predict(model)
 
-total_score_pred = (predict(model)
+dim(total_score_pred)
 
-dim(total_score_obs)
-total_score_pred$num
+is.vector(total_score_pred)
+is.vector(total_score_obs)
+
+str(total_score_obs)
+
+test <- data.frame(total_score_obs)$total_score_obs
+
+total_score_pred <- as.data.frame(total_score_pred)
+
+plot(total_score_pred$total_score_pred, test)
 ```
+
 
 
 Nick's Models I copies over 
