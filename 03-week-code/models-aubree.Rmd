@@ -220,7 +220,8 @@ media_long <- media_long %>%
 pls_long
 long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")) %>% 
   filter(wave != 4,
-         total_score > 0)
+         total_score > 0,
+         !is.na(daily_use))
 
 
 
@@ -233,7 +234,7 @@ summary(model)
 ```
 ## finding residual for model
 ```{r}
-residual_model = predict(model) - long_boi$total_score
+residual_model = predict(model, long_boi) - long_boi$total_score
 
 plot(residual_model, xlab = "child_id")
 
@@ -245,18 +246,30 @@ total_score_obs <- long_boi %>%
 
 total_score_pred <- predict(model)
 
-dim(total_score_pred)
+plot(predict(model) ~ total_score, data = long_boi) +
+abline(a = 0, b = 1)
 
-is.vector(total_score_pred)
-is.vector(total_score_obs)
+long_boi %>%
+  mutate(pred = predict(model)) %>% 
+  filter(total_score < 150) %>% 
+  ggplot(aes(total_score, pred, 
+             xmin = 50,
+             xmax = 150, 
+             ymin = 50,
+             ymax = 150,)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, col = "salmon") +
+  labs(x = "Actual PLS Score",
+       y = "Predicted PLS Score",
+       title = "Actual vs Predicted")
 
-str(total_score_obs)
+ength(predict(model))
 
-test <- data.frame(total_score_obs)$total_score_obs
+length(long_boi$total_score)
 
-total_score_pred <- as.data.frame(total_score_pred)
+sum(is.na(long_boi$total_score))
 
-plot(total_score_pred$total_score_pred, test)
+sum(is.na(long_boi$daily_use))
 ```
 
 
