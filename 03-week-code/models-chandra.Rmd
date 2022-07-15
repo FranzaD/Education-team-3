@@ -535,3 +535,31 @@ mod_7 <- lmer(total_score, BITprobavg * wave + (1 | child_id), data = bit_pls_mo
 
 ```
 
+## Model improvement explorations
+
+### adding random slope based on daily_use
+```{r}
+pls <- readRDS("../data/PLS_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+
+# clean data
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  filter(wave %in% c(1, 6)) %>% 
+  select(child_id, wave, total_score)
+
+# errors when only mother's scores are included
+media <- media %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  #filter(par_id < 30000) %>% 
+  select(child_id, wave, daily_use)
+
+media_pls <- media %>%
+  full_join(pls, by = c("child_id", "wave"))
+
+model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+```
+
