@@ -30,7 +30,7 @@ media_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta")
 media_w4 <- media_w4 %>% 
   transmute(child_id = as.character(childid),
          par_id = as.character(parid),
-         wave = as.factor(wave),
+         wave = as.factor(4),
          mealtimes = MTmealtimes,
          discipline_behavior_management = MTdcbhv1,
          behavior_management = MTdcbhv2)
