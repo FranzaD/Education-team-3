@@ -22,20 +22,44 @@ media_w1 <- readRDS(file="../data/media_data.dta") # which contain cleaned media
 media_w6 <- readRDS(file = "../data/media_wave_6.dta")
 ```
 
-# create all media in wide format
+# clean media in wave 4
 
 ```{r}
-media_wide <- inner_join(mutate(media_w1),
-           mutate(media_w6),
-           by = c("child_id", "par_id"),
-           suffix = c(".1", ".6")) %>% 
-          select(-discipline_behavior_management)
+media_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta")
+
+media_w4 <- media_w4 %>% 
+  transmute(child_id = as.character(childid),
+         par_id = as.character(parid),
+         wave = as.factor(wave),
+         mealtimes = MTmealtimes,
+         discipline_behavior_management = MTdcbhv1,
+         behavior_management = MTdcbhv2)
+
 ```
 
-# create all media in long format
+
+# transform all media to wide format
+
 ```{r}
-media_long <- full_join(mutate(media_w1, wave = 1),
-          mutate(media_w6, wave = 6))
+
+tmp <- select(media_w4,-c(wave)) %>% 
+  rename_at(vars(-par_id, -child_id), ~ paste0(., '.4'))
+
+media_wide <- full_join(media_w1,
+                     media_w6,
+                     by = c("child_id", "par_id"),
+                     suffix = c(".1", ".6")) %>% 
+          select(-discipline_behavior_management) %>% 
+          full_join(tmp,
+                   by = c("child_id", "par_id"),
+                   suffix = c(".err", ".err"))
+```
+
+# transform all media to long format
+```{r}
+media_long <- full_join(mutate(media_w1, wave = as.factor(1)),
+          mutate(media_w6, wave = as.factor(6))) %>% 
+          full_join(media_w4)
 
 # media_long <- reshape(as.data.frame(media_wide),
 #   varying = c("n_devices.1", "tv_exposure.1", "solo.1", "passive.1", "coop.1",
