@@ -68,10 +68,17 @@ media_w1 <- valuable_dataset %>%
 ```{r}
 media_w1 %>% 
 ggplot( aes(x = daily_use))+
-  geom_histogram()
+  geom_histogram(fill = "red") +
+  labs(x = "Media Involvment",
+       title = "Wave 1 Media Involvment")+
+  theme_minimal()
+
 media_w6 %>% 
 ggplot( aes(x = daily_use))+
-  geom_histogram()
+  geom_histogram(fill = "blue")+
+  labs(x = "Media Involvment",
+       title = "Wave 6 Media Involvment")+
+  theme_minimal()
 
 ```
 

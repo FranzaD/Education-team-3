@@ -66,14 +66,16 @@ summary(mod3m)
 
 #dad
 media_pls_w6 <- inner_join(PLS_w6, media_w6, by = c("par_id", "child_id"))%>% 
-  filter(par_id > 25000)
+  filter(par_id > 25000,
+         total_score >=0)
 
 mod4d <- lm(total_score ~ daily_use, data = media_pls_w6)
 summary(mod4d)
 
 #mom
 media_pls_w6 <- inner_join(PLS_w6, media_w6, by = c("par_id", "child_id"))%>% 
-  filter(par_id < 25000)
+  filter(par_id < 25000,
+         total_score >=0)
 
 mod4m <- lm(total_score ~ daily_use, data = media_pls_w6)
 summary(mod4m)
@@ -169,6 +171,11 @@ summary(mod2)
 ```
 daily use from wave 1 IS a good predictor of total score in wave 6 but only for mothers 
 
+```{r}
+
+```
+
+
 
 #Linear Mixed Effects Model
 
@@ -189,8 +196,10 @@ library(lme4)
 library(lmerTest)
 model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
 summary(model)
+plot(model)
 
-
+long_boi %>% 
+  summary(max(total_score))
 ```
 
 ```{r}
@@ -218,4 +227,76 @@ predicted: 85.59064
 child id: 1384
 observed(wave 1) = 87
 predicted: 96.579
+
+
+#Bitsea Score
+
+```{r}
+#dad wave 6 model
+dad_bit_w6 <- inner_join(media_w6, bitsea_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(par_id > 25000)
+dmod1 <- lm(daily_use ~ BITprobavg,  data = dad_bit_w6)
+summary(dmod1)
+
+mod4d <- lm(BITprobavg ~ daily_use, data = dad_bit_w6)
+summary(mod4d)
+
+#mom wave 6 bitsea
+mom_bit_w6 <- inner_join(media_w6, bitsea_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(par_id < 25000)
+mmod1 <- lm(daily_use ~ BITprobavg,  data = mom_bit_w6)
+summary(mmod1)
+
+mmod4 <- lm(BITprobavg ~ daily_use, data = mom_bit_w6)
+summary(mmod4)
+
+```
+
+```{r}
+#dad wave 6 model
+dad_bit_w6 <- inner_join(media_w6, bitsea_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(par_id > 25000)
+dmod1 <- lm(daily_use ~ BITcompavg,  data = dad_bit_w6)
+summary(dmod1)
+
+mod4d <- lm(BITcompavg ~ daily_use, data = dad_bit_w6)
+summary(mod4d)
+
+#mom wave 6 bitsea
+mom_bit_w6 <- inner_join(media_w6, bitsea_w6, 
+                              by = c("par_id", "child_id")) %>% 
+  filter(par_id < 25000)
+mmod1 <- lm(daily_use ~ BITcompavg,  data = mom_bit_w6)
+summary(mmod1)
+
+mmod4 <- lm(BITcompavg ~ daily_use, data = mom_bit_w6)
+summary(mmod4)
+
+```
+
+
+
+#ignore this 
+```{r}
+
+
+bitsea_w2_w6 <- inner_join(bitsea_w2, bitsea_w6, by = c("par_id", "child_id"),  suffix = c("_w1", "_w6"))
+
+media_bit_w1_w6 <- inner_join(media_w1_w6, bitsea_w2_w6, 
+                              by = c("par_id", "child_id")) 
+
+mod1 <- lm(daily_use_w6 ~ BITprobavg_w1 + daily_use_w1,  data = media_bit_w1_w6)
+summary(mod1)
+mod1 <- lm(BITprobavg_w6 ~ daily_use_w1 + BITprobavg_w1,  data = media_bit_w1_w6)
+summary(mod1)
+
+mod1 <- lm(daily_use_w6 ~ BITcompavg_w1 + daily_use_w1,  data = media_bit_w1_w6)
+summary(mod1)
+mod1 <- lm(BITcompavg_w6 ~ daily_use_w1 + BITcompavg_w1,  data = media_bit_w1_w6)
+summary(mod1)
+
+```
 

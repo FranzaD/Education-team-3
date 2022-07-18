@@ -229,10 +229,12 @@ long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")
 
 library(lme4)
 library(lmerTest)
-model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
+model <- lmer(total_score ~ daily_use * wave + (|child_id), data = long_boi)
 summary(model)
 
 ```
+
+
 ## finding residual for model
 ```{r}
 residual_model = predict(model, long_boi) - long_boi$total_score
@@ -247,8 +249,8 @@ total_score_obs <- long_boi %>%
 
 total_score_pred <- predict(model)
 
-plot(predict(model) ~ total_score, data = long_boi) +
-abline(a = 0, b = 1)
+#plot(predict(model) ~ total_score, data = long_boi) +
+#abline(a = 0, b = 1)
 
 long_boi %>%
   mutate(pred = predict(model)) %>% 
@@ -324,6 +326,46 @@ long_boi_dad %>%
 ```
 
 
+# trying to better model 
+```{r}
+pls_par -> full_join(pls_long_father, pls_long, by = c("child_id", "total_score"))
+
+long_boi_par -> full_join(pls_par, media_long, by = c("child_id", "par_id", "wave"))
+
+model_better <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
+summary(model)
+```
+
+
+## Chandras Code I copy over 
+```{r}
+pls <- readRDS("../data/PLS_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+
+# clean data
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  filter(wave %in% c(1, 6)) %>% 
+  select(child_id, wave, total_score)
+
+# errors when only mother's scores are included
+media <- media %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  #filter(par_id < 30000) %>% 
+  select(child_id, wave, daily_use)
+
+media_pls <- media %>%
+  full_join(pls, by = c("child_id", "wave"))
+
+model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+```
+
+
+
+
 Nick's Models I copies over 
 ```{r}
 media_w1_w6 <- inner_join(media_w1, media_w6, by = c("par_id", "child_id"), 
@@ -342,7 +384,7 @@ media_pls_w1_w6_dad <- inner_join(media_w1_w6, pls_w1_w6,
   filter(total_score_w6 > 0,
          father =="TRUE")
 
-mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)
+mod1 <- lm(daily_use_w6 ~ total_score_w1 + daily_use_w1,  data = media_pls_w1_w6)\
 summary(mod1)
 
 ```
