@@ -229,7 +229,7 @@ long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")
 
 library(lme4)
 library(lmerTest)
-model <- lmer(total_score ~ daily_use * wave + (|child_id), data = long_boi)
+model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
 summary(model)
 
 ```
@@ -356,9 +356,11 @@ media <- media %>%
   select(child_id, wave, daily_use)
 
 media_pls <- media %>%
-  full_join(pls, by = c("child_id", "wave"))
+  full_join(pls, by = c("child_id", "wave"))  
+
 
 model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
 
 summary(model)
 ```

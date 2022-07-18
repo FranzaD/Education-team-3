@@ -112,11 +112,18 @@ anova_table <- anova_table %>%
   filter(n() == 2)
 
 # now i need to create a new column factor that puts a daily score measurement as low, med high
-#but first I need to see the distribution of daily media usage
+# but first I need to see the distribution of daily media usage
+# figure out if I can create two histograms one for category wave1 and another for category wave 2
+
 ggplot(data = anova_table,
        aes(x = daily_use)) +
   geom_histogram(color = "white",
-                 fill = "darkred")
+                 fill = "darkred") +
+  ggtitle('Distribution of media usage for wave 1 and wave 6') +
+  facet_grid(~wave) +
+  theme_bw()
+
+
 ```
 
 
@@ -166,7 +173,7 @@ Multiple Linear regression doesn't get an adjusted r-squared larger than ~0.040.
 ```{r}
 
 w6_dbby_pls_model <- 
-  lm(total_score ~ digital_babysitting + daily_use + discipline_behavior_management + behavior_management + tv_exposure + n_devices +, data = wave6)
+  lm(total_score ~ digital_babysitting + daily_use + discipline_behavior_management + behavior_management + tv_exposure + n_devices, data = wave6)
 
 summary(w6_dbby_pls_model)
 ```
