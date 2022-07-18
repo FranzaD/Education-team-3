@@ -19,8 +19,8 @@ library(dplyr)
 library(janitor)
 
 wave_5 <- read_dta("../data/wave-5-(21-mo)/BB2_W5-BIT.dta")
-PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx")
-PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx", sheet = "PLS_ALL_W4")
+PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx",sheet = "PLS_ALL_W6")
 ```
 
 # clean w6 pls
