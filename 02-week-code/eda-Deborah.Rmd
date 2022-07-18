@@ -38,7 +38,7 @@ Here I've just started by creating a complete dataset for wave 6 for 3 datasets:
 ```{r}
 #creating wave 6 dataset complete with 
 wave6 <- inner_join(mt_w6_cleaned, model_w6, key = c(par_id, child_id))
-wave6 <- inner_join(wave6, PLS_data, key = c(par_id, child_id) )
+wave6 <- inner_join(wave6, PLS_w6, key = c(par_id, child_id) )
 
 wave6 <- wave6 %>% 
   filter(wave == 6) %>% 
@@ -101,11 +101,27 @@ anova_table <- anova_table %>%
     total_score != -999,
     wave != 4
     )
+#this categorizes daily_use as high-med-low, as an extra factor variable
+anova_table <- anova_table %>% 
+mutate(
+  daily_use_cat = case_when(
+    daily_use <= 0.25 ~ "LOW",
+    daily_use < 0.5 ~ "MED",
+    daily_use >= 0.5 ~ "HIGH")
+      )
+
+anova_table <- anova_table %>% 
+  mutate(daily_use_cat = as.factor(daily_use_cat))
 
 #now we need the same number of child ids for wave 6 and wave 1
 anova_table %>% 
-  summary()
+  glimpse()
 
+
+```
+
+
+```{r}
 #need to only include parent ids that exist both in wave 1 and in wave 6
 anova_table <- anova_table %>% 
   group_by(par_id) %>% 
