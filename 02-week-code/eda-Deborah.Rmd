@@ -173,7 +173,7 @@ Multiple Linear regression doesn't get an adjusted r-squared larger than ~0.040.
 ```{r}
 
 w6_dbby_pls_model <- 
-  lm(total_score ~ digital_babysitting + daily_use + discipline_behavior_management + behavior_management + tv_exposure + n_devices +, data = wave6)
+  lm(total_score ~ digital_babysitting + daily_use + discipline_behavior_management + behavior_management + tv_exposure + n_devices, data = wave6)
 
 summary(w6_dbby_pls_model)
 ```
