@@ -1,0 +1,168 @@
+---
+title: "anova-aubree"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+```{r}
+model_w2 <- readRDS(file="../data/model_w2.dta")
+model_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+```
+
+```{r}
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+mt_w6_cleaned <- readRDS(file = "../data/media_wave_6.dta")
+PLS_w6 <- readRDS(file = "../data/PLS_w6.dta")
+```
+
+### Creating tables
+
+Thoughts/Ideas:
+* explore an ANOVA model to see if the hypothesized predictors that have factors are actually significant
+* definitely check out the most efficient linear model according to Aubree's ML code that optimized for certain parameters
+* ANCOVA model is mixes linear regression with anova, this ultimately may be a good idea to implement since MEDIA, PLS, BITSEA, Income are quantitative (numerical) and Ethnicity, Education are qualitative (categorical)
+
+##### creating wave6 data for linear models
+
+Here I've just started by creating a complete dataset for wave 6 for 3 datasets:
+1. media
+2. BITSEA
+3. PLS
+
+```{r}
+#creating wave 6 dataset complete with 
+wave6 <- inner_join(mt_w6_cleaned, model_w6, key = c(par_id, child_id))
+wave6 <- inner_join(wave6, PLS_w6, key = c(par_id, child_id) )
+
+wave6 <- wave6 %>% 
+  filter(wave == 6) %>% 
+  glimpse()
+
+#wave6 <- inner_join(wave6, valuable_dataset, key = c(par_id, child_id) )
+wave6 %>% 
+  glimpse()
+```
+
+##### creating table for ANOVA model
+
+Here I added education to try and create an ANOVA model to see if we get a better quality model.
+
+```{r}
+#education doesn't change across waves (assumption)
+ed <- valuable_dataset %>% 
+  select(highest_degree_completed, child_id, par_id)
+
+wave6 <- inner_join(wave6, ed, key = c(par_id, child_id) )
+
+wave6 %>% 
+  glimpse()
+
+#here I'm getting rid of NA values in the education factor
+wave6 <- wave6 %>% 
+  filter(!is.na(highest_degree_completed)) %>% 
+  glimpse()
+
+```
+
+AH YES CLARITY:
+
+```{r}
+# wave 1 media and pls 
+pls_media_w1 <- valuable_dataset %>% 
+  filter(wave.y.y == 1) %>% 
+  mutate(wave = as.factor(wave.y.y)) %>% 
+  select(wave, child_id, par_id, total_score, daily_use) 
+
+# wave 6 media and pls 
+pls_media_w6 <- wave6 %>% 
+  select(wave, child_id, par_id, total_score, daily_use)
+
+#this may have done it, just joining with child and parent ids
+anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
+
+#now there are missing value codes, NAs, and wave 4 data (for some reason??), I need to get rid of:
+anova_table <- anova_table %>% 
+  na.omit() %>% 
+  filter( 
+    total_score != -111,
+    total_score != -222,
+    total_score != -333,
+    total_score != -444,
+    total_score != -555,
+    total_score != -666,
+    total_score != -777,
+    total_score != -888,
+    total_score != -999,
+    wave != 4
+    )
+#this categorizes daily_use as high-med-low, as an extra factor variable
+anova_table <- anova_table %>% 
+mutate(
+  daily_use_cat = case_when(
+    daily_use <= 0.25 ~ "LOW",
+    daily_use < 0.5 ~ "MED",
+    daily_use >= 0.5 ~ "HIGH")
+      )
+
+anova_table <- anova_table %>% 
+  mutate(daily_use_cat = as.factor(daily_use_cat))
+
+#now we need the same number of child ids for wave 6 and wave 1
+anova_table %>% 
+  glimpse()
+
+
+```
+
+BOX PLOTS
+```{r}
+anova_table %>% 
+  ggplot(aes(x = daily_use_cat, 
+         y = total_score,
+         color = daily_use_cat)) + 
+geom_boxplot() + 
+  geom_jitter() + 
+  facet_grid(~ wave)
+```
+
+## Deborah's eda file has tests to show staticlly what we see in the graphs. 
+
+```{r}
+bit <- readRDS("../data/BIT_long_mother.dta")
+bit$wave[bit$wave == 2] <- 1
+
+# bit$wave[bit$wave == 5] <- 4
+```
+
+
+```{r}
+bit_and_anova_table <- full_join(bit, anova_table, by = c("child_id", "par_id", "wave"))
+
+bit_and_anova_table <- 
+  bit_and_anova_table %>% 
+select("par_id", "child_id",  "wave", "total_score", "daily_use_cat", "BITprobavg")
+
+anova_2 <- aov(total_score ~ BITprobavg + daily_use_cat, data = bit_and_anova_table)
+summary(anova_2)
+```
+
+
+
+
