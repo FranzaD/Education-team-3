@@ -1,0 +1,56 @@
+```{r}
+library(tidyverse)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(nlme)
+```
+
+
+# Model Improvement Explorations
+
+## recreate model to include wave 4 model
+```{r}
+pls <- readRDS("../data/PLS_long.dta")
+media <- readRDS("../data/media_long.dta")
+
+#media %>%
+#  group_by(wave) %>%
+#  summarise_all(is.na) %>%
+#  summarise_all(sum) %>%
+#  select(-c(par_id, child_id))
+
+# clean data
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  select(child_id, wave, daily_use)
+
+media_pls <- media %>%
+  full_join(pls, by = c("child_id", "wave"))
+
+model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use) & !is.na(total_score))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+```
