@@ -159,7 +159,38 @@ bit_and_anova_table <-
   bit_and_anova_table %>% 
 select("par_id", "child_id",  "wave", "total_score", "daily_use_cat", "BITprobavg")
 
-anova_2 <- aov(total_score ~ BITprobavg + daily_use_cat, data = bit_and_anova_table)
+bit_and_anova_table <- bit_and_anova_table %>% 
+  filter(wave != 5) %>% 
+  na.omit()
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  BITprobavg_cat = case_when(
+    BITprobavg <= 0.3 ~ "LOW",
+    BITprobavg < 0.6 ~ "MED",
+    BITprobavg >= 0.6 ~ "HIGH")
+      )
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  BITprobavg_cat = case_when(
+    BITprobavg <= 0.3 ~ "LOW",
+    BITprobavg < 0.6 ~ "MED",
+    BITprobavg >= 0.6 ~ "HIGH")
+      )
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  total_score_cat = case_when(
+    total_score <= 80 ~ "LOW",
+    total_score < 110 ~ "MED",
+    total_score >= 110 ~ "HIGH")
+      )
+
+
+hist(bit_and_anova_table$total_score)
+
+anova_2 <- aov(BITprobavg ~ total_score_cat + daily_use_cat + total_score_cat:daily_use_cat, data = bit_and_anova_table)
 summary(anova_2)
 ```
 
