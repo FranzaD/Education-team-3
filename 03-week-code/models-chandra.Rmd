@@ -579,4 +579,48 @@ media_pred %>%
        title = "Actual vs Predicted PLS Scores")
 
 ```
+### mother and father data from pls from all waves and media wave 1 and 4
 
+```{r}
+pls <- readRDS("../data/PLS_long.dta")
+media <- readRDS("../data/media_long.dta")
+
+# clean data
+
+# including both parents data and data from wave 4 didn't effect our model
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  #filter(wave %in% c(1, 6)) %>% 
+  select(child_id, wave, total_score)
+
+# errors when only mother's scores are included ??? QUE??
+media <- media %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  #filter(par_id < 30000) %>% 
+  select(child_id, wave, daily_use)
+
+media_pls <- media %>%
+  full_join(pls, by = c("child_id", "wave"))
+
+model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use) & !is.na(total_score))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+```
