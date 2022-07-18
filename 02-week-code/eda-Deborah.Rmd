@@ -112,11 +112,18 @@ anova_table <- anova_table %>%
   filter(n() == 2)
 
 # now i need to create a new column factor that puts a daily score measurement as low, med high
-#but first I need to see the distribution of daily media usage
+# but first I need to see the distribution of daily media usage
+# figure out if I can create two histograms one for category wave1 and another for category wave 2
+
 ggplot(data = anova_table,
        aes(x = daily_use)) +
   geom_histogram(color = "white",
-                 fill = "darkred")
+                 fill = "darkred") +
+  ggtitle('Distribution of media usage for wave 1 and wave 6') +
+  facet_grid(~wave) +
+  theme_bw()
+
+
 ```
 
 
