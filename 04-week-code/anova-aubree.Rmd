@@ -152,5 +152,17 @@ bit$wave[bit$wave == 2] <- 1
 ```
 
 
+```{r}
+bit_and_anova_table <- full_join(bit, anova_table, by = c("child_id", "par_id", "wave"))
+
+bit_and_anova_table <- 
+  bit_and_anova_table %>% 
+select("par_id", "child_id",  "wave", "total_score", "daily_use_cat", "BITprobavg")
+
+anova_2 <- aov(total_score ~ BITprobavg + daily_use_cat, data = bit_and_anova_table)
+summary(anova_2)
+```
+
+
 
 
