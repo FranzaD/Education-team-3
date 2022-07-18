@@ -129,7 +129,7 @@ anova_table %>%
 
 ```{r}
 #need to only include parent ids that exist both in wave 1 and in wave 6
-anova_table <- anova_table %>% 
+anova_table %>% 
   group_by(par_id) %>% 
   filter(n() == 2)
 
@@ -193,6 +193,12 @@ aov_model <- aov(total_score ~ daily_use_cat, anova_table)
 
 summary(aov_model)
 ```
+$\mu_i =$ average PLS score for each category of infant daily media usage
+$$y_{ij}= \mu_i + \epsilon_{ij}$$
+
+
+
+
 ```{r}
 #Two Sample T-test testing if at least one of the means is unlike the others
 t.test(anova_table$total_score[anova_table$daily_use_cat == "MED"],anova_table$total_score[anova_table$daily_use_cat == "HIGH"], var.equal = TRUE, conf.level = 0.95)
@@ -202,6 +208,7 @@ t.test(anova_table$total_score[anova_table$daily_use_cat == "MED"],anova_table$t
 ```{r}
 t.test(anova_table$total_score[anova_table$daily_use_cat == "LOW"],anova_table$total_score[anova_table$daily_use_cat == "MED"], var.equal = TRUE, conf.level = 0.95)
 ```
+
 
 
 ```{r}
@@ -236,10 +243,10 @@ This maps PLS scores to years of school completed (which has a ridiculous amount
 More relevant variables but this adjusted r-squared values makes me very sad:
 
 ```{r}
-w6_media_bitsea_model <- 
-  lm(total_score ~ daily_use , data = wave6)
+#w6_media_bitsea_model <- 
+#  lm(total_score ~ daily_use , data = wave6)
 
-summary(w6_media_pls_model)
+#summary(w6_media_pls_model)
 ```
 
 ##### Graphs for Week 2 powerpoint presentation:
