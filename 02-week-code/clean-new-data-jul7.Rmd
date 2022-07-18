@@ -391,7 +391,7 @@ BIT_long_mother <- BIT_long %>%
 ```{r}
 tmp_f <- function(df){
   df <- as.data.frame(df) %>% 
-    reshape(varying = c("BITcompavg.2", "BITcompavg.5", "BITcompavg.6", "BITprobavg.2", "BITprobavg.5", "BITprobavg.6"),
+    reshape(varying = c("BITcompavg.2", "BITprobavg.2", "BITcompavg.5", "BITprobavg.5", "BITcompavg.6",   "BITprobavg.6"),
     v.names = c("BITcompavg","BITprobavg"),
     timevar = "wave",
     times = c("2","5","6"),
@@ -433,19 +433,39 @@ PLS_tmp <- filter(PLS_tmp,wave == 1) %>%
             by=c("par_id", "child_id"), 
             suffix = c(".error", ".error"))
 
+PLS_tmp_father <- as.data.frame(PLS_tmp) %>%
+  filter(par_id >= 30000)
+
 PLS_tmp <- as.data.frame(PLS_tmp) %>%
   filter(par_id < 30000)
 
 ```
 
 ### by auditory_comprehension_score, expressive_communication_score, total score
-
 ```{r}
 PLS_long <- reshape(PLS_tmp,
-  varying = c("auditory_comprehension_score.1", "auditory_comprehension_score.4",
-              "auditory_comprehension_score.6","expressive_communication_score.1",
-              "expressive_communication_score.4","expressive_communication_score.6",
-              "total_score.1", "total_score.4", "total_score.6"), 
+  varying = c("auditory_comprehension_score.1", "expressive_communication_score.1",
+              "total_score.1",
+              "auditory_comprehension_score.4", "expressive_communication_score.4",
+              "total_score.4",
+              "auditory_comprehension_score.6","expressive_communication_score.6",
+              "total_score.6"), 
+  v.names = c("auditory_comprehension_score","expressive_communication_score",
+              "total_score"),
+  timevar = "wave",
+  times = c("1","4","6"),
+  direction = "long")
+```
+
+
+```{r}
+PLS_long_father <- reshape(PLS_tmp_father,
+  varying = c("auditory_comprehension_score.1", "expressive_communication_score.1",
+              "total_score.1",
+              "auditory_comprehension_score.4", "expressive_communication_score.4",
+              "total_score.4",
+              "auditory_comprehension_score.6","expressive_communication_score.6",
+              "total_score.6"), 
   v.names = c("auditory_comprehension_score","expressive_communication_score",
               "total_score"),
   timevar = "wave",
@@ -457,20 +477,32 @@ PLS_long <- reshape(PLS_tmp,
 
 
 ```{r}
-saveRDS(PLS_long, file="../data/PLS_long.dta")
 saveRDS(BIT_long_par, file="../data/BIT_long_par.dta")
 saveRDS(BIT_long_father, file="../data/BIT_long_father.dta")
 saveRDS(BIT_long_mother, file="../data/BIT_long_mother.dta")
 saveRDS(media_data, file="../data/media_data.dta")
 saveRDS(demography, file="../data/demography.dta")
+
+saveRDS(PLS_long, file="../data/PLS_long_mother.dta")
+saveRDS(PLS_long_father, file="../data/PLS_long_father.dta")
+saveRDS(PLS_tmp, file="../data/PLS_wide_mother.dta")
+saveRDS(PLS_tmp_father, file="../data/PLS_wide_father.dta")
+saveRDS(BIT_long, file="../data/BIT_wide.dta")
 ```
 
 # load data back
 ```{r}
-PLS_long <- readRDS(file="../data/PLS_long.dta")
-BIT_long_par <- readRDS(file="../data/BIT_long_par.dta")
-BIT_long_father <- readRDS(file="../data/BIT_long_father.dta")
-BIT_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
+
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+
 ```

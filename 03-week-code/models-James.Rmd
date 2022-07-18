@@ -1,0 +1,76 @@
+---
+title: "models James"
+author: "James"
+date: '2022-07-12'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+```{r}
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+```
+
+# try linear model for PLS
+
+```{r}
+ mod1 <- inner_join(pls_wide, media_wide, by = c("child_id", "par_id")) %>%  
+  filter(total_score.6 >= 0) %>% 
+  lm(total_score.6 ~ daily_use.1 +total_score.1 ,  data = .)
+summary(mod1)
+
+# Sig
+mod1 <- inner_join(pls_wide, media_wide, by = c("child_id", "par_id")) %>%  
+  filter(total_score.6 >= 0) %>% 
+  lm(total_score.6 ~ daily_use.6,  data = .)
+summary(mod1)
+
+mod1 <- inner_join(pls_wide, media_wide, by = c("child_id", "par_id")) %>%  
+  filter(total_score.1 >= 0) %>% 
+  lm(total_score.1 ~ daily_use.1,  data = .)
+summary(mod1)
+```
+
+# try linear model for BITSEA
+## wave 6 only
+avg ~ daily_use sig
+
+```{r}
+mod1 <- bit_wide %>% 
+  inner_join(media_wide, by = c("child_id", "par_id")) %>%  
+  filter(BITprobavg.6 >= 0) %>% 
+  lm(BITprobavg.6 ~ daily_use.6 ,  data = .)
+summary(mod1)
+
+mod1 <- bit_wide %>% 
+  inner_join(media_wide, by = c("child_id", "par_id")) %>%  
+  filter(BITcompavg.6 >= 0) %>% 
+  lm(BITcompavg.6 ~ daily_use.6 ,  data = .)
+summary(mod1)
+```

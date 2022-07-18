@@ -1,0 +1,88 @@
+---
+title: "clean media"
+author: "James"
+date: '2022-07-12'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+media_w1 <- readRDS(file="../data/media_data.dta") # which contain cleaned media_w1
+media_w6 <- readRDS(file = "../data/media_wave_6.dta")
+```
+
+# clean media in wave 4
+
+```{r}
+media_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta")
+
+media_w4 <- media_w4 %>% 
+  transmute(child_id = as.character(childid),
+         par_id = as.character(parid),
+         wave = as.factor(4),
+         mealtimes = MTmealtimes,
+         discipline_behavior_management = MTdcbhv1,
+         behavior_management = MTdcbhv2)
+
+```
+
+
+# transform all media to wide format
+
+```{r}
+
+tmp <- select(media_w4,-c(wave)) %>% 
+  rename_at(vars(-par_id, -child_id), ~ paste0(., '.4'))
+
+media_wide <- full_join(media_w1,
+                     media_w6,
+                     by = c("child_id", "par_id"),
+                     suffix = c(".1", ".6")) %>% 
+          select(-discipline_behavior_management) %>% 
+          full_join(tmp,
+                   by = c("child_id", "par_id"),
+                   suffix = c(".err", ".err"))
+```
+
+# transform all media to long format
+```{r}
+media_long <- full_join(mutate(media_w1, wave = as.factor(1)),
+          mutate(media_w6, wave = as.factor(6))) %>% 
+          full_join(media_w4)
+
+# media_long <- reshape(as.data.frame(media_wide),
+#   varying = c("n_devices.1", "tv_exposure.1", "solo.1", "passive.1", "coop.1",
+#               "mealtimes.1", "behavior_management.1", "positive_beliefs_media.1",
+#               "educational_benefits.1", "digital_babysitting.1", "daily_use.1",
+#               "n_devices.6", "tv_exposure.6", "solo.6", "passive.6", "coop.6",
+#               "mealtimes.6", "behavior_management.6", "positive_beliefs_media.6",
+#               "educational_benefits.6", "digital_babysitting.6", "daily_use.6"), 
+#   v.names = c("n_devices", "tv_exposure", "solo", "passive", "coop", "mealtimes",
+#               "behavior_management", "positive_beliefs_media", 
+#               "educational_benefits", "digital_babysitting", "daily_use"),
+#   timevar = "wave",
+#   times = c("1","6"),
+#   direction = "long")
+```
+
+# save data
+```{r}
+saveRDS(media_long, file="../data/media_long.dta")
+saveRDS(media_wide, file="../data/media_wide.dta")
+```
+# load data back
+```{r}
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+```

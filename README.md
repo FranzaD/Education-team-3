@@ -22,22 +22,34 @@ Education-3
 
 1. open `./01-week-code/eda.Rmd` and run all chunk
 2. open `./02-week-code/clean-new-data-jul7.Rmd` and run all chunk
-3. Run 1 and 2 only ONCE. never run it again!
-4. import new data by:
+3. open `./02-week-code/clean-w6-media.Rmd` and run all chunk
+4. open `./03-week-code/clean-media.Rmd` and run all chunk
+5. Run **1-4** only ONCE. never run it again!
+6. import new data by:
 ```{r}
-PLS_long <- readRDS(file="../data/PLS_long.dta")
-BIT_long_par <- readRDS(file="../data/BIT_long_par.dta")
-BIT_long_father <- readRDS(file="../data/BIT_long_father.dta")
-BIT_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
+
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
 ```
 
 ## what does those data means?
 
-- **BIT_long_par**  include ONLY **BITSEA** scores in all waves (avg score of parents)
-- **BIT_long_father**  include ONLY **BITSEA** scores in all waves (of father)
-- **BIT_long_mother**  include ONLY **BITSEA** scores in all waves (of mother)
-- **PLS_long**  include include ONLY **PLS** scores in all waves
+- **bit_long_par**  include ONLY **BITSEA** scores in all waves (avg score of parents)
+- **bit_long_father**  include ONLY **BITSEA** scores in all waves (of father)
+- **bit_long_mother**  include ONLY **BITSEA** scores in all waves (of mother)
+- **pls_long**  include include ONLY **PLS** scores in all waves
 - **Media**  include include ONLY  **media info** media data in all waves **has only media from wave 1 for now**
 - **Demographic dataset** include ONLY demography (assuming that it doesn't change)
