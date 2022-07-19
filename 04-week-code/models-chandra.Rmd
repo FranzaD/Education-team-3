@@ -14,11 +14,11 @@ library(nlme)
 pls <- readRDS("../data/PLS_long.dta")
 media <- readRDS("../data/media_long.dta")
 
-#media %>%
-#  group_by(wave) %>%
-#  summarise_all(is.na) %>%
-#  summarise_all(sum) %>%
-#  select(-c(par_id, child_id))
+media %>%
+  group_by(wave) %>%
+  summarise_all(is.na) %>%
+  summarise_all(sum) %>%
+  select(-c(par_id, child_id))
 
 # clean data
 pls <- pls %>% 
@@ -27,7 +27,8 @@ pls <- pls %>%
   select(child_id, wave, total_score)
 
 media <- media %>% 
-  mutate(wave = as.factor(wave)) %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
   select(child_id, wave, daily_use)
 
 media_pls <- media %>%
