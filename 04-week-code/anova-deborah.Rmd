@@ -142,12 +142,11 @@ ggplot(anova_table, aes(x = daily_use_cat, y = total_score, color = daily_use_ca
 
 ##### Scatterplot of PLS scores and Infant Media Use 
 ```{r}
-g <- ggplot(anova_table, aes(x = daily_use, y = total_score, color = daily_use_cat)) +
+ggplot(anova_table, aes(x = daily_use, y = total_score, color = daily_use_cat)) +
   geom_point() +
-  facet_grid(~wave) #+
-#  geom_smooth(method=lm)
+  facet_grid(~wave) +
+  geom_smooth(method=lm)
 
-g + stat_ellipse()
 
 #ggplot(anova_table, aes(x = total_score, y = daily_use)) +
 #geom_point(size=2, shape=23)
