@@ -1,0 +1,106 @@
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+
+#### Loading the Data Table
+
+```{r}
+model_w2 <- readRDS(file="../data/model_w2.dta")
+model_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+```
+
+```{r}
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+```
+
+```{r}
+#creating wave 6 dataset complete with 
+wave6 <- inner_join(mt_w6_cleaned, model_w6, key = c(par_id, child_id))
+wave6 <- inner_join(wave6, PLS_w6, key = c(par_id, child_id) )
+
+wave6 <- wave6 %>% 
+  filter(wave == 6)
+
+```
+
+```{r}
+#education doesn't change across waves (assumption)
+ed <- valuable_dataset %>% 
+  select(highest_degree_completed, child_id, par_id)
+
+wave6 <- inner_join(wave6, ed, key = c(par_id, child_id) )
+
+#here I'm getting rid of NA values in the education factor
+wave6 <- wave6 %>% 
+  filter(!is.na(highest_degree_completed))
+```
+
+```{r}
+# wave 1 media and pls 
+pls_media_w1 <- valuable_dataset %>% 
+  filter(wave.y.y == 1) %>% 
+  mutate(wave = as.factor(wave.y.y),
+         pargen = as.character(par_gen.x)) %>% 
+  select(wave, child_id, par_id, pargen, total_score, daily_use) 
+
+# wave 6 media and pls 
+pls_media_w6 <- wave6 %>% 
+  select(wave, child_id, par_id, pargen, total_score, daily_use)
+
+#wave 4 media and pls DAILY-USE
+#pls_media_w4 <- full_join(PLS_w4, media_w4, key = c(wave, child_id, par_id))
+
+#pls_media_w4 <- pls_media_w4 %>% 
+#  select(wave, child_id, par_id, total_score, daily_use)
+
+#this may have done it, just joining with child and parent ids
+anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
+#anova_table <- full_join(anova_table, pls_media_w4,key = c(child_id, par_id))
+
+#now there are missing value codes, NAs, and wave 4 data (for some reason??), I need to get rid of:
+anova_table <- anova_table %>% 
+  na.omit() %>% 
+  filter( 
+    total_score != -111,
+    total_score != -222,
+    total_score != -333,
+    total_score != -444,
+    total_score != -555,
+    total_score != -666,
+    total_score != -777,
+    total_score != -888,
+    total_score != -999,
+    )
+#this categorizes daily_use as high-med-low, as an extra factor variable
+anova_table <- anova_table %>% 
+mutate(
+  daily_use_cat = case_when(
+    daily_use <= 0.25 ~ "LOW",
+    daily_use < 0.5 ~ "MED",
+    daily_use >= 0.5 ~ "HIGH")
+      )
+
+anova_table <- anova_table %>% 
+  mutate(daily_use_cat = as.factor(daily_use_cat))
+
+#now we need the same number of child ids for wave 6 and wave 1
+anova_table %>% 
+  glimpse()
+```
+
+Data Observations:
+* the daily_use measurement for a single child is different depending on the parent asked
+* a single child is counted twice, since there are both mother and fathers in these data sets
+  + we should likely include parent gender
+
