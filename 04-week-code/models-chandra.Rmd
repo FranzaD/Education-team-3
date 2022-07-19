@@ -9,32 +9,29 @@ library(nlme)
 
 # Model Improvement Explorations
 
-## recreate model to include wave 4 model
+## base (null) model
 ```{r}
-pls <- readRDS("../data/PLS_long.dta")
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
 media <- readRDS("../data/media_long.dta")
 
-media %>%
-  group_by(wave) %>%
-  summarise_all(is.na) %>%
-  summarise_all(sum) %>%
-  select(-c(par_id, child_id))
 
 # clean data
-pls <- pls %>% 
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
   mutate(wave = as.factor(wave),
          total_score = ifelse(total_score < 0, NA, total_score)) %>% 
-  select(child_id, wave, total_score)
+  select(par_id, child_id, wave, total_score)
 
 media <- media %>% 
   mutate(wave = as.factor(wave),
          daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
-  select(child_id, wave, daily_use)
+  select(par_id, child_id, wave, daily_use)
 
 media_pls <- media %>%
-  full_join(pls, by = c("child_id", "wave"))
+  full_join(pls, by = c("par_id", "child_id", "wave"))
 
-model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+model_0 <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls, REML = FALSE)
 
 summary(model)
 
@@ -53,5 +50,314 @@ media_pred %>%
   labs(x = "Acutal Total PLS Score",
        y = "Predicted Total PLS Score",
        title = "Actual vs Predicted PLS Scores")
+
+cor(media_pred$total_score, predict(model, newdata = media_pred))
+```
+
+## add parenting class taken as covariate
+
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+
+
+# clean data
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use)
+
+demo <- demo %>%
+  select(par_id, child_id, parenting_class_taken)
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id"))
+
+model <- lmer(total_score ~ parenting_class_taken + daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use) & !is.na(total_score))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+```
+## add years school complete as covariate - lowest p-value
+
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+
+
+# clean data
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use)
+
+demo <- demo %>%
+  select(par_id, child_id, years_school_complete)
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id"))
+
+model <- lmer(total_score ~ years_school_complete + daily_use * wave + (1 + daily_use | child_id), data = media_pls, REML = FALSE)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use), !is.na(total_score), !is.na(years_school_complete))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+cor(media_pred$total_score, predict(model, newdata = media_pred))
+```
+
+## add years school complete and parenting class taken as covariates
+
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+
+
+# clean data
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use)
+
+demo <- demo %>%
+  select(par_id, child_id, years_school_complete, parenting_class_taken)
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id"))
+
+model <- lmer(total_score ~ 
+                # fixed effects
+                years_school_complete + 
+                parenting_class_taken + 
+                # interaction term
+                daily_use * wave + 
+                # random effects
+                (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use), !is.na(total_score), !is.na(years_school_complete))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+```
+
+## add household income level as covariate
+
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+
+
+# clean data
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use)
+
+demo <- demo %>%
+  select(par_id, child_id, household_income_numerical)
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id"))
+
+model <- lmer(total_score ~ household_income_numerical + daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use), !is.na(total_score), !is.na(household_income_numerical))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+```
+
+
+## add household income and highest degree earned as covariates
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+
+
+# clean data
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use)
+
+demo <- demo %>%
+  select(par_id, child_id, years_school_complete, household_income_numerical)
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id"))
+
+model <- lmer(total_score ~ 
+                # fixed effects
+                years_school_complete + 
+                household_income_numerical + 
+                # interaction term
+                daily_use * wave + 
+                # random effects
+                (1 + daily_use | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use), !is.na(total_score), !is.na(years_school_complete), !is.na(household_income_numerical))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+```
+## Aubree's original model
+
+```{r}
+pls <- readRDS("../data/PLS_long_mother.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+
+
+# clean data
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use) %>%
+  filter(par_id < 30000, wave != 4)
+
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id"))
+
+model <- lmer(total_score ~ daily_use * wave + (1 | child_id), data = media_pls, REML = FALSE)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use), !is.na(total_score))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+cor(media_pred$total_score, predict(model, newdata = media_pred))
 
 ```
