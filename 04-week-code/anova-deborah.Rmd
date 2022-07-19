@@ -7,9 +7,6 @@ library(tidyverse)
 library(dplyr)
 library(janitor)
 library(ggcorrplot)
-#install.packages("ggcorrplot")
-#library(GGally)
-#install.packages("GGally")
 ```
 
 #### Loading the Data Table
@@ -156,8 +153,81 @@ ggplot(anova_table, aes(x = daily_use, y = total_score, fill = pargen)) +
 ```
 #### One-Way Anova Model
 
+__ANOVA takes into account variability within groups and between groups, by comparing means among groups.__
+
+_Assumptions are consistent regardless of whether ANOVA is balanced or not:_
+1. responses follow a normal distribution 
+  * PLS scores histograms look approx. normal, but if take the sample means of pls scores in each media category and bootstrap then according to CLT we should be able to say that the sample means follow a approx normal distribution (check out ppt for wk2 for origial histogram of pls scores (not means of scores))
+
+2. Observations are independent within and between groups
+  * questionable as media usage and receptive and expressive communication skills are likely dependent (or are they? potential HYPOTHESIS TEEESTT BBBAABBYYY) 
+
+3. errors/residuals are normally distributed with a constant variance, expectation 0
+  * totally unknown
+
 ```{r}
 aov_model <- aov(total_score ~ daily_use_cat, anova_table)
 
 summary(aov_model)
 ```
+
+
+#### Two-Way Anova Model:
+
+```{r}
+bit <- readRDS("../data/BIT_long_mother.dta")
+bit$wave[bit$wave == 2] <- 1
+
+# bit$wave[bit$wave == 5] <- 4
+```
+
+
+```{r}
+bit_and_anova_table <- full_join(bit, anova_table, by = c("child_id", "par_id", "wave"))
+
+bit_and_anova_table <- 
+  bit_and_anova_table %>% 
+select("par_id", "child_id",  "wave", "total_score", "daily_use_cat", "BITprobavg")
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+  filter(wave != 5) %>% 
+  na.omit()
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  BITprobavg_cat = case_when(
+    BITprobavg <= 0.3 ~ "LOW",
+    BITprobavg < 0.6 ~ "MED",
+    BITprobavg >= 0.6 ~ "HIGH")
+      )
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  BITprobavg_cat = case_when(
+    BITprobavg <= 0.3 ~ "LOW",
+    BITprobavg < 0.6 ~ "MED",
+    BITprobavg >= 0.6 ~ "HIGH")
+      )
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  total_score_cat = case_when(
+    total_score <= 80 ~ "LOW",
+    total_score < 110 ~ "MED",
+    total_score >= 110 ~ "HIGH")
+      )
+
+
+hist(bit_and_anova_table$total_score)
+
+anova_2 <- aov(BITprobavg ~ total_score_cat + daily_use_cat + total_score_cat:daily_use_cat, data = bit_and_anova_table)
+summary(anova_2)
+```
+##### Tukey Test for Two Way Anova
+```{r}
+#https://rpubs.com/aaronsc32/post-hoc-analysis-tukey
+
+tukey.test <- TukeyHSD(anova_2)
+plot(tukey.test)
+```
+
