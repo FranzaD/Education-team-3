@@ -151,6 +151,18 @@ ggplot(anova_table, aes(x = daily_use, y = total_score, fill = pargen)) +
 #ggplot(anova_table, aes(x = total_score, y = daily_use)) +
 #geom_point(size=2, shape=23)
 ```
+##### Histogram of PLS scores filled by Media Usage
+
+```{r}
+ggplot(anova_table, aes(x=total_score, fill=daily_use_cat)) + 
+  geom_histogram(color="darkgreen") +
+  facet_grid(~wave)
+
+```
+Observations:
+
+PLS scores are not normally distributed, however generally there's the least amount of counts for infants who had higher media exposure. It's worth noting that the mean for PLS scores for both waves looks a bit less than 100. Wave one is right skewed, potentially because of a few outliers, meanwhile wave 6 is well clustered.
+
 #### One-Way Anova Model
 
 __ANOVA takes into account variability within groups and between groups, by comparing means among groups.__
