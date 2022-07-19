@@ -154,7 +154,7 @@ ggplot(anova_table, aes(x = daily_use, y = total_score, fill = pargen)) +
 #ggplot(anova_table, aes(x = total_score, y = daily_use)) +
 #geom_point(size=2, shape=23)
 ```
-
+#### One-Way Anova Model
 
 ```{r}
 aov_model <- aov(total_score ~ daily_use_cat, anova_table)
