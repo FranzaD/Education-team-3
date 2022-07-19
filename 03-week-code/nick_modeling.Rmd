@@ -133,6 +133,10 @@ media_pls_w1_w6 <- inner_join(media_w1_w6, pls_w1_w6,
                               by = c("par_id", "child_id")) %>% 
   filter(total_score_w6 > 0 )
 
+media_long %>% 
+  ggplot(aes(x = n_devices)) +
+  geom_histogram(binwidth = 2)
+
 ```
 
 ```{r}

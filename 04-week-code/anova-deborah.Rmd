@@ -9,7 +9,7 @@ library(janitor)
 library(ggcorrplot)
 ```
 
-#### Loading the Data Table
+### Loading the Data Table
 
 ```{r}
 model_w2 <- readRDS(file="../data/model_w2.dta")
@@ -102,6 +102,10 @@ anova_table <- anova_table %>%
            )
          )
 
+#trying to add BITprobavg
+#solo, passive, coup mealtimes
+
+
 #now we need the same number of child ids for wave 6 and wave 1 - we've paused about this
 #anova_table %>% 
 #  glimpse()
@@ -113,7 +117,7 @@ Data Observations:
   + we should likely include parent gender, gender is included
 * PLS score is unique to each child, it was not assessed through each parent so it shouldn't vary by mother or father
   
-#### EDA
+### EDA
 
 ##### Histogram of infant daily media usage in wave 1 and wave 6:
 
@@ -163,7 +167,7 @@ Observations:
 
 PLS scores are not normally distributed, however generally there's the least amount of counts for infants who had higher media exposure. It's worth noting that the mean for PLS scores for both waves looks a bit less than 100. Wave one is right skewed, potentially because of a few outliers, meanwhile wave 6 is well clustered.
 
-#### One-Way Anova Model
+### One-Way Anova Model
 
 __ANOVA takes into account variability within groups and between groups, by comparing means among groups.__
 
@@ -184,7 +188,7 @@ summary(aov_model)
 ```
 
 
-#### Two-Way Anova Model:
+### Two-Way Anova Models:
 
 ```{r}
 bit <- readRDS("../data/BIT_long_mother.dta")
@@ -192,6 +196,7 @@ bit$wave[bit$wave == 2] <- 1
 
 # bit$wave[bit$wave == 5] <- 4
 ```
+
 
 
 ```{r}
@@ -224,9 +229,9 @@ mutate(
 bit_and_anova_table <- bit_and_anova_table %>% 
 mutate(
   total_score_cat = case_when(
-    total_score <= 80 ~ "LOW",
-    total_score < 110 ~ "MED",
-    total_score >= 110 ~ "HIGH")
+    total_score <= 80 ~ "LOW_ts",
+    total_score < 110 ~ "MED_ts",
+    total_score >= 110 ~ "HIGH_ts")
       )
 
 
@@ -241,5 +246,55 @@ summary(anova_2)
 
 tukey.test <- TukeyHSD(anova_2)
 plot(tukey.test)
+
+
+TukeyHSD(anova_2)
+```
+##### 2-Way ANOVA: PLS = Media + parent Gender
+
+```{r}
+aov_model <- aov(total_score ~ daily_use_cat + pargen + pargen:daily_use_cat , anova_table)
+
+summary(aov_model)
+```
+Interpretation:
+
+Parent gender is not a significant covariate in this two-way anova model. Not a significant different in PLS scores based on parent gender.
+
+##### 1-Way ANOVA: PLS = Media + parent Gender
+
+```{r}
+aov_model <- aov(total_score ~ daily_use_cat, anova_table)
+
+summary(aov_model)
+```
+```{r}
+ggplot(bit_and_anova_table, aes(x=total_score)) + 
+  geom_histogram(color ="white", fill = "pink", bins = 30) +
+  labs(title  = "Distribution of Infant PLS Scores for Waves 1 and 6", x ="Infant PLS Scores") + 
+  facet_grid(~wave)
+
+```
+
+
+
+```{r}
+anova_table %>% 
+ggplot(aes(x = daily_use)) + 
+  geom_histogram(color ="white", fill = "lightblue", 
+                 bins = 10) + 
+  labs(title  = "Distribution of Infant Media Usage for Waves 1 and 6", x = "Infant Daily Media Use") + 
+  facet_grid(~wave)
+
+```
+
+```{r}
+bit_and_anova_table %>% 
+ggplot(aes(x = BITprobavg)) + 
+  geom_histogram(color ="white", fill = "darkorange", 
+                 bins = 30) + 
+  labs(title  = "Distribution of Infant BITSEA scores for Waves 1 and 6", x = "Infant BITSEA scores") + 
+  facet_grid(~wave)
+
 ```
 
