@@ -6,8 +6,11 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(ggcorrplot)
+#install.packages("ggcorrplot")
+#library(GGally)
+#install.packages("GGally")
 ```
-
 
 #### Loading the Data Table
 
@@ -89,18 +92,72 @@ mutate(
     daily_use <= 0.25 ~ "LOW",
     daily_use < 0.5 ~ "MED",
     daily_use >= 0.5 ~ "HIGH")
+  
       )
-
+#converting daily_use_cat into a factor and setting the right order
 anova_table <- anova_table %>% 
-  mutate(daily_use_cat = as.factor(daily_use_cat))
+  mutate(daily_use_cat = as.factor(daily_use_cat),
+         daily_use_cat = fct_relevel(
+           daily_use_cat, 
+           "LOW", 
+           "MED", 
+           "HIGH"
+           )
+         )
 
-#now we need the same number of child ids for wave 6 and wave 1
-anova_table %>% 
-  glimpse()
+#now we need the same number of child ids for wave 6 and wave 1 - we've paused about this
+#anova_table %>% 
+#  glimpse()
 ```
 
 Data Observations:
 * the daily_use measurement for a single child is different depending on the parent asked
 * a single child is counted twice, since there are both mother and fathers in these data sets
-  + we should likely include parent gender
+  + we should likely include parent gender, gender is included
+* PLS score is unique to each child, it was not assessed through each parent so it shouldn't vary by mother or father
+  
+#### EDA
 
+##### Histogram of infant daily media usage in wave 1 and wave 6:
+
+```{r}
+ggplot(data = anova_table,
+       aes(x = daily_use, color = pargen)) +
+  geom_histogram(fill = "white") +
+  ggtitle('Distribution of media usage for wave 1 and wave 6') +
+  facet_grid(~wave) +
+  theme_grey()
+```
+Observations:
+
+Wave 1 and wave 6 are very different from one another potentially because wave 1 media habits weren't collect as well as possible, (skip questions were implemented). What's nice is that wave 6 seems like it's approximately normally distributed, meanwhile wave 1 could be chi-squared distributed or  at least right skewed. So obviously the means and medians between these two waves are different.
+
+
+##### Boxplots of PLS scores and Infant Media Usage by Category
+
+```{r}
+ggplot(anova_table, aes(x = daily_use_cat, y = total_score, color = daily_use_cat)) +
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.4) +
+  #geom_jitter() +
+  facet_grid(~wave)
+```
+
+##### Scatterplot of PLS scores and Infant Media Use 
+```{r}
+ggplot(anova_table, aes(x = daily_use, y = total_score, fill = pargen)) +
+  geom_point() +
+  facet_grid(~wave) +
+  geom_point(size=5, shape=24) +
+  geom_smooth(method=lm)
+
+#ggplot(anova_table, aes(x = total_score, y = daily_use)) +
+#geom_point(size=2, shape=23)
+```
+
+
+```{r}
+aov_model <- aov(total_score ~ daily_use_cat, anova_table)
+
+summary(aov_model)
+```
