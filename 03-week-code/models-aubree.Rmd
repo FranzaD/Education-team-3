@@ -278,7 +278,7 @@ sum(is.na(long_boi$daily_use))
 
 ## Find the correlation of our model 
 ```{r}
-
+cor(predict(model), media_pred$total_score)
 ```
 
 ## Do the same model, but for dads 
@@ -363,6 +363,25 @@ model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data 
 
 
 summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use) & !is.na(total_score))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+
+cor(predict(model), media_pred$total_score)
 ```
 
 
