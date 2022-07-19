@@ -202,7 +202,14 @@ mutate(
     total_score >= 110 ~ "HIGH")
       )
 
-hist(bit_and_anova_table$)
+hist(anova_table$daily_use)
+
+anova_table %>% 
+ggplot(aes(x = daily_use)) + 
+  geom_histogram(colour = 4, fill = "white", 
+                 bins = 10) + 
+  labs(title  = "Distribution of Infant Media Usage for Waves 1 and 6") + 
+  facet_grid(~wave)
 
 
 anova_2 <- aov(BITprobavg ~ total_score_cat + daily_use_cat + total_score_cat:daily_use_cat, data = bit_and_anova_table)
