@@ -1,0 +1,245 @@
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(ggcorrplot)
+```
+
+#### Loading the Data Table
+
+```{r}
+model_w2 <- readRDS(file="../data/model_w2.dta")
+model_w6 <- readRDS(file="../data/model_w6.dta")
+valuable_dataset <- readRDS(file="../data/valuable_dataset.dta")
+```
+
+```{r}
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+BIT_data <- readRDS(file="../data/BIT_data.dta")
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+```
+
+```{r}
+#creating wave 6 dataset complete with 
+wave6 <- inner_join(mt_w6_cleaned, model_w6, key = c(par_id, child_id))
+wave6 <- inner_join(wave6, PLS_w6, key = c(par_id, child_id) )
+
+wave6 <- wave6 %>% 
+  filter(wave == 6)
+
+```
+
+```{r}
+#education doesn't change across waves (assumption)
+ed <- valuable_dataset %>% 
+  select(highest_degree_completed, child_id, par_id)
+
+wave6 <- inner_join(wave6, ed, key = c(par_id, child_id) )
+
+#here I'm getting rid of NA values in the education factor
+wave6 <- wave6 %>% 
+  filter(!is.na(highest_degree_completed))
+```
+
+```{r}
+# wave 1 media and pls 
+pls_media_w1 <- valuable_dataset %>% 
+  filter(wave.y.y == 1) %>% 
+  mutate(wave = as.factor(wave.y.y),
+         pargen = as.character(par_gen.x)) %>% 
+  select(wave, child_id, par_id, pargen, total_score, daily_use) 
+
+# wave 6 media and pls 
+pls_media_w6 <- wave6 %>% 
+  select(wave, child_id, par_id, pargen, total_score, daily_use)
+
+#wave 4 media and pls DAILY-USE
+#pls_media_w4 <- full_join(PLS_w4, media_w4, key = c(wave, child_id, par_id))
+
+#pls_media_w4 <- pls_media_w4 %>% 
+#  select(wave, child_id, par_id, total_score, daily_use)
+
+#this may have done it, just joining with child and parent ids
+anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
+#anova_table <- full_join(anova_table, pls_media_w4,key = c(child_id, par_id))
+
+#now there are missing value codes, NAs, and wave 4 data (for some reason??), I need to get rid of:
+anova_table <- anova_table %>% 
+  na.omit() %>% 
+  filter( 
+    total_score != -111,
+    total_score != -222,
+    total_score != -333,
+    total_score != -444,
+    total_score != -555,
+    total_score != -666,
+    total_score != -777,
+    total_score != -888,
+    total_score != -999,
+    )
+#this categorizes daily_use as high-med-low, as an extra factor variable
+anova_table <- anova_table %>% 
+mutate(
+  daily_use_cat = case_when(
+    daily_use <= 0.25 ~ "LOW",
+    daily_use < 0.5 ~ "MED",
+    daily_use >= 0.5 ~ "HIGH")
+  
+      )
+#converting daily_use_cat into a factor and setting the right order
+anova_table <- anova_table %>% 
+  mutate(daily_use_cat = as.factor(daily_use_cat),
+         daily_use_cat = fct_relevel(
+           daily_use_cat, 
+           "LOW", 
+           "MED", 
+           "HIGH"
+           )
+         )
+
+#now we need the same number of child ids for wave 6 and wave 1 - we've paused about this
+#anova_table %>% 
+#  glimpse()
+```
+
+Data Observations:
+* the daily_use measurement for a single child is different depending on the parent asked
+* a single child is counted twice, since there are both mother and fathers in these data sets
+  + we should likely include parent gender, gender is included
+* PLS score is unique to each child, it was not assessed through each parent so it shouldn't vary by mother or father
+  
+#### EDA
+
+##### Histogram of infant daily media usage in wave 1 and wave 6:
+
+```{r}
+ggplot(data = anova_table,
+       aes(x = daily_use, color = pargen)) +
+  geom_histogram(fill = "white") +
+  ggtitle('Distribution of media usage for wave 1 and wave 6') +
+  facet_grid(~wave) +
+  theme_grey()
+```
+Observations:
+
+Wave 1 and wave 6 are very different from one another potentially because wave 1 media habits weren't collect as well as possible, (skip questions were implemented). What's nice is that wave 6 seems like it's approximately normally distributed, meanwhile wave 1 could be chi-squared distributed or  at least right skewed. So obviously the means and medians between these two waves are different.
+
+
+##### Boxplots of PLS scores and Infant Media Usage by Category
+
+```{r}
+ggplot(anova_table, aes(x = daily_use_cat, y = total_score, color = daily_use_cat)) +
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.4) +
+  #geom_jitter() +
+  facet_grid(~wave)
+```
+
+##### Scatterplot of PLS scores and Infant Media Use 
+```{r}
+ggplot(anova_table, aes(x = daily_use, y = total_score, color = daily_use_cat)) +
+  geom_point() +
+  facet_grid(~wave) +
+  geom_smooth(method=lm)
+
+
+#ggplot(anova_table, aes(x = total_score, y = daily_use)) +
+#geom_point(size=2, shape=23)
+```
+##### Histogram of PLS scores filled by Media Usage
+
+```{r}
+ggplot(anova_table, aes(x=total_score, fill=daily_use_cat)) + 
+  geom_histogram(color="darkgreen") +
+  facet_grid(~wave)
+
+```
+Observations:
+
+PLS scores are not normally distributed, however generally there's the least amount of counts for infants who had higher media exposure. It's worth noting that the mean for PLS scores for both waves looks a bit less than 100. Wave one is right skewed, potentially because of a few outliers, meanwhile wave 6 is well clustered.
+
+#### One-Way Anova Model
+
+__ANOVA takes into account variability within groups and between groups, by comparing means among groups.__
+
+_Assumptions are consistent regardless of whether ANOVA is balanced or not:_
+1. responses follow a normal distribution 
+  * PLS scores histograms look approx. normal, but if take the sample means of pls scores in each media category and bootstrap then according to CLT we should be able to say that the sample means follow a approx normal distribution (check out ppt for wk2 for origial histogram of pls scores (not means of scores))
+
+2. Observations are independent within and between groups
+  * questionable as media usage and receptive and expressive communication skills are likely dependent (or are they? potential HYPOTHESIS TEEESTT BBBAABBYYY) 
+
+3. errors/residuals are normally distributed with a constant variance, expectation 0
+  * totally unknown
+
+```{r}
+aov_model <- aov(total_score ~ daily_use_cat, anova_table)
+
+summary(aov_model)
+```
+
+
+#### Two-Way Anova Model:
+
+```{r}
+bit <- readRDS("../data/BIT_long_mother.dta")
+bit$wave[bit$wave == 2] <- 1
+
+# bit$wave[bit$wave == 5] <- 4
+```
+
+
+```{r}
+bit_and_anova_table <- full_join(bit, anova_table, by = c("child_id", "par_id", "wave"))
+
+bit_and_anova_table <- 
+  bit_and_anova_table %>% 
+select("par_id", "child_id",  "wave", "total_score", "daily_use_cat", "BITprobavg")
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+  filter(wave != 5) %>% 
+  na.omit()
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  BITprobavg_cat = case_when(
+    BITprobavg <= 0.3 ~ "LOW",
+    BITprobavg < 0.6 ~ "MED",
+    BITprobavg >= 0.6 ~ "HIGH")
+      )
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  BITprobavg_cat = case_when(
+    BITprobavg <= 0.3 ~ "LOW",
+    BITprobavg < 0.6 ~ "MED",
+    BITprobavg >= 0.6 ~ "HIGH")
+      )
+
+bit_and_anova_table <- bit_and_anova_table %>% 
+mutate(
+  total_score_cat = case_when(
+    total_score <= 80 ~ "LOW",
+    total_score < 110 ~ "MED",
+    total_score >= 110 ~ "HIGH")
+      )
+
+
+hist(bit_and_anova_table$total_score)
+
+anova_2 <- aov(BITprobavg ~ total_score_cat + daily_use_cat + total_score_cat:daily_use_cat, data = bit_and_anova_table)
+summary(anova_2)
+```
+##### Tukey Test for Two Way Anova
+```{r}
+#https://rpubs.com/aaronsc32/post-hoc-analysis-tukey
+
+tukey.test <- TukeyHSD(anova_2)
+plot(tukey.test)
+```
+
