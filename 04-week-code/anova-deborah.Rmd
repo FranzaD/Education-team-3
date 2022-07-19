@@ -224,9 +224,9 @@ mutate(
 bit_and_anova_table <- bit_and_anova_table %>% 
 mutate(
   total_score_cat = case_when(
-    total_score <= 80 ~ "LOW",
-    total_score < 110 ~ "MED",
-    total_score >= 110 ~ "HIGH")
+    total_score <= 80 ~ "LOW_ts",
+    total_score < 110 ~ "MED_ts",
+    total_score >= 110 ~ "HIGH_ts")
       )
 
 
@@ -241,5 +241,8 @@ summary(anova_2)
 
 tukey.test <- TukeyHSD(anova_2)
 plot(tukey.test)
+
+
+TukeyHSD(anova_2)
 ```
 
