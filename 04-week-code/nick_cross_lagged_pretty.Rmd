@@ -1,0 +1,111 @@
+
+The three variables in which we can hypothetically perform cross lagged analysis are mealtimes, discipline_behavior_management, and behavior_management.
+
+```{r}
+pls_wide_mother <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+
+pls_wide <- full_join(pls_wide_mother, pls_wide_father)
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+```
+
+
+
+First we need to look at the individual waves before we can move to cross lagged for mealtimes, discipline_behavior_management, and behavior_management.
+
+```{r}
+media_pls <- inner_join(media_wide, pls_wide, by = c("child_id", "par_id")) %>% filter(total_score.1 >0, total_score.4 > 0, total_score.6 >0)
+```
+
+mealtimes:
+```{r}
+mod1 <- lm(total_score.1 ~ mealtimes.1,  data = media_pls)
+summary(mod1)
+
+mod2 <- lm(total_score.4 ~ mealtimes.4,  data = media_pls)
+summary(mod2)
+
+mod3 <- lm(total_score.6 ~ mealtimes.6,  data = media_pls)
+summary(mod3)
+#Significant in wave 6
+
+#reverse!
+
+mod1 <- lm( mealtimes.1 ~total_score.1 ,  data = media_pls)
+summary(mod1)
+
+mod2 <- lm( mealtimes.4 ~total_score.4 ,  data = media_pls)
+summary(mod2)
+
+mod3 <- lm( mealtimes.6 ~total_score.6 ,  data = media_pls)
+summary(mod3)
+#Significant in wave 6 both ways
+```
+
+behavior_management:
+```{r}
+mod1 <- lm(total_score.1 ~ behavior_management.1,  data = media_pls)
+summary(mod1)
+mod2 <- lm(total_score.4 ~ behavior_management.4,  data = media_pls)
+summary(mod2)
+mod3 <- lm(total_score.6 ~ behavior_management.6,  data = media_pls)
+summary(mod3)
+
+#reverse!
+mod1 <- lm( behavior_management.1~ total_score.1 ,  data = media_pls)
+summary(mod1)
+mod2 <- lm( behavior_management.4~total_score.4,  data = media_pls)
+summary(mod2)
+mod3 <- lm( behavior_management.6~total_score.6,  data = media_pls)
+summary(mod3)
+#Wave 4 and 6 is very significant both ways
+```
+
+
+UHHHHHHHH Lines 70 - 200 are dealing with cross lagged between media and PLS
+
+
+Lets start simple by looking across the waves with the variables we do have, 
+mealtimes: going forward we will be looking at what we expect, wave 1 to 4 to 6 with mealtimes as a predictor of language scores
+
+```{r}
+#wave 1 to 4
+mod1 <- lm(total_score.4 ~ mealtimes.1 + total_score.1,  data = media_pls)
+summary(mod1)
+#not significant
+
+#wave 4 to 6
+mod2 <- lm(total_score.6 ~ mealtimes.4 + total_score.4,  data = media_pls)
+summary(mod2)
+#p-value of 0.000418, very significant
+
+#wave 1 to 6
+mod3 <- lm(total_score.6 ~ mealtimes.1 + total_score.1,  data = media_pls)
+summary(mod3)
+#not significant... VERY INTERESTING
+```
+
+
+Behavior management
+```{r}
+#wave 1 to 4
+mod1 <- lm(total_score.4 ~ behavior_management.1 + total_score.1,  data = media_pls)
+summary(mod1)
+#wave 1 is almost a good predictor, .059
+
+#wave 4 to 6
+mod2 <- lm(total_score.6 ~ behavior_management.4 + total_score.4,  data = media_pls)
+summary(mod2)
+#good model, p-value of 0.000923
+
+#wave 1 to 6
+mod3 <- lm(total_score.6 ~ behavior_management.1 + total_score.1,  data = media_pls)
+summary(mod3)
+#also good, p-value = 0.0314
+```
+
+Summary of mealtimes value: Within waves mealtimes only gives an association in wave 6. But when doing cross lagged association, only wave 4 mealtime was a significant predictor of wave 6 total score.x
+

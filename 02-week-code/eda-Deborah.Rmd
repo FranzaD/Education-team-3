@@ -38,7 +38,7 @@ Here I've just started by creating a complete dataset for wave 6 for 3 datasets:
 ```{r}
 #creating wave 6 dataset complete with 
 wave6 <- inner_join(mt_w6_cleaned, model_w6, key = c(par_id, child_id))
-wave6 <- inner_join(wave6, PLS_data, key = c(par_id, child_id) )
+wave6 <- inner_join(wave6, PLS_w6, key = c(par_id, child_id) )
 
 wave6 <- wave6 %>% 
   filter(wave == 6) %>% 
@@ -83,8 +83,15 @@ pls_media_w1 <- valuable_dataset %>%
 pls_media_w6 <- wave6 %>% 
   select(wave, child_id, par_id, total_score, daily_use)
 
+#wave 4 media and pls DAILY-USE
+#pls_media_w4 <- full_join(PLS_w4, media_w4, key = c(wave, child_id, par_id))
+
+#pls_media_w4 <- pls_media_w4 %>% 
+#  select(wave, child_id, par_id, total_score, daily_use)
+
 #this may have done it, just joining with child and parent ids
 anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
+#anova_table <- full_join(anova_table, pls_media_w4,key = c(child_id, par_id))
 
 #now there are missing value codes, NAs, and wave 4 data (for some reason??), I need to get rid of:
 anova_table <- anova_table %>% 
@@ -99,15 +106,30 @@ anova_table <- anova_table %>%
     total_score != -777,
     total_score != -888,
     total_score != -999,
-    wave != 4
     )
+#this categorizes daily_use as high-med-low, as an extra factor variable
+anova_table <- anova_table %>% 
+mutate(
+  daily_use_cat = case_when(
+    daily_use <= 0.25 ~ "LOW",
+    daily_use < 0.5 ~ "MED",
+    daily_use >= 0.5 ~ "HIGH")
+      )
+
+anova_table <- anova_table %>% 
+  mutate(daily_use_cat = as.factor(daily_use_cat))
 
 #now we need the same number of child ids for wave 6 and wave 1
 anova_table %>% 
-  summary()
+  glimpse()
 
+
+```
+
+
+```{r}
 #need to only include parent ids that exist both in wave 1 and in wave 6
-anova_table <- anova_table %>% 
+anova_table %>% 
   group_by(par_id) %>% 
   filter(n() == 2)
 
@@ -126,6 +148,18 @@ ggplot(data = anova_table,
 
 ```
 
+```{r}
+ggplot(anova_table, aes(x=daily_use_cat, y=total_score, color = daily_use_cat)) + 
+  geom_boxplot() +
+  geom_jitter() +
+  facet_grid(~wave)
+
+# Box plot with dot plot
+#p + geom_dotplot(binaxis='y', stackdir='center', dotsize=1)
+# Box plot with jittered points
+# 0.2 : degree of jitter in x direction
+#p + geom_jitter(shape=16, position=position_jitter(0.2))
+```
 
 
 ### First ONE-WAY ANOVA model:
@@ -155,9 +189,30 @@ Estimated coefficient is not significant, for an example look at 120C discussion
 
 
 ```{r}
-aov_model <- aov(total_score ~ highest_degree_completed, wave6)
+aov_model <- aov(total_score ~ daily_use_cat, anova_table)
 
 summary(aov_model)
+```
+$\mu_i =$ average PLS score for each category of infant daily media usage
+$$y_{ij}= \mu_i + \epsilon_{ij}$$
+
+
+
+
+```{r}
+#Two Sample T-test testing if at least one of the means is unlike the others
+t.test(anova_table$total_score[anova_table$daily_use_cat == "MED"],anova_table$total_score[anova_table$daily_use_cat == "HIGH"], var.equal = TRUE, conf.level = 0.95)
+```
+
+
+```{r}
+t.test(anova_table$total_score[anova_table$daily_use_cat == "LOW"],anova_table$total_score[anova_table$daily_use_cat == "MED"], var.equal = TRUE, conf.level = 0.95)
+```
+
+
+
+```{r}
+t.test(anova_table$total_score[anova_table$daily_use_cat == "LOW"],anova_table$total_score[anova_table$daily_use_cat == "HIGH"], var.equal = TRUE, conf.level = 0.95)
 ```
 
 
@@ -188,10 +243,10 @@ This maps PLS scores to years of school completed (which has a ridiculous amount
 More relevant variables but this adjusted r-squared values makes me very sad:
 
 ```{r}
-w6_media_bitsea_model <- 
-  lm(total_score ~ daily_use , data = wave6)
+#w6_media_bitsea_model <- 
+#  lm(total_score ~ daily_use , data = wave6)
 
-summary(w6_media_pls_model)
+#summary(w6_media_pls_model)
 ```
 
 ##### Graphs for Week 2 powerpoint presentation:
