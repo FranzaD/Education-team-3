@@ -109,3 +109,32 @@ summary(mod3)
 
 Summary of mealtimes value: Within waves mealtimes only gives an association in wave 6. But when doing cross lagged association, only wave 4 mealtime was a significant predictor of wave 6 total score.x
 
+
+
+-----------------------------------------
+gapminder, ggplot2, gganimate and gifski.
+```{r}
+#trash code :(
+bleh <- bleh %>% 
+  mutate(wave = as.integer(wave.x),
+         daily_use = as.double(daily_use),
+         total_score = as.double(total_score)) 
+
+bleh %>% 
+ggplot(gapminder, mapping = aes(x = daily_use, 
+                      y= total_score, 
+                      color = wave)) +
+   geom_point(alpha = 0.7, show.legend = FALSE) +
+   scale_size(range = c(2, 12)) +
+   scale_x_log10() +
+  facet_wrap(wave.x)
+
+ggplot(data = demography, aes(x= household_income_numerical, 
+                              y = years_school_complete)) +
+  geom_point()
+```
+
+```{r}
+
+```
+
