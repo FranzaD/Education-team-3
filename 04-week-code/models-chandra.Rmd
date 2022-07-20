@@ -317,11 +317,8 @@ media_pred %>%
 
 ```{r}
 pls <- readRDS("../data/PLS_long_mother.dta")
-demo <- readRDS("../data/demography.dta")
 media <- readRDS("../data/media_long.dta")
 
-
-# clean data
 pls <- pls %>% 
   mutate(wave = as.factor(wave),
          total_score = ifelse(total_score < 0, NA, total_score)) %>% 
@@ -336,20 +333,52 @@ media <- media %>%
 
 media_pls <- media %>%
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
-  inner_join(demo, by = c("par_id", "child_id"))
+  select(par_id, child_id, daily_use, total_score, wave) %>%
+  na.omit()
 
-model <- lmer(total_score ~ daily_use * wave + (1 | child_id), data = media_pls, REML = FALSE)
+
+bootstrap <- function(df, func, num) {
+  temp <- numeric(num)
+  # setup
+  for (i in 1:num) {
+    # repeated action
+    # sampling
+    lying_mothers <- df[sample(nrow(df), 450, replace = TRUE), ]
+    
+    # model
+    model <- func(total_score ~ daily_use * wave + (1 + wave | child_id), data = lying_mothers, REML = FALSE)
+    
+    temp[i] <- cor(lying_mothers$total_score, predict(model, newdata = lying_mothers))
+    
+  }
+  
+  #ci <- quantile(temp, prob = c(0.025, 0.975), na.rm = TRUE)
+  #list(est=func(temp), ci=ci)
+  print(temp)
+  print(mean(temp))
+}
+
+#bootstrap(media_pls, lmer, 10)
+
+
+lying_mothers <- media_pls[sample(nrow(media_pls), 450, replace = TRUE), ]
+# clean data
+
+lying_mothers %>% 
+  arrange(child_id)
+
+model <- lmer(total_score ~ daily_use * wave + (1 + daily_use| child_id), data = lying_mothers, REML = FALSE)
 
 summary(model)
 
 # create data set without NA values to be used for predictions
-media_pred <- media_pls %>%
-  filter(!is.na(daily_use), !is.na(total_score))
+#media_pred <- lying_mothers %>%
+#  filter(!is.na(daily_use), !is.na(total_score))
 
 # graph actual vs predicted
-media_pred %>%
-  mutate(pred = predict(model, newdata = media_pred)) %>%
-  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+lying_mothers %>%
+  mutate(pred = predict(model, newdata = lying_mothers)) %>%
+  ggplot(aes(total_score, predict(model, newdata = lying_mothers))) +
   geom_point() +
   geom_abline(intercept = 0,
               slope = 1,
@@ -358,6 +387,6 @@ media_pred %>%
        y = "Predicted Total PLS Score",
        title = "Actual vs Predicted PLS Scores")
 
-cor(media_pred$total_score, predict(model, newdata = media_pred))
+cor(lying_mother$total_score, predict(model, newdata = lying_mothers))
 
 ```
