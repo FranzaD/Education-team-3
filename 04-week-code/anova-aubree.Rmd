@@ -116,10 +116,17 @@ anova_table <- anova_table %>%
 anova_table <- anova_table %>% 
 mutate(
   daily_use_cat = case_when(
-    daily_use <= 0.25 ~ "LOW",
-    daily_use < 0.5 ~ "MED",
-    daily_use >= 0.5 ~ "HIGH")
+    daily_use <= 0.4 ~ "LOW",
+    daily_use > 0.4 ~ "HIGH")
       )
+## anova_table <- anova_table %>% 
+#mutate(
+ # daily_use_cat = case_when(
+ #   daily_use <= 0.25 ~ "LOW",
+  #  daily_use < 0.5 ~ "MED",
+  #  daily_use >= 0.5 ~ "HIGH")
+   #   )
+
 
 anova_table <- anova_table %>% 
   mutate(daily_use_cat = as.factor(daily_use_cat))
@@ -179,6 +186,14 @@ mutate(
     BITprobavg >= 0.6 ~ "HIGH")
       )
 
+#bit_and_anova_table <- bit_and_anova_table %>% 
+#mutate(
+#  total_score_cat = case_when(
+ #   total_score <= 97 ~ "LOWts",
+#    total_score > 97 ~ "HIGHts")
+ #     )
+
+
 bit_and_anova_table <- bit_and_anova_table %>% 
 mutate(
   total_score_cat = case_when(
@@ -187,13 +202,26 @@ mutate(
     total_score >= 110 ~ "HIGH")
       )
 
+hist(anova_table$daily_use)
 
-hist(bit_and_anova_table$total_score)
+anova_table %>% 
+ggplot(aes(x = daily_use)) + 
+  geom_histogram(colour = 4, fill = "white", 
+                 bins = 10) + 
+  labs(title  = "Distribution of Infant Media Usage for Waves 1 and 6") + 
+  facet_grid(~wave)
+
 
 anova_2 <- aov(BITprobavg ~ total_score_cat + daily_use_cat + total_score_cat:daily_use_cat, data = bit_and_anova_table)
 summary(anova_2)
 ```
 
+```{r}
+tukey.test <- TukeyHSD(anova_2)
+plot(tukey.test)
+
+TukeyHSD(anova_2)
+```
 
 
 
