@@ -56,6 +56,7 @@ media_long <- readRDS(file="../data/media_long.dta")
 media_wide <- readRDS(file="../data/media_wide.dta")
 
 pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+pls_long_mother <- readRDS(file="../data/PLS_long_mother.dta")
 
 
 ```
@@ -278,7 +279,7 @@ sum(is.na(long_boi$daily_use))
 
 ## Find the correlation of our model 
 ```{r}
-cor(predict(model), media_pred$total_score)
+cor(predict(model), long_boi$total_score)
 ```
 
 ## Do the same model, but for dads 
