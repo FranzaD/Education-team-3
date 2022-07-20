@@ -303,4 +303,15 @@ mod1 <- lm(BITcompavg_w6 ~ daily_use_w1 + BITcompavg_w1,  data = media_bit_w1_w6
 summary(mod1)
 
 ```
+daily use and total score
+```{r}
+bleh <- inner_join(pls_long, media_long, by = c("child_id", "par_id")) %>% 
+  filter(total_score >0)
+ggplot(data = bleh, aes(x = daily_use,
+                        y = total_score)) +
+  geom_point() 
+
+mod1 <- lm(total_score ~ daily_use, data = bleh)
+summary(mod1)
+```
 
