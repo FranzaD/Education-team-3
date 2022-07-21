@@ -1,0 +1,41 @@
+---
+title: "grouping-data"
+output: html_document
+---
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+```
+
+Clean
+```{r}
+grouping_data <- read_excel("data/UMD_UCI Condition_7.20.22.xlsx")
+grouping_data <- grouping_data %>% 
+  mutate(condition = as.factor(Condition),
+         child_id = as.character(ChildID)) 
+
+
+grouping_data <- grouping_data %>% 
+  select(c("child_id", "condition"))
+
+grouping_data <- grouping_data %>% 
+ mutate(condition =
+  case_when(condition == "Both" ~ "1",
+            condition == "Mom" ~ "2",
+            condition == "Dad" ~ "3",
+            condition == "Control" ~ "4"))
+
+saveRDS(grouping_data, file="data/grouping_data.dta")
+
+grouping_data <- readRDS(file = "data/grouping_data.dta")
+
+```
+
+

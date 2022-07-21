@@ -56,6 +56,9 @@ media_long <- readRDS(file="../data/media_long.dta")
 media_wide <- readRDS(file="../data/media_wide.dta")
 
 pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+pls_long_mother <- readRDS(file="../data/PLS_long_mother.dta")
+
+grouping_data <- readRDS(file = "../data/grouping_data.dta")
 
 
 ```
@@ -217,11 +220,15 @@ PLS scores from wave 6.
 
 Linear Mixed Effects model 
 ```{r}
+media_long <- full_join(media_long, grouping_data, by = "child_id")
+
 media_long <- media_long %>% 
   mutate(wave = as.factor(wave)) %>% 
   filter(par_id < 25000)
-pls_long
-long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")) %>% 
+
+pls_long_mother <- full_join(pls_long_mother, grouping_data, by = "child_id")
+
+long_boi <- full_join(media_long, pls_long_mother, by = c("child_id", "par_id", "wave", "condition")) %>% 
   filter(wave != 4,
          total_score > 0,
          !is.na(daily_use))
@@ -229,11 +236,21 @@ long_boi <- full_join(media_long, pls_long, by = c("child_id", "par_id", "wave")
 
 library(lme4)
 library(lmerTest)
-model <- lmer(total_score ~ daily_use * wave + (1|child_id), data = long_boi)
+model <- lmer(auditory_comprehension_score ~ daily_use * wave + (1|child_id) + condition, 
+              data = long_boi)
 summary(model)
+##signifigant
 
+model2 <- lmer(expressive_communication_score ~ daily_use * wave + (1|child_id)  + condition, data = long_boi)
+summary(model2)
+##not swignifigant 
+
+model3 <- lmer(total_score ~ daily_use * wave + (1|child_id) + condition, data = long_boi)
+summary(model3)
+##not signifigant 
 ```
-
+Interpretation of change is not linear. 
+The interpretations change within the devolopment changes. 
 
 ## finding residual for model
 ```{r}
@@ -278,7 +295,7 @@ sum(is.na(long_boi$daily_use))
 
 ## Find the correlation of our model 
 ```{r}
-cor(predict(model), media_pred$total_score)
+cor(predict(model), long_boi$total_score)
 ```
 
 ## Do the same model, but for dads 
