@@ -603,7 +603,7 @@ media <- media %>%
 media_pls <- media %>%
   full_join(pls, by = c("child_id", "wave"))
 
-model <- lmer(total_score ~ daily_use * wave + (1 + daily_use | child_id), data = media_pls)
+model <- lmer(total_score ~ daily_use * wave + (1 | child_id), data = media_pls)
 
 summary(model)
 

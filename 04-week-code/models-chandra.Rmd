@@ -346,7 +346,7 @@ summary(model)
 
 # graph actual vs predicted
 media_pls %>%
-  mutate(pred = predict(model, newdata = lying_mothers)) %>%
+  mutate(pred = predict(model, newdata = media_pls)) %>%
   ggplot(aes(total_score, predict(model, newdata = media_pls))) +
   geom_point() +
   geom_abline(intercept = 0,
