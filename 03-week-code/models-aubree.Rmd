@@ -233,21 +233,29 @@ long_boi <- full_join(media_long, pls_long_mother, by = c("child_id", "par_id", 
          total_score > 0,
          !is.na(daily_use))
 
+demography <- full_join(demography, grouping_data, by = "child_id")
+
+long_boi_2 <- inner_join(long_boi, demography, by = c("child_id", "par_id", "condition"))
+
+long_boi_2 <- long_boi_2 %>% 
+  select("par_ethnicity", "child_id", "condition", "par_id", "auditory_comprehension_score", "daily_use",
+         "wave")
+
 
 library(lme4)
 library(lmerTest)
-model <- lmer(auditory_comprehension_score ~ daily_use * wave + (1|child_id) + condition, 
-              data = long_boi)
+model <- lmer(auditory_comprehension_score ~ daily_use * wave + (1|child_id) + condition + par_ethnicity, 
+              data = long_boi_2)
 summary(model)
-##signifigant
+##significant
 
 model2 <- lmer(expressive_communication_score ~ daily_use * wave + (1|child_id)  + condition, data = long_boi)
 summary(model2)
-##not swignifigant 
+##not significant 
 
 model3 <- lmer(total_score ~ daily_use * wave + (1|child_id) + condition, data = long_boi)
 summary(model3)
-##not signifigant 
+##not significant 
 ```
 Interpretation of change is not linear. 
 The interpretations change within the devolopment changes. 
@@ -295,7 +303,12 @@ sum(is.na(long_boi$daily_use))
 
 ## Find the correlation of our model 
 ```{r}
-cor(predict(model), long_boi$total_score)
+summary(model)
+predict(model)
+cor(predict(model), long_boi_2$auditory_comprehension_score)
+
+dim(predict(model))
+dim(long_boi_2$auditory_comprehension_score)
 ```
 
 ## Do the same model, but for dads 
