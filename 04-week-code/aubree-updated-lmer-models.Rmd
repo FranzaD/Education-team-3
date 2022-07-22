@@ -18,6 +18,8 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(lme4)
+library(lmerTest)
 ```
 
 ##Read Data 
@@ -186,13 +188,85 @@ media_pls_lmer <- full_join(media_pls_lmer, grouping_data)
 
 
 ## Let create models 
+
+# LMER Model predicting percentile_rank by behavior_management
 ```{r}
-library(lme4)
-library(lmerTest)
-model <- lmer(percentile_rank ~ daily_use * wave + (1|child_id) + condition, 
-              data = long_boi_2)
+model <- lmer(percentile_rank ~ behavior_management * wave + (1|child_id) + condition, 
+              data = media_pls_lmer)
 summary(model)
+
+## trying to get to work 
+cor(predict(model), media_pls_lmer$percentile_rank)
+
+predict(model)
+media_pls_lmer$percentile_rank
+
 ```
+SIGNIFIGANT
+
+# LMER Model predicting expressive_communication_percentile by meal_times 
+```{r}
+model4 <- lmer(expressive_communication_percentile ~ meal_times * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model4)
+```
+SIGNIFIGANT
+
+# LMER Model predicting expressive_communication_percentile by behavior_management 
+```{r}
+model5 <- lmer(expressive_communication_percentile ~ behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model5)
+```
+SIGNIFIGANT
 
 
 
+
+
+
+
+
+# LMER Model predicting percentile_rank by meal_times
+```{r}
+model2 <- lmer(percentile_rank ~ meal_times * wave + (1|child_id) + condition, 
+              data = media_pls_lmer)
+summary(model2)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting percentile_rank by meal_times and behavior managment
+```{r}
+model3 <- lmer(percentile_rank ~ meal_times * wave + behavior_management * wave 
+               + (1|child_id) + condition, data = media_pls_lmer)
+summary(model3)
+```
+NOT SIGNIFIGANT
+
+
+
+# LMER Model predicting expressive_communication_percentile by meal_times and behavior_management
+```{r}
+model6 <- lmer(expressive_communication_percentile ~ meal_times * wave + behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model6)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting auditory_comprehension_percentile by behavior_management 
+```{r}
+model7 <- lmer(auditory_comprehension_percentile ~ behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model7)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting auditory_comprehension_percentile by meal_times 
+```{r}
+model8 <- lmer(auditory_comprehension_percentile ~ meal_times * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model8)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting auditory_comprehension_percentile by meal_times and behavior_management
+```{r}
+model6 <- lmer(auditory_comprehension_percentile ~ meal_times * wave + behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model6)
+```
+NOT SIGNIFIGANT
