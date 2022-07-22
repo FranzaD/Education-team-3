@@ -716,6 +716,11 @@ bit_media_father <- bit_father %>%
   full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
   select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
   inner_join(grouping, by = "child_id")
+############################################
+# run individual line for summary of model #
+# lines with a . or a * has significant    #
+# higher level variables (interactions)    #
+############################################
 
 # mother
 # .
