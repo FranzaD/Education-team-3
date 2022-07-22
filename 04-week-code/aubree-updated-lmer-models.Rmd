@@ -1,0 +1,91 @@
+---
+title: "aubree-updated-lmer-models"
+output: html_document
+---
+```{r}
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+##Read Data 
+```{r}
+PLS_data <- readRDS(file="../data/PLS_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+media_long <- readRDS(file="../data/media_long.dta")
+grouping_data <- readRDS(file = "../data/grouping_data.dta")
+
+
+PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx", sheet = "PLS_ALL_W4")
+PLS_w4 <- clean_names(PLS_w4)
+PLS_w4 <-  PLS_w4 %>% 
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+        language= as.factor(case_when(
+          language == 0 ~ "english",
+          language == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "umd",
+          site == 2 ~ "uci"
+        )))
+PLS_w4 <- PLS_w4 %>%
+  select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss, percentile_rank_expressive = plsecpr, percentile_rank_auditory = plsacpr, 
+         percentile_rank_total = plspr)
+
+
+
+
+PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx",sheet = "PLS_ALL_W6")
+PLS_w6 <- clean_names(PLS_w6)
+PLS_w6 <-  PLS_w6 %>% 
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+        language= as.factor(case_when(
+          language == 0 ~ "english",
+          language == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "umd",
+          site == 2 ~ "uci"
+        )))
+PLS_w6 <- PLS_w6 %>%
+  select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss, percentile_rank_expressive = plsecpr, percentile_rank_auditory = plsacpr, 
+         percentile_rank_total = plspr)
+
+
+PLS_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+PLS_w1 <- clean_names(PLS_w1)
+PLS_w1 <-  PLS_w1 %>% 
+  mutate(child_id = as.character(childid),
+         par_id = as.character(parid),
+         father = pargen == 1,
+        language_26_PLS_w1 = as.factor(case_when(
+          language_26_pls_w1 == 0 ~ "english",
+          language_26_pls_w1 == 1 ~ "spanish"
+        )),
+        site = as.factor(case_when(
+          site == 1 ~ "UMD",
+          site == 2 ~ "UCI"
+        )))
+PLS_w1 <- PLS_w1 %>%
+  select(child_id, par_id, father, language = language_26_PLS_w1, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss, percentile_rank_expressive = plsecpr, percentile_rank_auditory = plsacpr, percentile_rank_total = plspr)
+```
+
+
+## Create fewer data sets combineing EVERYTHING, then we will only have a few 
+## data sets to work with
+
+

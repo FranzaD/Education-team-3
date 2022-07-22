@@ -50,7 +50,7 @@ wave6 <- wave6 %>%
 ```{r}
 # wave 1 media and pls 
 pls_media_w1 <- valuable_dataset %>% 
-  filter(wave.y.y == 1, par_id ) %>% 
+  filter(wave.y.y == 1 ) %>% 
   mutate(wave = as.factor(wave.y.y),
          pargen = as.character(par_gen.x)) %>% 
   select(wave, child_id, par_id, pargen, total_score, daily_use) 
@@ -58,12 +58,6 @@ pls_media_w1 <- valuable_dataset %>%
 # wave 6 media and pls 
 pls_media_w6 <- wave6 %>% 
   select(wave, child_id, par_id, pargen, total_score, daily_use)
-
-#wave 4 media and pls DAILY-USE
-#pls_media_w4 <- full_join(PLS_w4, media_w4, key = c(wave, child_id, par_id))
-
-#pls_media_w4 <- pls_media_w4 %>% 
-#  select(wave, child_id, par_id, total_score, daily_use)
 
 #this may have done it, just joining with child and parent ids
 anova_table <- full_join(pls_media_w1, pls_media_w6 ,key = c(child_id, par_id))
@@ -87,10 +81,9 @@ anova_table <- anova_table %>%
 anova_table <- anova_table %>% 
 mutate(
   daily_use_cat = case_when(
-    daily_use <= 0.25 ~ "LOW",
-    daily_use < 0.5 ~ "MED",
-    daily_use >= 0.5 ~ "HIGH")
-  
+    daily_use == 0 ~ "recommended",
+    daily_use > 0 ~ "NOT recommended"
+                           )
       )
 #converting daily_use_cat into a factor and setting the right order
 anova_table <- anova_table %>% 
@@ -105,6 +98,7 @@ anova_table <- anova_table %>%
 #Just mothers media observations
 anova_table <- anova_table %>% 
   filter(pargen == 0)
+
 #trying to add BITprobavg
 
 #solo, passive, coup mealtimes
@@ -115,24 +109,63 @@ anova_table <- anova_table %>%
 #  glimpse()
 ```
 
-##### table for spaghetti plot
+
+##### Table for spaghetti plot
 
 ```{r}
 # table for spaghetti plot
 
 anova_table <- anova_table %>% 
-  group_by(par_id) %>% 
-  filter(n() == 2) %>% 
+  group_by(child_id) %>% 
+  filter(n() == 2) %>%
+  distinct() %>% 
   glimpse()
+
 # IN PROGRESS
-anova_table <- anova_table %>% 
-mutate(
-  pls_change = case_when(
-    total_score <= 0.25 ~ "LOW",
-    daily_use < 0.5 ~ "MED",
-    daily_use >= 0.5 ~ "HIGH")
-  
+#anova_table <- anova_table %>% 
+#mutate(
+#  pls_change = case_when(
+#    total_score <= 0.25 ~ "LOW",
+#    daily_use < 0.5 ~ "MED",
+#    daily_use >= 0.5 ~ "HIGH")
+#      )
+
+pls_diff_w1w6 <- full_join(PLS_w1, PLS_w6, by = c("child_id", "par_id"))
+
+pls_diff_w1w6 <- pls_diff_w1w6 %>% 
+  select(wave.y, 
+         wave.x, 
+         total_score.x, 
+         total_score.y, 
+         father, 
+         child_id, 
+         par_id) %>% 
+  filter(father == FALSE,
+         total_score.y > 0,
+         total_score.x > 0) %>% 
+  mutate(
+    pls_change = as.numeric(total_score.x - total_score.y),
+    pls_change_cat = case_when(
+    pls_change == 0 ~ "constant",
+    pls_change < 0 ~ "decreasing",
+    pls_change > 0 ~ "increasing"
+    )
       )
+
+anova_table <- left_join(anova_table, pls_diff_w1w6, key = c("child_id", "par_id"))
+
+#finalized selection of variables
+anova_table <- anova_table %>% 
+  select(child_id, par_id, wave, pls_change, pls_change_cat, father, total_score, daily_use, daily_use_cat) %>%
+  na.omit() 
+```
+
+
+##### Table for change pls
+
+```{r}
+anova_table_no_double <- anova_table %>% 
+  filter(wave == 6)
 ```
 
 ##### Two Way Table
@@ -211,7 +244,18 @@ ggplot(anova_table, aes(x = daily_use_cat, y = total_score, color = daily_use_ca
   #geom_jitter() +
   facet_grid(~wave)
 ```
+##### Boxplots of CHANGE in PLS scores and Infant Media Usage by Category
 
+```{r}
+ggplot(anova_table_no_double, aes(x = daily_use_cat, y = pls_change, color = daily_use_cat)) +
+  geom_violin(trim = FALSE) +
+  geom_boxplot(width = 0.3) 
+  #geom_jitter() +
+  #facet_grid(~wave)
+```
+This graph implies that children not following recommended media use have an average positive change in pls scores (increasing pls scores), meanwhile infants who are following recommended media use have an average negative change in pls scores (decreasing).
+
+To avoid double counting, it only oncludes wave 6.
 ##### Scatterplot of PLS scores and Infant Media Use 
 ```{r}
 ggplot(anova_table, aes(x = daily_use, y = total_score, color = daily_use_cat)) +
@@ -232,6 +276,7 @@ ggplot(anova_table, aes(x=total_score, fill=daily_use_cat)) +
 
 ```
 
+##### Spaghetti Plots of PLS scores
 ```{r}
 interaction.plot(
 x.factor = anova_table$wave,
@@ -249,18 +294,19 @@ main = "Spaghetti Plot of PLS Scores"
 
 ```{r}
 anova_table%>%
-ggplot() +
-aes(x = wave, y = total_score, group = child_id, color = daily_use_cat) +
-geom_point() +
-geom_line() +
+  ggplot() +
+  aes(x = wave, y = total_score, group = child_id, color = daily_use_cat) +
+  geom_point() +
+  geom_line() +
   xlab("Waves (9mo and 24mo)") +
-ylab("PLS Scores") +
-ggtitle("Spaghetti Plot of PLS Scores") +
-labs(color = "Media Usage Category") +
-theme_bw() +
-theme(
-text = element_text(family = "Times"),
-plot.title = element_text(hjust = 0.5)
+  ylab("PLS Scores") +
+  ggtitle("Spaghetti Plot of PLS Scores") +
+  labs(color = "total_s") +
+  labs(color = "Infant Media Use") +
+  theme_bw() +
+  theme(
+  text = element_text(family = "Times"),
+  plot.title = element_text(hjust = 0.5)
 )
 
 ```
@@ -272,11 +318,11 @@ PLS scores are not normally distributed, however generally there's the least amo
 
 ##### Histograms of Most Important Variables
 ```{r}
-ggplot(bit_and_anova_table, aes(x=total_score)) + 
-  geom_histogram(color ="white", fill = "pink", bins = 30) +
+ggplot(anova_table, aes(x=total_score, fill = daily_use_cat)) + 
+  geom_histogram( bins = 30) +
   labs(title  = "Distribution of Infant PLS Scores for Waves 1 and 6", x ="Infant PLS Scores") + 
   facet_grid(~wave)
-
+#color ="white", fill = "pink",
 ```
 
 Observations:
@@ -322,6 +368,25 @@ _Assumptions are consistent regardless of whether ANOVA is balanced or not:_
 
 3. errors/residuals are normally distributed with a constant variance, expectation 0
   * totally unknown
+  
+##### PLS scores = Media rec/not rec
+```{r}
+pls_media <- aov(total_score ~ daily_use_cat, anova_table)
+
+pls_media %>% 
+  summary()
+```
+
+
+##### change in PLS = Media rec/not rec
+
+```{r}
+pls_change_media <- aov(pls_change ~ daily_use_cat, anova_table_no_double)
+
+pls_change_media %>% 
+  summary()
+```
+Why is this significant?
 
 ##### PLS = Media 
 ```{r}
@@ -358,17 +423,37 @@ TukeyHSD(anova_2)
 ##### PLS = Media + parent Gender
 
 ```{r}
-aov_model <- aov(total_score ~ daily_use_cat + pargen + pargen:daily_use_cat , anova_table)
+#aov_model <- aov(total_score ~ daily_use_cat + pargen + pargen:daily_use_cat , anova_table)
 
-summary(aov_model)
+#(aov_model)
 ```
 Interpretation:
 
 Parent gender is not a significant covariate in this two-way anova model. Not a significant different in PLS scores based on parent gender.
 
+### Hypothesis Testing
 
+##### Contingency Table of CHANGE in PLS and daily use Rec/Not Rec
 
+```{r}
+cont_table_change_pls_media <- table(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
+cont_table_change_pls_media
+```
 
+##### Chi-Squared Test of Indepdendence
+
+H0: pls_change and daily_use are independent (unrelated)
+H1: PLs_change and daily_use are dependent (related)
+
+```{r}
+chisq.test(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
+```
+Not enough evidence to reject null hypothesis when we take into account double counting
+NO EVIDENCE = NOT DEPENDENT = 
+
+FAIL TO REJECT NULL HYPOTHESIS, HENCE THERE IS NOT ENOUGH EVIDENCE TO SAY THAT THE VARIABLES ARE DEPENDENT
+
+AKA media categories and change in pls scores are independent.
 
 
 
