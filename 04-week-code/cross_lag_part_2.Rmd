@@ -1,0 +1,272 @@
+#Chandra go to line 100 and thats where I start the cross lagged analysis
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+
+```{r}
+
+
+pls_wide_mother <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+
+pls_wide <- full_join(pls_wide_mother, pls_wide_father)
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+media_pls <- inner_join(media_wide, pls_wide, by = c("child_id", "par_id")) %>% filter(total_score.1 >0, total_score.4 > 0, total_score.6 >0)
+
+library(readxl)
+
+
+PLS_W1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+View(X26_PLS_w1)
+
+
+PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx", sheet = "PLS_ALL_W4")
+PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx",sheet = "PLS_ALL_W6")
+
+
+```
+
+
+# clean w6 pls
+```{r}
+PLS_w6 <- clean_names(PLS_w6)
+glimpse(PLS_w6)
+```
+
+```{r}
+PLS_w6 <-  PLS_w6 %>% 
+  mutate(child_id = as.double(childid),
+         par_id = as.double(parid),
+        language= as.factor(case_when(
+          language == 0 ~ "english",
+          language == 1 ~ "spanish")))
+```
+
+
+```{r}
+PLS_w6 <- PLS_w6 %>%
+  select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss, percentile_rank = plspr, auditory_comprehension_percentile = plsacpr, expressive_communication_percentile = plsecpr)
+```
+
+# clean w4 pls
+
+```{r}
+PLS_W4 <- clean_names(PLS_w4)
+```
+
+```{r}
+PLS_W4 <-  PLS_W4 %>% 
+  select(child_id = childid, par_id = parid, language,
+         auditory_comprehension_score = plsacss,
+         expressive_communication_score = plsecss,
+         total_score = plsss, percentile_rank = plspr,
+         auditory_comprehension_percentile = plsacpr,
+         expressive_communication_percentile = plsecpr)
+```
+
+```{r}
+PLS_W1 <- clean_names(PLS_W1) 
+PLS_W1 <- PLS_W1 %>% 
+  select(child_id = childid, par_id = parid, 
+         auditory_comprehension_score = plsacss,
+         expressive_communication_score = plsecss,
+         total_score = plsss, percentile_rank = plspr,
+         auditory_comprehension_percentile = plsacpr,
+         expressive_communication_percentile = plsecpr)
+  
+```
+
+```{r}
+pls_total <-inner_join(PLS_W1, PLS_W4, by = c("child_id", "par_id"))
+
+pls_all <-inner_join(pls_total, PLS_w6, by = c("child_id", "par_id"))
+
+glimpse(pls_all)
+```
+#this combines the pls scores across waves
+```{r}
+pls_all <- pls_all %>% 
+  filter(percentile_rank.x >0,
+         percentile_rank >0,
+         percentile_rank.y >0) %>% 
+    mutate(child_id = as.character(child_id),
+           par_id = as.character(par_id))
+```
+
+```{r}
+media_wide <- media_wide %>% 
+  mutate(child_id = as.character(child_id))
+glimpse(media_wide)
+```
+
+
+```{r}
+media_pls <- inner_join(pls_all, media_wide, by = c("child_id", "par_id"))
+```
+
+# mealtime predicting auditory comprehension scores
+```{r}
+#x across waves
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls)
+summary(mod1)
+#y across waves
+mod1 <- lm(auditory_comprehension_percentile.y ~ auditory_comprehension_percentile.x, data = media_pls)
+summary(mod1)
+mod1 <- lm(auditory_comprehension_percentile ~ auditory_comprehension_percentile.y, data = media_pls)
+summary(mod1)
+#y ~x
+mod1 <- lm(auditory_comprehension_percentile.y ~ mealtimes.1 + auditory_comprehension_percentile.x, data = media_pls)
+summary(mod1)
+mod1 <- lm(auditory_comprehension_percentile ~ mealtimes.4 + auditory_comprehension_percentile.y, data = media_pls)
+summary(mod1)
+#x ~ y
+mod1 <- lm(mealtimes.4 ~ auditory_comprehension_percentile.x + mealtimes.1, data = media_pls)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ auditory_comprehension_percentile.y + mealtimes.4, data = media_pls)
+summary(mod1)
+```
+
+# mealtime predicting expressive communication percentile 
+```{r}
+#x across waves
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls)
+summary(mod1)
+#y across waves
+mod1 <- lm(expressive_communication_percentile.y ~ expressive_communication_percentile.x, data = media_pls)
+summary(mod1)
+mod1 <- lm(expressive_communication_percentile ~ expressive_communication_percentile.y, data = media_pls)
+summary(mod1)
+#y ~x
+mod1 <- lm(expressive_communication_percentile.y ~ mealtimes.1 + expressive_communication_percentile.x, data = media_pls)
+summary(mod1)
+mod1 <- lm(expressive_communication_percentile ~ mealtimes.4 + expressive_communication_percentile.y, data = media_pls)
+summary(mod1)
+#x ~ y
+mod1 <- lm(mealtimes.4 ~ expressive_communication_percentile.x + mealtimes.1, data = media_pls)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ expressive_communication_percentile.y + mealtimes.4, data = media_pls)
+summary(mod1)
+```
+
+#mealtimes predicting percentile rank 
+```{r}
+#x across waves
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls)
+summary(mod1)
+#y across waves
+mod1 <- lm(percentile_rank.y ~ percentile_rank.x, data = media_pls)
+summary(mod1)
+mod1 <- lm(percentile_rank ~ percentile_rank.y, data = media_pls)
+summary(mod1)
+#y ~x
+mod1 <- lm(percentile_rank.y ~ mealtimes.1 + percentile_rank.x, data = media_pls)
+summary(mod1)
+mod1 <- lm(percentile_rank ~ mealtimes.4 + percentile_rank.y, data = media_pls)
+summary(mod1)
+#x ~ y
+mod1 <- lm(mealtimes.4 ~ percentile_rank.x + mealtimes.1, data = media_pls)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ percentile_rank.y + mealtimes.4, data = media_pls)
+summary(mod1)
+```
+
+Time to get wild!!
+```{r}
+intervention <- read_xlsx("../data/UMD_UCI Condition_7.20.22.xlsx") %>% 
+  mutate(child_id = as.character(ChildID))
+media_pls <- full_join(media_pls, intervention, by = c("child_id"))
+```
+
+#mealtimes predicting percentile rank 
+```{r}
+media_pls_both <- media_pls %>% 
+  filter(par_id >25000)
+#x across waves
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_both)
+summary(mod1)
+#y across waves
+mod1 <- lm(percentile_rank.y ~ percentile_rank.x, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(percentile_rank ~ percentile_rank.y, data = media_pls_both)
+summary(mod1)
+#y ~x
+mod1 <- lm(percentile_rank.y ~ mealtimes.1 + percentile_rank.x, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(percentile_rank ~ mealtimes.4 + percentile_rank.y, data = media_pls_both)
+summary(mod1)
+#x ~ y
+mod1 <- lm(mealtimes.4 ~ percentile_rank.x + mealtimes.1, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ percentile_rank.y + mealtimes.4, data = media_pls_both)
+summary(mod1)
+```
+
+#mealtimes predicting ec rank 
+```{r}
+media_pls_both <- media_pls %>% 
+  filter(par_id >25000)
+#x across waves
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_both)
+summary(mod1)
+#y across waves
+mod1 <- lm(expressive_communication_percentile.y ~ expressive_communication_percentile.x, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(expressive_communication_percentile ~ expressive_communication_percentile.y, data = media_pls_both)
+summary(mod1)
+#y ~x
+mod1 <- lm(expressive_communication_percentile.y ~ mealtimes.1 + expressive_communication_percentile.x, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(expressive_communication_percentile ~ mealtimes.4 + expressive_communication_percentile.y, data = media_pls_both)
+summary(mod1)
+#x ~ y
+mod1 <- lm(mealtimes.4 ~ expressive_communication_percentile.x + mealtimes.1, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ expressive_communication_percentile.y + mealtimes.4, data = media_pls_both)
+summary(mod1)
+```
+
+#mealtimes predicting AC rank 
+```{r}
+media_pls_both <- media_pls %>% 
+  filter(par_id >25000)
+#x across waves
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_both)
+summary(mod1)
+#y across waves
+mod1 <- lm(auditory_comprehension_percentile.y ~ auditory_comprehension_percentile.x, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(auditory_comprehension_percentile ~ auditory_comprehension_percentile.y, data = media_pls_both)
+summary(mod1)
+#y ~x
+mod1 <- lm(auditory_comprehension_percentile.y ~ mealtimes.1 + auditory_comprehension_percentile.x, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(auditory_comprehension_percentile ~ mealtimes.4 + auditory_comprehension_percentile.y, data = media_pls_both)
+summary(mod1)
+#x ~ y
+mod1 <- lm(mealtimes.4 ~ auditory_comprehension_percentile.x + mealtimes.1, data = media_pls_both)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ auditory_comprehension_percentile.y + mealtimes.4, data = media_pls_both)
+summary(mod1)
+```
