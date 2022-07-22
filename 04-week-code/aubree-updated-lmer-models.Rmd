@@ -398,14 +398,14 @@ cor(predict(model10), behavior_management_vac$behavior_management)
 
 # Trying James code 
 ```{r}
-model11 <- lmer(percentile_rank ~ behavior_management + wave + (1| child_id), 
+model11 <- lmer(percentile_rank ~ behavior_management * wave + (1| child_id), 
                 data = media_pls_lmer_and_demography)
 
 summary(model11)
 ```
 
 ```{r}
-model12 <- lmer(percentile_rank ~ meal_times + wave + (1| child_id), 
+model12 <- lmer(percentile_rank ~ meal_times + (1|wave) +(1| child_id), 
                 data = media_pls_lmer_and_demography)
 
 summary(model12)
