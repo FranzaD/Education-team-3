@@ -346,7 +346,7 @@ summary(model)
 
 # graph actual vs predicted
 media_pls %>%
-  mutate(pred = predict(model, newdata = lying_mothers)) %>%
+  mutate(pred = predict(model, newdata = media_pls)) %>%
   ggplot(aes(total_score, predict(model, newdata = media_pls))) +
   geom_point() +
   geom_abline(intercept = 0,
@@ -361,3 +361,422 @@ cor(media_pls$total_score, predict(model, newdata = media_pls))
 ```
 
 
+## Model exploration after meeting
+
+```{r}
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+pls_father <- readRDS("../data/PLS_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+
+# clean data
+pls <- pls_mother %>%
+  full_join(pls_father) %>%
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use)
+
+demo <- demo %>%
+  select(par_id, child_id, years_school_complete, household_income_numerical)
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(demo, by = c("par_id", "child_id")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  mutate(sex = case_when(
+    par_id >= 30000 ~ "m",
+    par_id < 30000 ~ "f"
+  ))
+
+model <- lmer(total_score ~ 
+                # fixed effects
+                years_school_complete + 
+                household_income_numerical + 
+                condition +
+                sex +
+                # interaction term
+                daily_use * wave + 
+                daily_use * sex +
+                # random effects
+                (1 | child_id), data = media_pls)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_pls %>%
+  filter(!is.na(daily_use), !is.na(total_score), !is.na(years_school_complete), !is.na(household_income_numerical))
+
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+```
+## BIT ~ behavior & mealtimes
+
+### probavg ~ mealtimes .
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(BITprobavg ~ mealtimes * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+### probavg ~ behavior .
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(BITprobavg ~ behavior_management * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+### compavg ~ mealtimes
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(BITcompavg ~ mealtimes * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+### compavg ~ behavior
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(BITcompavg ~ behavior_management * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+## mealtimes ~ BIT
+
+### mealtimes ~ probavg *
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(mealtimes ~ BITprobavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+### mealtimes ~ compavg
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(mealtimes ~ BITcompavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+## behavior ~ BIT
+
+### behavior ~ probavg
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(behavior_management ~ BITprobavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+### behavior ~ compavg
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+
+model <- lmer(behavior_management ~ BITcompavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE)
+
+summary(model)
+```
+
+## Multiple comparisons
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+media_mother <- filter(media, par_id < 30000)
+media_father <- filter(media, par_id >= 30000)
+
+bit_media <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_mother, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id")
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media_father, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>%
+  inner_join(grouping, by = "child_id")
+############################################
+# run individual line for summary of model #
+# lines with a . or a * has significant    #
+# higher level variables (interactions)    #
+############################################
+
+# mother
+# .
+summary(lmer(BITprobavg ~ mealtimes * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+# .
+summary(lmer(BITprobavg ~ behavior_management * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+summary(lmer(BITcompavg ~ mealtimes * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+summary(lmer(BITcompavg ~ behavior_management * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+summary(lmer(mealtimes ~ BITprobavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+# *
+summary(lmer(mealtimes ~ BITcompavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+summary(lmer(behavior_management ~ BITprobavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+summary(lmer(behavior_management ~ BITcompavg * wave + condition + (1 | child_id), data = bit_media, REML = FALSE))
+
+# father
+summary(lmer(BITprobavg ~ mealtimes * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+summary(lmer(BITprobavg ~ behavior_management * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+summary(lmer(BITcompavg ~ mealtimes * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+summary(lmer(BITcompavg ~ behavior_management * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+summary(lmer(mealtimes ~ BITprobavg * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+# .
+summary(lmer(mealtimes ~ BITcompavg * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+summary(lmer(behavior_management ~ BITprobavg * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE))
+summary(lmer(behavior_management ~ BITcompavg * wave + condition + (1 | child_id), data = bit_media_father, REML = FALSE)) 
+
+```
+
+## Jame's threesome model
+
+```{r}
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+pls_mother <- readRDS("../data/PLS_long_mother.dta")
+
+bit_media_pls <- bit_mother %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management) %>% 
+  inner_join(grouping, by = "child_id") %>%
+  inner_join(pls_mother, by = c("child_id", "wave"))
+
+bit_media_father <- bit_father %>%
+  mutate(wave = as.factor(case_when(
+    wave == 2 ~ 1,
+    wave == 5 ~ 4,
+    wave == 6 ~ 6))) %>%
+  full_join(media, by = c("par_id", "child_id", "wave")) %>% 
+  select(child_id, wave, BITcompavg, BITprobavg, mealtimes, behavior_management)
+
+model <- lmer(BITcompavg ~ total_score * wave + mealtimes * wave + (1 | child_id), data = bit_media_pls, REML = FALSE)
+
+summary(model)
+```
