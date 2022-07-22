@@ -121,8 +121,15 @@ cplm_data <- left_join(cplm_data, PLS_w1, key = c("child_id")) %>%
   mutate(acpr_w6 = as.numeric(percentile_rank_auditory)) %>% 
   select(child_id, par_id, ml_w1, ml_w4, ml_w6, acpr_w1, acpr_w4, acpr_w6)  
 
-#baseline wide formatted data complete
+#CHECKPOINT: baseline wide formatted data complete
 
+#Adding means of variables auditory percentile rank and mealtimes over wave 1 4 6
+#ignores NA values in measurements
+cplm_data <- cplm_data %>% 
+  add_column(acpr_mean = rowMeans(cplm_data[ ,6:8], na.rm = TRUE))
+
+cplm_data <- cplm_data %>% 
+  add_column(ml_mean = rowMeans(cplm_data[ ,3:5], na.rm = TRUE)) 
 ```
 ### CREATING THE MODELS
 1) =~ , which is used for factor loadings, and can be thought of as “is measured by;”
