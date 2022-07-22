@@ -22,7 +22,7 @@ library(janitor)
 
 ##Read Data 
 ```{r}
-PLS_data <- readRDS(file="../data/PLS_data.dta")
+#PLS_data <- readRDS(file="../data/PLS_data.dta")
 demography <- readRDS(file="../data/demography.dta")
 media_long <- readRDS(file="../data/media_long.dta")
 grouping_data <- readRDS(file = "../data/grouping_data.dta")
@@ -87,5 +87,9 @@ PLS_w1 <- PLS_w1 %>%
 
 ## Create fewer data sets combineing EVERYTHING, then we will only have a few 
 ## data sets to work with
+```{r}
+pls_and_media_lmer 
+full_join(PLS_w1, PLS_w4, by = c("child_id", "par_id"))
+```
 
 
