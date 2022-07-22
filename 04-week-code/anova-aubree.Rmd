@@ -223,5 +223,20 @@ plot(tukey.test)
 TukeyHSD(anova_2)
 ```
 
+We only consider moms in this model because, categorically speaking, there is
+not much variance between mothers and fathers between categories. Statisitcally
+speaking, we see that the average BITSEA score for children with low PLS scores 
+has a significant difference between average BITSEA score for children with a
+high PLS score. The difference between the low category and the high category is 
+about .18. This mean typically the children with a high PLS score have a lower 
+BITSEA score. (which is what we want)
 
+Additionally, we see that the average BITSEA score for children with medium PLS scores 
+has a significant difference between average BITSEA score for children with a
+low PLS score. The difference between the med category and the low category is 
+about -.14 . This means typically the children with a medium PLS score have a lower 
+BITSEA score. (which is what we want)
+
+There is a significant difference between the low and high categories for daily 
+use. Which is expected when having only two categories. 
 

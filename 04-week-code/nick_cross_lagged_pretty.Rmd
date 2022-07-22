@@ -43,6 +43,20 @@ summary(mod2)
 mod3 <- lm( mealtimes.6 ~total_score.6 ,  data = media_pls)
 summary(mod3)
 #Significant in wave 6 both ways
+
+mod1 <- lm(mealtimes.4 ~ mealtimes.1,  data = media_pls)
+summary(mod1)
+
+mod2 <- lm(mealtimes.6 ~ mealtimes.4,  data = media_pls)
+summary(mod2)
+
+mod1 <- lm( total_score.4 ~total_score.1 ,  data = media_pls)
+summary(mod1)
+
+mod2 <- lm( total_score.6 ~total_score.4 ,  data = media_pls)
+summary(mod2)
+
+
 ```
 
 behavior_management:
@@ -62,6 +76,14 @@ summary(mod2)
 mod3 <- lm( behavior_management.6~total_score.6,  data = media_pls)
 summary(mod3)
 #Wave 4 and 6 is very significant both ways
+
+
+mod1 <- lm(behavior_management.4 ~ behavior_management.1,  data = media_pls)
+summary(mod1)
+mod2 <- lm(behavior_management.6 ~ behavior_management.4,  data = media_pls)
+summary(mod2)
+mod3 <- lm(total_score.6 ~ behavior_management.6,  data = media_pls)
+summary(mod3)
 ```
 
 
@@ -76,20 +98,90 @@ mealtimes: going forward we will be looking at what we expect, wave 1 to 4 to 6 
 mod1 <- lm(total_score.4 ~ mealtimes.1 + total_score.1,  data = media_pls)
 summary(mod1)
 #not significant
+mod1 <- lm(mealtimes.4 ~ total_score.1 + mealtimes.1,  data = media_pls)
+summary(mod1)
 
 #wave 4 to 6
 mod2 <- lm(total_score.6 ~ mealtimes.4 + total_score.4,  data = media_pls)
 summary(mod2)
 #p-value of 0.000418, very significant
+mod1 <- lm(total_score.6 ~ mealtimes.4 + total_score.4,  data = media_pls)
+summary(mod1)
+
 
 #wave 1 to 6
 mod3 <- lm(total_score.6 ~ mealtimes.1 + total_score.1,  data = media_pls)
 summary(mod3)
 #not significant... VERY INTERESTING
+
+#reverse 
+#wave 1 to 4
+mod1 <- lm(mealtimes.1 ~ total_score.4 + mealtimes.4,  data = media_pls)
+summary(mod1)
+
+#wave 4 to 6
+mod2 <- lm(mealtimes.4 ~ total_score.6 + mealtimes.6,  data = media_pls)
+summary(mod2)
+
+#wave 1 to 6
+mod3 <- lm(mealtimes.1 ~ total_score.6 + mealtimes.6,  data = media_pls)
+summary(mod3)
+```
+
+##BITprob
+```{r}
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_bit <- inner_join(bit_wide, media_wide, by = c("child_id", "par_id"))
 ```
 
 
+```{r}
+mod1 <- lm(BITprobavg.2 ~ BITprobavg.5,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITprobavg.5 ~ BITprobavg.6,  data = media_bit)
+summary(mod1)
+#both significant
+
+mod1 <- lm(BITprobavg.5 ~ mealtimes.1 + BITprobavg.2,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITprobavg.6 ~ mealtimes.4 + BITprobavg.5,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ BITprobavg.2 + mealtimes.1,  data = media_bit)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ BITprobavg.5 + mealtimes.4,  data = media_bit)
+summary(mod1)
+
+```
+##BITcompavg
+```{r}
+mod1 <- lm(BITcompavg.2 ~ BITcompavg.5,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITcompavg.5 ~ BITcompavg.6,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(BITcompavg.5 ~ mealtimes.1 + BITcompavg.2,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITcompavg.6 ~ mealtimes.4 + BITcompavg.5,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ BITcompavg.2 + mealtimes.1,  data = media_bit)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ BITcompavg.5 + mealtimes.4,  data = media_bit)
+summary(mod1)
+```
+
+
+
 Behavior management
+```{r}
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_bit)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_bit)
+summary(mod1)
+```
+
 ```{r}
 #wave 1 to 4
 mod1 <- lm(total_score.4 ~ behavior_management.1 + total_score.1,  data = media_pls)
@@ -108,6 +200,60 @@ summary(mod3)
 ```
 
 Summary of mealtimes value: Within waves mealtimes only gives an association in wave 6. But when doing cross lagged association, only wave 4 mealtime was a significant predictor of wave 6 total score.x
+
+
+##BITcompavg
+```{r}
+mod1 <- lm(BITcompavg.2 ~ BITcompavg.5,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITcompavg.5 ~ BITcompavg.6,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(BITcompavg.5 ~ behavior_management.1 + BITcompavg.2,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITcompavg.6 ~ behavior_management.4 + BITcompavg.5,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ BITcompavg.2 + behavior_management.1,  data = media_bit)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ BITcompavg.5 + behavior_management.4,  data = media_bit)
+summary(mod1)
+```
+
+
+```{r}
+mod1 <- lm(BITprobavg.5 ~ behavior_management.1 + BITprobavg.2,  data = media_bit)
+summary(mod1)
+mod1 <- lm(BITprobavg.6 ~ behavior_management.4 + BITprobavg.5,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ BITprobavg.2 + behavior_management.1,  data = media_bit)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ BITprobavg.5 + behavior_management.4,  data = media_bit)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ BITprobavg.2 + behavior_management.1,  data = media_bit)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ BITprobavg.5 + behavior_management.4,  data = media_bit)
+summary(mod1)
+```
+
+```{r}
+mod1 <- lm(total_score.4 ~ behavior_management.1 + total_score.1,  data = media_pls)
+summary(mod1)
+mod1 <- lm(total_score.6 ~ behavior_management.4 + total_score.4,  data = media_pls)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ total_score.1 + behavior_management.1,  data = media_pls)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ total_score.4 + behavior_management.4,  data = media_pls)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ total_score.1 + behavior_management.1,  data = media_pls)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ total_score.4 + behavior_management.4,  data = media_pls)
+summary(mod1)
+```
 
 
 
@@ -137,4 +283,217 @@ ggplot(data = demography, aes(x= household_income_numerical,
 ```{r}
 
 ```
+
+
+
+
+
+#Okay im starting over>:(
+father mealtime (if you want the moms just switch the > cause I'm not gonna do this agian lmao)
+```{r}
+
+media_bit_dad <- media_bit %>% 
+  filter(par_id >25000)
+
+mod1 <- lm(mealtimes.4 ~mealtimes.1, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~mealtimes.4, data = media_bit_dad)
+summary(mod1)
+
+
+mod1 <- lm(BITprobavg.5 ~BITprobavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITprobavg.6 ~BITprobavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(BITprobavg.5 ~ mealtimes.1 + BITprobavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITprobavg.6 ~ mealtimes.4 + BITprobavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ BITprobavg.2 + mealtimes.1, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ BITprobavg.5 + mealtimes.4, data = media_bit_dad)
+summary(mod1)
+
+```
+
+```{r}
+media_bit_dad <- media_bit %>% 
+  filter(par_id >25000)
+
+mod1 <- lm(BITcompavg.5 ~BITcompavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITcompavg.6 ~BITcompavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(BITcompavg.5 ~ mealtimes.1 + BITcompavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITcompavg.6 ~ mealtimes.4 + BITcompavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ BITcompavg.2 + mealtimes.1, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ BITcompavg.5 + mealtimes.4, data = media_bit_dad)
+summary(mod1)
+
+```
+
+```{r}
+media_pls_dad <- media_pls %>% 
+  filter(par_id > 25000)
+
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(total_score.4 ~ total_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(total_score.6 ~ total_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(total_score.4 ~ mealtimes.1 + total_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(total_score.6 ~ mealtimes.4 + total_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ total_score.1 + mealtimes.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ total_score.4 + mealtimes.4, data = media_pls_dad)
+summary(mod1)
+```
+
+```{r}
+media_pls_dad <- media_pls %>% 
+  filter(par_id > 25000)
+
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(auditory_comprehension_score.4 ~ auditory_comprehension_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(auditory_comprehension_score.6 ~ auditory_comprehension_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(auditory_comprehension_score.4 ~ mealtimes.1 + auditory_comprehension_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(auditory_comprehension_score.6 ~ mealtimes.4 + auditory_comprehension_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ auditory_comprehension_score.1 + mealtimes.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ auditory_comprehension_score.4 + mealtimes.4, data = media_pls_dad)
+summary(mod1)
+
+```
+
+```{r}
+media_pls_dad <- media_pls %>% 
+  filter(par_id > 25000)
+
+mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(expressive_communication_score.4 ~ expressive_communication_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(expressive_communication_score.6 ~ expressive_communication_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(expressive_communication_score.4 ~ mealtimes.1 + expressive_communication_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(expressive_communication_score.6 ~ mealtimes.4 + expressive_communication_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(mealtimes.4 ~ expressive_communication_score.1 + mealtimes.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(mealtimes.6 ~ expressive_communication_score.4 + mealtimes.4, data = media_pls_dad)
+summary(mod1)
+
+```
+
+
+--------------
+
+#father behavior management
+
+father mealtime
+```{r}
+
+media_bit_dad <- media_bit %>% 
+  filter(par_id > 25000)
+
+mod1 <- lm(behavior_management.4 ~behavior_management.1, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~behavior_management.4, data = media_bit_dad)
+summary(mod1)
+
+
+mod1 <- lm(BITprobavg.5 ~BITprobavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITprobavg.6 ~BITprobavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(BITprobavg.5 ~ behavior_management.1 + BITprobavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITprobavg.6 ~ behavior_management.4 + BITprobavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ BITprobavg.2 + behavior_management.1, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ BITprobavg.5 + behavior_management.4, data = media_bit_dad)
+summary(mod1)
+
+```
+
+```{r}
+media_bit_dad <- media_bit %>% 
+  filter(par_id > 25000)
+
+mod1 <- lm(BITcompavg.5 ~BITcompavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITcompavg.6 ~BITcompavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(BITcompavg.5 ~ behavior_management.1 + BITcompavg.2, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(BITcompavg.6 ~ behavior_management.4 + BITcompavg.5, data = media_bit_dad)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ BITcompavg.2 + behavior_management.1, data = media_bit_dad)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ BITcompavg.5 + behavior_management.4, data = media_bit_dad)
+summary(mod1)
+
+```
+
+```{r}
+media_pls_dad <- media_pls %>% 
+  filter(par_id > 25000)
+
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(total_score.4 ~ total_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(total_score.6 ~ total_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(total_score.4 ~ behavior_management.1 + total_score.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(total_score.6 ~ behavior_management.4 + total_score.4, data = media_pls_dad)
+summary(mod1)
+
+mod1 <- lm(behavior_management.4 ~ total_score.1 + behavior_management.1, data = media_pls_dad)
+summary(mod1)
+mod1 <- lm(behavior_management.6 ~ total_score.4 + behavior_management.4, data = media_pls_dad)
+summary(mod1)
+```
+
 
