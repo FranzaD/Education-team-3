@@ -1,0 +1,256 @@
+---
+title: "lost"
+author: "James"
+date: '`r Sys.Date()`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+```{r}
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+pls_wide %>% 
+  filter(total_score.4 >= 0)
+```
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+```
+
+```{r}
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide.dta")
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+pls_wide %>% 
+  filter(total_score.4 >= 0)
+```
+
+## Bootstrap with mixed effect random slope
+
+```{r}
+pls <- readRDS("../data/PLS_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+pls_wide <- readRDS("../data/PLS_wide_mother.dta")
+
+pls_wide <- pls_wide %>% 
+  filter(total_score.1 >= 0,
+         total_score.6 >= 0)
+
+tmp1 <- 
+
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         daily_use = ifelse(daily_use < 0, NA, daily_use)) %>% 
+  select(par_id, child_id, wave, daily_use) %>%
+  filter(par_id < 30000, wave != 4)
+
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  select(par_id, child_id, daily_use, total_score, wave) %>%
+  na.omit()
+
+
+bootstrap <- function(df, func, num) {
+  temp <- numeric(num)
+  # setup
+  for (i in 1:num) {
+    # repeated action
+    # sampling
+    lying_mothers <- df[sample(nrow(df), 450, replace = TRUE), ]
+    
+    # model
+    model <- func(total_score ~ daily_use * wave + (1 + wave | child_id), data = lying_mothers, REML = FALSE)
+    
+    temp[i] <- cor(lying_mothers$total_score, predict(model, newdata = lying_mothers))
+    
+  }
+  
+  #ci <- quantile(temp, prob = c(0.025, 0.975), na.rm = TRUE)
+  #list(est=func(temp), ci=ci)
+  print(temp)
+  print(mean(temp))
+}
+
+#bootstrap(media_pls, lmer, 10)
+
+
+lying_mothers <- media_pls[sample(nrow(media_pls), 110), ] %>% 
+  rbind(media_pls)
+# clean data
+
+# lying_mothers %>% 
+#   arrange(child_id)
+
+model <- lmer(total_score ~ daily_use * wave + (1 + daily_use| child_id), data = lying_mothers, REML = FALSE)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+#media_pred <- lying_mothers %>%
+#  filter(!is.na(daily_use), !is.na(total_score))
+
+# graph actual vs predicted
+lying_mothers %>%
+  mutate(pred = predict(model, newdata = lying_mothers)) %>%
+  ggplot(aes(total_score, predict(model, newdata = lying_mothers))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+cor(lying_mothers$total_score, predict(model, newdata = lying_mothers))
+
+```
+
+## Aubree's original model
+
+```{r}
+pls <- readRDS("../data/PLS_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+grouping_data <- readRDS(file = "../data/grouping_data.dta")
+
+# colSums(is.na(pls))
+# colSums(is.na(media))
+
+pls <- pls %>% 
+  mutate(wave = as.factor(wave),
+         total_score = ifelse(total_score < 0, NA, total_score)) %>% 
+  select(par_id, child_id, wave, total_score)
+
+media <- media %>% 
+  mutate(wave = as.factor(wave),
+         mealtimes = ifelse(mealtimes < 0, NA, mealtimes),
+         behavior_management = ifelse(behavior_management < 0, NA, behavior_management),
+         daily_use = ifelse(daily_use < 0, NA, daily_use))
+  # select(par_id, child_id, wave, daily_use)
+  # filter(par_id < 30000, wave != 4)
+
+
+media_pls <- media %>%
+  full_join(pls, by = c("par_id", "child_id", "wave"))
+  # select(par_id, child_id, daily_use, total_score, wave)
+   #filter(total_score < 150) %>% 
+
+# demography
+demography <- readRDS(file="../data/demography.dta")
+```
+
+
+```{r}
+media_pls_demo <- left_join(media_pls, demography, by = c("par_id", "child_id"))
+
+media_pls_demo <- media_pls_demo %>% 
+  left_join(grouping_data, by = "child_id") %>% 
+  mutate(child_id = as.factor(child_id),
+         years_school_complete = as.factor(years_school_complete),
+         condition = as.factor(condition),
+         wave = as.factor(wave)) %>%
+  select(child_id, par_id, wave, total_score, mealtimes, condition) %>% 
+   na.omit()
+
+
+
+model <- media_pls_demo %>% 
+  lmer(total_score ~  mealtimes+ wave+ (1| child_id), data = .)
+summary(model)
+cor(media_pls_demo$total_score, predict(model, newdata = media_pls_demo))
+# summary(model)
+
+# qqnorm(resid(model)) 
+# qqline(resid(model), col = "red") 
+# 
+# library(MuMIn)
+# r.squaredGLMM(model)
+```
+
+
+```{r}
+library(equatiomatic)
+extract_eq(model)
+```
+$$
+\begin{aligned}
+  \operatorname{total\_score}_{i}  &\sim N \left(\mu, \sigma^2 \right) \\
+    \mu &=\alpha_{j[i]} + \beta_{1}(\operatorname{mealtimes}) + \beta_{2}(\operatorname{wave}_{\operatorname{6}}) + \beta_{3}(\operatorname{wave}_{\operatorname{4}}) \\
+    \alpha_{j}  &\sim N \left(\mu_{\alpha_{j}}, \sigma^2_{\alpha_{j}} \right)
+    \text{, for child\_id j = 1,} \dots \text{,J}
+\end{aligned}
+$$
+
+```{r}
+# graph actual vs predicted
+media_pls %>%
+  mutate(pred = predict(model, newdata = lying_mothers)) %>%
+  ggplot(aes(total_score, predict(model, newdata = media_pls))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total PLS Score",
+       y = "Predicted Total PLS Score",
+       title = "Actual vs Predicted PLS Scores")
+
+
+```
+
+$$
+\begin{aligned}
+  \operatorname{total\_score}_{i}  &\sim N \left(\mu, \sigma^2 \right) \\
+    \mu &=\alpha_{j[i]} + \beta_{1}(\operatorname{daily\_use}) + \beta_{2}(\operatorname{wave}_{\operatorname{6}}) + \beta_{3}(\operatorname{daily\_use} \times \operatorname{wave}_{\operatorname{6}}) \\
+    \alpha_{j}  &\sim N \left(\mu_{\alpha_{j}}, \sigma^2_{\alpha_{j}} \right)
+    \text{, for child\_id j = 1,} \dots \text{,J}
+\end{aligned}
+$$
