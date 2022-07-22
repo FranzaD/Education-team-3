@@ -35,6 +35,8 @@ bit_wide <- readRDS(file="../data/BIT_wide.dta")
 media_long <- readRDS(file="../data/media_long.dta")
 media_wide <- readRDS(file="../data/media_wide.dta")
 
+pls_wide %>% 
+  filter(total_score.4 >= 0)
 ```
 
 # try linear model for PLS
@@ -48,7 +50,7 @@ summary(mod1)
 # Sig
 mod1 <- inner_join(pls_wide, media_wide, by = c("child_id", "par_id")) %>%  
   filter(total_score.6 >= 0) %>% 
-  lm(total_score.6 ~ daily_use.6,  data = .)
+  lm(total_score.1 ~ daily_use.6,  data = .)
 summary(mod1)
 
 mod1 <- inner_join(pls_wide, media_wide, by = c("child_id", "par_id")) %>%  
@@ -58,6 +60,18 @@ summary(mod1)
 ```
 
 # try linear model for BITSEA
+```{r}
+mod1 <- inner_join(bit_wide, media_wide, by = c("child_id", "par_id")) %>%  
+  filter(BITprobavg.6 >= 0) %>% 
+  lm(BITprobavg.6 ~ daily_use.6 + BITprobavg.2,  data = .)
+summary(mod1)
+
+mod1 <- inner_join(bit_wide, media_wide, by = c("child_id", "par_id")) %>%  
+  filter(BITcompavg.6 >= 0) %>% 
+  lm(BITcompavg.6 ~ daily_use.6 + BITcompavg.2,  data = .)
+summary(mod1)
+```
+
 ## wave 6 only
 avg ~ daily_use sig
 
@@ -73,4 +87,122 @@ mod1 <- bit_wide %>%
   filter(BITcompavg.6 >= 0) %>% 
   lm(BITcompavg.6 ~ daily_use.6 ,  data = .)
 summary(mod1)
+```
+
+
+# change wave 1 bitsea to wave 2
+```{r}
+bit_long_mother$wave[bit_long_mother$wave == 2] <- 1
+pls <- readRDS("../data/BIT_long_mother.dta")
+pls$wave[pls$wave == 2] <- 1
+```
+
+# Chandra's
+### adding random slope based on BITSEA
+```{r}
+bit <- readRDS("../data/BIT_long_mother.dta")
+media <- readRDS("../data/media_long.dta")
+
+bit$wave[bit$wave == 2] <- 1
+# clean data
+bit <- bit %>% 
+  mutate(wave = as.factor(wave),
+         BITcompavg = ifelse(BITcompavg < 0, NA, BITcompavg)) %>% 
+  filter(wave %in% c(1, 6)) %>% 
+  select(child_id, wave, BITcompavg)
+
+# errors when only mother's scores are included ??? QUE??
+media <- media %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  #filter(par_id < 30000) %>% 
+  select(child_id, wave, daily_use)
+
+media_bit <- media %>%
+  full_join(bit, by = c("child_id", "wave"))
+
+# aubree
+model1 <- lmer(BITcompavg ~ daily_use * wave + (1|child_id), data = media_bit)
+summary(model1)
+
+# chandra
+model <- lmer(BITcompavg ~ daily_use * wave + (1 + daily_use | child_id), data = media_bit)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_bit %>%
+  filter(!is.na(daily_use) & !is.na(BITcompavg))
+
+# correlation
+pred = predict(model)
+cor(pred, media_pred$BITcompavg)
+  
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(BITcompavg, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total BIT Score",
+       y = "Predicted Total BIT Score",
+       title = "Actual vs Predicted BIT Scores")
+
+```
+
+
+### adding random slope based on BITSEA
+```{r}
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+pls_long <- full_join(pls_long,pls_long_father)
+
+media <- readRDS("../data/media_long.dta")
+
+# clean data
+bit <- bit %>% 
+  mutate(wave = as.factor(wave),
+         BITcompavg = ifelse(BITcompavg < 0, NA, BITcompavg)) %>% 
+  filter(wave %in% c(1, 6)) %>% 
+  select(child_id, wave, BITcompavg)
+
+# errors when only mother's scores are included ??? QUE??
+media <- media %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  #filter(par_id < 30000) %>% 
+  select(child_id, wave, daily_use)
+
+media_bit <- media %>%
+  full_join(bit, by = c("child_id", "wave"))
+
+# aubree
+model1 <- lmer(BITcompavg ~ daily_use * wave + (1|child_id), data = media_bit)
+summary(model1)
+
+# chandra
+model <- lmer(BITcompavg ~ daily_use * wave + (1 + daily_use | child_id), data = media_bit)
+
+summary(model)
+
+# create data set without NA values to be used for predictions
+media_pred <- media_bit %>%
+  filter(!is.na(daily_use) & !is.na(BITcompavg))
+
+# correlation
+pred = predict(model)
+cor(pred, media_pred$BITcompavg)
+  
+# graph actual vs predicted
+media_pred %>%
+  mutate(pred = predict(model, newdata = media_pred)) %>%
+  ggplot(aes(BITcompavg, predict(model, newdata = media_pred))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +
+  labs(x = "Acutal Total BIT Score",
+       y = "Predicted Total BIT Score",
+       title = "Actual vs Predicted BIT Scores")
+
 ```

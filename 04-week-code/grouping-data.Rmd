@@ -16,7 +16,7 @@ library(janitor)
 
 Clean
 ```{r}
-grouping_data <- read_excel("data/UMD_UCI Condition_7.20.22.xlsx")
+grouping_data <- read_excel(here::here("data/UMD_UCI Condition_7.20.22.xlsx"))
 grouping_data <- grouping_data %>% 
   mutate(condition = as.factor(Condition),
          child_id = as.character(ChildID)) 
@@ -32,9 +32,9 @@ grouping_data <- grouping_data %>%
             condition == "Dad" ~ "3",
             condition == "Control" ~ "4"))
 
-saveRDS(grouping_data, file="data/grouping_data.dta")
+saveRDS(grouping_data, file= here::here("data/grouping_data.dta"))
 
-grouping_data <- readRDS(file = "data/grouping_data.dta")
+grouping_data <- readRDS(file = here::here("data/grouping_data.dta"))
 
 ```
 
