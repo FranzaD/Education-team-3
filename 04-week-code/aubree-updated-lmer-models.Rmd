@@ -208,6 +208,9 @@ SIGNIFIGANT
 ```{r}
 model4 <- lmer(expressive_communication_percentile ~ meal_times * wave + (1|child_id) + condition, data = media_pls_lmer)
 summary(model4)
+
+cor(predict(model4), media_pls_lmer$expressive_communication_percentile)
+
 ```
 SIGNIFIGANT
 
@@ -215,6 +218,8 @@ SIGNIFIGANT
 ```{r}
 model5 <- lmer(expressive_communication_percentile ~ behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
 summary(model5)
+
+cor(predict(model5), media_pls_lmer$expressive_communication_percentile)
 ```
 SIGNIFIGANT
 
