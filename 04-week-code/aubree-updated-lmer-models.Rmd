@@ -144,6 +144,42 @@ media_pls <- inner_join(pls_all, media_wide, by = c("child_id", "par_id"))
 media_pls_lmer <- 
   inner_join(media_pls, grouping_data, by = "child_id")
 ## note  x = 1, y = 4, and blank = 6
+
+test <- media_pls_lmer %>% 
+  select(child_id, par_id, percentile_rank.x, auditory_comprehension_percentile.x, expressive_communication_percentile.x, language.x, behavior_management.1, mealtimes.1) %>% 
+  mutate(percentile_rank = percentile_rank.x,
+         auditory_comprehension_percentile = auditory_comprehension_percentile.x, 
+         expressive_communication_percentile = expressive_communication_percentile.x,
+         language = as.factor(language.x),
+         meal_times = mealtimes.1,
+         behavior_management = behavior_management.1,
+           wave = 1)
+
+test2 <- media_pls_lmer %>% 
+   select(child_id, par_id, percentile_rank.y, auditory_comprehension_percentile.y, expressive_communication_percentile.y, language.y, behavior_management.4, mealtimes.4) %>% 
+  mutate(percentile_rank = percentile_rank.y, auditory_comprehension_percentile = auditory_comprehension_percentile.y, 
+         expressive_communication_percentile = expressive_communication_percentile.y,
+         language = as.factor(language.y),
+         meal_times = mealtimes.4,
+         behavior_management = behavior_management.4,
+         wave = 4)
+  
+testlong <- full_join(test, test2)
+
+test3 <- media_pls_lmer %>% 
+   select(child_id, par_id, percentile_rank, auditory_comprehension_percentile, expressive_communication_percentile, behavior_management.6, mealtimes.6) %>% 
+  mutate(meal_times = mealtimes.6,
+         behavior_management = behavior_management.6,
+         wave = 6)
+
+test2long <- full_join(testlong, test3)
+
+
+media_pls_lmer <- test2long %>% 
+  select(child_id, par_id, percentile_rank, expressive_communication_percentile, auditory_comprehension_percentile, language, wave, behavior_management, meal_times)
+
+media_pls_lmer <- full_join(media_pls_lmer, grouping_data)
+
 ```
 
 ## We will only need to pay attention to demography and media_pls_lmer data set
