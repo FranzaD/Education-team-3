@@ -108,12 +108,7 @@ anova_table <- anova_table %>%
 #anova_table %>% 
 #  glimpse()
 ```
-##### Table for change pls
 
-```{r}
-anova_table_no_double <- anova_table %>% 
-  filter(wave == 6)
-```
 
 ##### Table for spaghetti plot
 
@@ -163,6 +158,14 @@ anova_table <- left_join(anova_table, pls_diff_w1w6, key = c("child_id", "par_id
 anova_table <- anova_table %>% 
   select(child_id, par_id, wave, pls_change, pls_change_cat, father, total_score, daily_use, daily_use_cat) %>%
   na.omit() 
+```
+
+
+##### Table for change pls
+
+```{r}
+anova_table_no_double <- anova_table %>% 
+  filter(wave == 6)
 ```
 
 ##### Two Way Table
@@ -368,7 +371,7 @@ _Assumptions are consistent regardless of whether ANOVA is balanced or not:_
   
 ##### PLS scores = Media rec/not rec
 ```{r}
-pls_media <- aov(total_score ~ daily_use_cat + , anova_table)
+pls_media <- aov(total_score ~ daily_use_cat, anova_table)
 
 pls_media %>% 
   summary()
@@ -420,9 +423,9 @@ TukeyHSD(anova_2)
 ##### PLS = Media + parent Gender
 
 ```{r}
-aov_model <- aov(total_score ~ daily_use_cat + pargen + pargen:daily_use_cat , anova_table)
+#aov_model <- aov(total_score ~ daily_use_cat + pargen + pargen:daily_use_cat , anova_table)
 
-summary(aov_model)
+#(aov_model)
 ```
 Interpretation:
 
@@ -446,6 +449,11 @@ H1: PLs_change and daily_use are dependent (related)
 chisq.test(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
 ```
 Not enough evidence to reject null hypothesis when we take into account double counting
+NO EVIDENCE = NOT DEPENDENT = 
+
+FAIL TO REJECT NULL HYPOTHESIS, HENCE THERE IS NOT ENOUGH EVIDENCE TO SAY THAT THE VARIABLES ARE DEPENDENT
+
+AKA media categories and change in pls scores are independent.
 
 
 
