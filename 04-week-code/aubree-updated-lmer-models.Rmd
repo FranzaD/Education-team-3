@@ -88,8 +88,75 @@ PLS_w1 <- PLS_w1 %>%
 ## Create fewer data sets combineing EVERYTHING, then we will only have a few 
 ## data sets to work with
 ```{r}
-pls_and_media_lmer 
-full_join(PLS_w1, PLS_w4, by = c("child_id", "par_id"))
+
+pls_wide <- full_join(pls_wide_mother, pls_wide_father)
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+
+media_pls <- inner_join(media_wide, pls_wide, by = c("child_id", "par_id")) %>% filter(total_score.1 >0, total_score.4 > 0, total_score.6 >0)
+
+PLS_W1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+PLS_W1 <- clean_names(PLS_W1) 
+PLS_W1 <- PLS_W1 %>% 
+  select(child_id = childid, par_id = parid, 
+         auditory_comprehension_score = plsacss,
+         expressive_communication_score = plsecss,
+         total_score = plsss, percentile_rank = plspr,
+         auditory_comprehension_percentile = plsacpr,
+         expressive_communication_percentile = plsecpr)
+
+
+PLS_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx", sheet = "PLS_ALL_W4")
+PLS_W4 <- clean_names(PLS_w4)
+PLS_W4 <-  PLS_W4 %>% 
+  select(child_id = childid, par_id = parid, language,
+         auditory_comprehension_score = plsacss,
+         expressive_communication_score = plsecss,
+         total_score = plsss, percentile_rank = plspr,
+         auditory_comprehension_percentile = plsacpr,
+         expressive_communication_percentile = plsecpr)
+
+
+
+PLS_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx",sheet = "PLS_ALL_W6")
+PLS_w6 <- clean_names(PLS_w6)
+PLS_w6 <-  PLS_w6 %>% 
+  mutate(child_id = as.double(childid),
+         par_id = as.double(parid),
+        language= as.factor(case_when(
+          language == 0 ~ "english",
+          language == 1 ~ "spanish")))
+PLS_w6 <- PLS_w6 %>%
+  select(child_id, par_id, language, auditory_comprehension_score = plsacss, expressive_communication_score = plsecss, total_score = plsss, percentile_rank = plspr, auditory_comprehension_percentile = plsacpr, expressive_communication_percentile = plsecpr)
+
+pls_total <-inner_join(PLS_W1, PLS_W4, by = c("child_id", "par_id"))
+pls_all <-inner_join(pls_total, PLS_w6, by = c("child_id", "par_id"))
+pls_all <- pls_all %>% 
+  filter(percentile_rank.x >0,
+         percentile_rank >0,
+         percentile_rank.y >0) %>% 
+    mutate(child_id = as.character(child_id),
+           par_id = as.character(par_id))
+media_wide <- media_wide %>% 
+  mutate(child_id = as.character(child_id))
+media_pls <- inner_join(pls_all, media_wide, by = c("child_id", "par_id"))
+
+media_pls_lmer <- 
+  inner_join(media_pls, grouping_data, by = "child_id")
+## note  x = 1, y = 4, and blank = 6
 ```
+
+## We will only need to pay attention to demography and media_pls_lmer data set
+
+
+## Let create models 
+```{r}
+library(lme4)
+library(lmerTest)
+model <- lmer(percentile_rank ~ daily_use * wave + (1|child_id) + condition, 
+              data = long_boi_2)
+summary(model)
+```
+
 
 
