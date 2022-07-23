@@ -94,7 +94,7 @@ View (dat_long)
 write.csv(dat_wide, file = "Abridged Comp Data.csv")
 ```
 
-#### Our Data
+#### Data version 0.0
 
 ```{r}
 #child_id and mealtime scores
@@ -133,6 +133,11 @@ cplm_data <- cplm_data %>%
 cplm_data <- cplm_data %>% 
   add_column(ml_mean = rowMeans(cplm_data[ ,3:5], na.rm = TRUE)) 
 ```
+#### Data version 1.0
+```{r}
+
+```
+
 ### Correlation EDA
 
 Reference:
@@ -214,4 +219,34 @@ __What is the purpose of NA* in specifying the latent variable__
 
 ---
 CHECKPOINT
+
+### Configural Model
+```{r}
+configural_v1 <-
+  
+'
+# (ML) MEALTIMES factor loadings defined
+ML_W1 =~ NA*mt05c_w1 + mt05d_w1 + mt05cjz_w1
+ML_W4 =~ NA*mt05c_w4 + mt05d_w4 + mt05cjz_w4
+ML_W6 =~ NA*mt05c_w6 + mt05d_w6 + mt05cjz_w6
+
+# (ML) MEALTIMES variance constrained to 1
+ML_W1 ~~ 1*ML_W1
+ML_W4 ~~ 1*ML_W4
+ML_W6 ~~ 1*ML_W6
+
+# (PLS) RECEPTIVE AND EXPRESSIVE COMMUNICATION SKILLS PERCENTILE RANK factor loadings defined
+PLS_W1 =~ NA*plsecpr_w1 + plsacpr_w1
+PLS_W4 =~ NA*plsecpr_w4 + plsacpr_w4
+PLS_W6 =~ NA*plsecpr_w6 + plsacpr_w5
+
+# (PLS) RECEPTIVE AND EXPRESSIVE COMMUNICATION SKILLS PERCENTILE RANK variance constrained to 1
+PLS_W1 ~~ 1*PLS_W1
+PLS_W4 ~~ 1*PLS_W4
+PLS_W6 ~~ 1*PLS_W6
+'
+configural.model <- paste(configural.v1, errorstructure, sep = ' ', collapse 
+= NULL)
+```
+
   
