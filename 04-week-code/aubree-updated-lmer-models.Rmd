@@ -2,9 +2,6 @@
 title: "aubree-updated-lmer-models"
 output: html_document
 ---
-```{r}
-
-```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -18,11 +15,13 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 library(janitor)
+library(lme4)
+library(lmerTest)
 ```
 
 ##Read Data 
 ```{r}
-#PLS_data <- readRDS(file="../data/PLS_data.dta")
+PLS_data <- readRDS(file="../data/PLS_data.dta")
 demography <- readRDS(file="../data/demography.dta")
 media_long <- readRDS(file="../data/media_long.dta")
 grouping_data <- readRDS(file = "../data/grouping_data.dta")
@@ -88,6 +87,8 @@ PLS_w1 <- PLS_w1 %>%
 ## Create fewer data sets combineing EVERYTHING, then we will only have a few 
 ## data sets to work with
 ```{r}
+pls_wide_mother <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
 
 pls_wide <- full_join(pls_wide_mother, pls_wide_father)
 media_wide <- readRDS(file="../data/media_wide.dta")
@@ -144,19 +145,269 @@ media_pls <- inner_join(pls_all, media_wide, by = c("child_id", "par_id"))
 media_pls_lmer <- 
   inner_join(media_pls, grouping_data, by = "child_id")
 ## note  x = 1, y = 4, and blank = 6
+
+test <- media_pls_lmer %>% 
+  select(child_id, par_id, percentile_rank.x, auditory_comprehension_percentile.x, expressive_communication_percentile.x, language.x, behavior_management.1, mealtimes.1) %>% 
+  mutate(percentile_rank = percentile_rank.x,
+         auditory_comprehension_percentile = auditory_comprehension_percentile.x, 
+         expressive_communication_percentile = expressive_communication_percentile.x,
+         language = as.factor(language.x),
+         meal_times = mealtimes.1,
+         behavior_management = behavior_management.1,
+           wave = 1)
+
+test2 <- media_pls_lmer %>% 
+   select(child_id, par_id, percentile_rank.y, auditory_comprehension_percentile.y, expressive_communication_percentile.y, language.y, behavior_management.4, mealtimes.4) %>% 
+  mutate(percentile_rank = percentile_rank.y, auditory_comprehension_percentile = auditory_comprehension_percentile.y, 
+         expressive_communication_percentile = expressive_communication_percentile.y,
+         language = as.factor(language.y),
+         meal_times = mealtimes.4,
+         behavior_management = behavior_management.4,
+         wave = 4)
+  
+testlong <- full_join(test, test2)
+
+test3 <- media_pls_lmer %>% 
+   select(child_id, par_id, percentile_rank, auditory_comprehension_percentile, expressive_communication_percentile, behavior_management.6, mealtimes.6) %>% 
+  mutate(meal_times = mealtimes.6,
+         behavior_management = behavior_management.6,
+         wave = 6)
+
+test2long <- full_join(testlong, test3)
+
+
+media_pls_lmer <- test2long %>% 
+  select(child_id, par_id, percentile_rank, expressive_communication_percentile, auditory_comprehension_percentile, language, wave, behavior_management, meal_times)
+
+media_pls_lmer <- full_join(media_pls_lmer, grouping_data)
+
 ```
 
 ## We will only need to pay attention to demography and media_pls_lmer data set
-
-
-## Let create models 
+## This combines them. 
 ```{r}
-library(lme4)
-library(lmerTest)
-model <- lmer(percentile_rank ~ daily_use * wave + (1|child_id) + condition, 
-              data = long_boi_2)
-summary(model)
+media_pls_lmer_and_demography <- inner_join(media_pls_lmer, demography)
 ```
 
 
+## Let create models 
+
+# LMER Model predicting percentile_rank by behavior_management
+```{r}
+model <- lmer(percentile_rank ~ behavior_management * wave + (1|child_id) + condition , 
+              data = media_pls_lmer)
+summary(model)
+
+##Plot of residuals 
+residual_model = predict(model) - media_pls_lmer$percentile_rank
+plot(residual_model, xlab = "child_id")
+
+# Get the correlation
+behavior_management_vac <- media_pls_lmer %>% 
+   select(behavior_management) %>% 
+  na.omit()
+cor(predict(model), behavior_management_vac$behavior_management)
+
+```
+SIGNIFIGANT
+
+Behavior management changes between waves. We see it seems to go down about 
+1.2 points between waves; overtime children's BITSEA score goes down. We control 
+for the condition (treatment) and variability between children. 
+
+## Lets see if I can make the above model better 
+```{r}
+model_a <- lmer(percentile_rank ~ behavior_management * wave + (1|child_id)+ parenting_class_taken + condition,
+              data = media_pls_lmer_and_demography)
+summary(model_a)
+
+behavior_management_vac <- media_pls_lmer_and_demography %>% 
+   select(behavior_management, parenting_class_taken) %>% 
+  na.omit()
+cor(predict(model_a), behavior_management_vac)
+```
+MODEL GETS BETTER.. best so far (-.46 correlation)
+
+
+```{r}
+model_b <- lmer(percentile_rank ~ behavior_management * wave + (1|child_id)+ parenting_class_taken + highest_degree_completed + condition,
+              data = media_pls_lmer_and_demography)
+summary(model_b)
+
+behavior_management_vec <- media_pls_lmer_and_demography %>% 
+   select(behavior_management, parenting_class_taken, highest_degree_completed) %>% 
+  na.omit()
+cor(predict(model_b), behavior_management_vec$behavior_management)
+```
+THIS MODEL IS WORSE
+
+```{r}
+model_c <- lmer(percentile_rank ~ behavior_management * wave + (1|child_id)+ parenting_class_taken + assistance + marital_status + household_income_numerical + father + condition,
+              data = media_pls_lmer_and_demography)
+summary(model_c)
+
+behavior_management_vec <- media_pls_lmer_and_demography %>% 
+   select(behavior_management, parenting_class_taken, assistance, marital_status, household_income_numerical, father) %>% 
+  na.omit()
+cor(predict(model_c), behavior_management_vec$behavior_management)
+```
+## adding education makes the correlation go down a lot.
+## adding ethnicity makes correlation go down slightly. 
+## father keeps correlation the same. 
+
+
+
+
+
+# LMER Model predicting expressive_communication_percentile by meal_times 
+```{r}
+model4 <- lmer(expressive_communication_percentile ~ meal_times * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model4)
+
+##Plot of residuals 
+residual_model4 = predict(model4) - media_pls_lmer$percentile_rank
+plot(residual_model4, xlab = "child_id")
+
+# Get the correlation
+meal_times_vec <- media_pls_lmer %>% 
+   select(meal_times) %>% 
+  na.omit()
+cor(predict(model4), meal_times_vec)
+
+```
+SIGNIFIGANT
+
+
+
+# LMER Model predicting expressive_communication_percentile by behavior_management 
+```{r}
+model5 <- lmer(expressive_communication_percentile ~ behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model5)
+
+cor(predict(model5), media_pls_lmer$expressive_communication_percentile)
+
+##Plot of residuals 
+residual_model5 = predict(model5) - media_pls_lmer$percentile_rank
+plot(residual_model5, xlab = "child_id")
+
+# Get the correlation
+behavior_management_vec <- media_pls_lmer %>% 
+   select(behavior_management) %>% 
+  na.omit()
+cor(predict(model5), behavior_management_vec)
+
+```
+SIGNIFIGANT
+
+
+
+
+
+
+
+
+# LMER Model predicting percentile_rank by meal_times
+```{r}
+model2 <- lmer(percentile_rank ~ meal_times * wave + (1|child_id) + condition, 
+              data = media_pls_lmer)
+summary(model2)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting percentile_rank by meal_times and behavior managment
+```{r}
+model3 <- lmer(percentile_rank ~ meal_times * wave + behavior_management * wave 
+               + (1|child_id) + condition, data = media_pls_lmer)
+summary(model3)
+```
+NOT SIGNIFIGANT
+
+
+
+# LMER Model predicting expressive_communication_percentile by meal_times and behavior_management
+```{r}
+model6 <- lmer(expressive_communication_percentile ~ meal_times * wave + behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model6)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting auditory_comprehension_percentile by behavior_management 
+```{r}
+model7 <- lmer(auditory_comprehension_percentile ~ behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model7)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting auditory_comprehension_percentile by meal_times 
+```{r}
+model8 <- lmer(auditory_comprehension_percentile ~ meal_times * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model8)
+```
+NOT SIGNIFIGANT
+
+# LMER Model predicting auditory_comprehension_percentile by meal_times and behavior_management
+```{r}
+model6 <- lmer(auditory_comprehension_percentile ~ meal_times * wave + behavior_management * wave + (1|child_id) + condition, data = media_pls_lmer)
+summary(model6)
+```
+NOT SIGNIFIGANT
+
+
+
+
+
+## Down here I tried to see if a model would predict better if the children were categorizes as "average" and "not average". One model was signifigant, but it had a correlation of -.18.
+```{r}
+media_pls_lmer_and_demography <- inner_join(media_pls_lmer, demography)
+
+
+media_pls_lmer_and_demography <- media_pls_lmer_and_demography %>% 
+  mutate(percentile_rank = case_when(percentile_rank >= 25 & percentile_rank <= 75 ~ "1",
+                                     percentile_rank < 25 | percentile_rank > 75 ~ "0"
+                                     ))
+
+media_pls_lmer_and_demography <- media_pls_lmer_and_demography %>% 
+  mutate(expressive_communication_percentile = case_when(expressive_communication_percentile >= 25 & expressive_communication_percentile <= 75 ~ "1",
+                                     expressive_communication_percentile < 25 | expressive_communication_percentile > 75 ~ "0"
+                                     ))
+
+media_pls_lmer_and_demography <- media_pls_lmer_and_demography %>% 
+  mutate(auditory_comprehension_percentile = case_when(auditory_comprehension_percentile >= 25 & auditory_comprehension_percentile <= 75 ~ "1",
+                                     auditory_comprehension_percentile < 25 | auditory_comprehension_percentile > 75 ~ "0"
+                                     ))
+
+media_pls_lmer_and_demography %>% 
+  mutate(percentile_rank = as.integer(expressive_communication_percentile))
+```
+
+```{r}
+library(lme4)
+model10 <- glmer(as.factor(auditory_comprehension_percentile) ~ meal_times * wave + (1|child_id) + condition, data = media_pls_lmer_and_demography, family = binomial)
+summary(model10)
+
+##Plot of residuals 
+residual_model = predict(model) - media_pls_lmer$percentile_rank
+plot(residual_model, xlab = "child_id")
+
+# Get the correlation
+behavior_management_vac <- media_pls_lmer %>% 
+   select(behavior_management) %>% 
+  na.omit()
+cor(predict(model10), behavior_management_vac$behavior_management)
+```
+
+# Trying James code 
+```{r}
+model11 <- lmer(percentile_rank ~ behavior_management * wave + (1| child_id), 
+                data = media_pls_lmer_and_demography)
+
+summary(model11)
+```
+
+```{r}
+model12 <- lmer(percentile_rank ~ meal_times + (1|wave) +(1| child_id), 
+                data = media_pls_lmer_and_demography)
+
+summary(model12)
+```
 

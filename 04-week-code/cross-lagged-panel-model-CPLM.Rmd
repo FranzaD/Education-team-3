@@ -1,0 +1,141 @@
+
+
+```{r}
+#required packages
+library(foreign)
+library(tidyr)
+library(dplyr)
+library(data.table)
+```
+
+https://osf.io/9p4x5
+
+```{r}
+#### Load required packages ####
+
+library(foreign)
+library(tidyr)
+library(dplyr)
+library(data.table)
+```
+### DATA
+
+#### Example Data
+PSP is perfectionistic self-presentation
+  * PSP, composed of three items
+SSA is state social anxiety
+  * SSA, composed of seven items
+established longitudinal measurement invariance over __5 days__
+
+In general, think of the measurement invariance portion as a necessary first step to proceed with hypothesis testing in the cross-lagged panel.
+
+PSP items were measured using a 7-point scale from 1 to 7. 
+SSA items were measured using a 5-point scale from 0 to 4.
+
+* convert data to wide format (in which every participant receives a unique row, and each variable receives a unique column - participants and categorical variables SHOULD NOT occur across multiple rows)
+
+
+```{r}
+#### Create a database with just the necessary variables ####
+
+# 1.1 Load original dataset
+
+mydata <- read.spss("Total Dataset.sav",
+					use.value.labels = FALSE,
+					to.data.frame = TRUE)
+
+# 1.2 Select only variables of interest
+
+dat_subset_1 <- select(mydata, id, day, psp1, psp2, psp3,
+					   psp.mean, ssa1, ssa2, ssa3,
+					   ssa4, ssa5, ssa6, ssa7, ssa.mean)
+
+# 1.3 Filter for days 7 - 11 only
+
+dat_subset_2 <- subset(dat_subset_1, day>=7 & day<=11)
+
+# 1.4 Convert to fully long format
+
+dat_long_1 <- gather(dat_subset_2, key = var, value = score, psp1:ssa.mean)
+
+# 1.5 Combine day and var into a new variable
+
+dat_long_1$var.c <- paste(dat_long_1$var, dat_long_1$day)
+
+dat_long_2 <- select(dat_long_1, id, var.c, score)
+
+View(dat_long_2)
+
+# 1.6 Convert to wide format
+
+dat_wide <- spread(dat_long_2, var.c, score)
+
+# 1.7 Correct variable names
+
+name.orig <- colnames(dat_wide)
+
+name.new <- make.names(name.orig, unique = TRUE)
+
+setnames(dat_wide, old = name.orig, new = name.new)
+
+# 1.8 This data set now contains all variables of interest in wide format.
+
+View(dat_wide)
+
+# 1.9 Convert back to long format, with variables of item and score.
+
+# This format is similar, but not identical, to dat_long_2 above.
+
+dat_long <- gather(dat_wide, item, score, psp.mean.10:ssa7.9, factor_key=TRUE)
+
+View (dat_long)
+
+write.csv(dat_wide, file = "Abridged Comp Data.csv")
+```
+#### Our Data
+
+```{r}
+#child_id and mealtime scores
+cplm_data <- media_pls %>% 
+  mutate(ml_w1 = as.numeric(mealtimes.1),
+         ml_w4 = as.numeric(mealtimes.4),
+         ml_w6 = as.numeric(mealtimes.6)
+         ) %>%
+  select(child_id, par_id, ml_w1, ml_w4, ml_w6) 
+
+#adding auditory percentile rank wave 1 
+#(the amount of data for this variable is really low)
+cplm_data <- left_join(cplm_data, PLS_w1, key = c("child_id")) %>%
+  mutate(acpr_w1 = as.numeric(percentile_rank_auditory)) %>% 
+  select(child_id, par_id, ml_w1, ml_w4, ml_w6, acpr_w1) 
+  
+
+#adding auditory percentile rank wave 4
+cplm_data <- left_join(cplm_data, PLS_w4, key = c("child_id")) %>%
+  mutate(acpr_w4 = as.numeric(percentile_rank_auditory)) %>% 
+  select(child_id, par_id, ml_w1, ml_w4, ml_w6, acpr_w1, acpr_w4) 
+  
+
+#adding auditory percentile rank wave 6
+cplm_data <- left_join(cplm_data, PLS_w1, key = c("child_id")) %>%
+  mutate(acpr_w6 = as.numeric(percentile_rank_auditory)) %>% 
+  select(child_id, par_id, ml_w1, ml_w4, ml_w6, acpr_w1, acpr_w4, acpr_w6)  
+
+#CHECKPOINT: baseline wide formatted data complete
+
+#Adding means of variables auditory percentile rank and mealtimes over wave 1 4 6
+#ignores NA values in measurements
+cplm_data <- cplm_data %>% 
+  add_column(acpr_mean = rowMeans(cplm_data[ ,6:8], na.rm = TRUE))
+
+cplm_data <- cplm_data %>% 
+  add_column(ml_mean = rowMeans(cplm_data[ ,3:5], na.rm = TRUE)) 
+```
+### CREATING THE MODELS
+1) =~ , which is used for factor loadings, and can be thought of as “is measured by;”
+2) ~ , which is used for regression formulas, and can be thought of as “is regressed on;”
+3) ~~ , which is used for defining variance and residual covariance, and can be thought of as “varieswith;”and 
+4) ~ 1, which is a special notation for defining intercepts.
+5) true cross-lagged model where directionality is assumed
+
+5 DAYS: 7 8 9 10 11
