@@ -1,0 +1,36 @@
+```{r}
+library(tidyverse)
+
+w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx", sheet = "PLS_ALL_W4")
+w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx", sheet = "PLS_ALL_W6")
+
+w1 <- w1 %>%
+  transmute(child_id = childid, 
+            par_id = parid, 
+            wave = as.factor(wave),
+            plsacpr = ifelse(plsacpr < 0, NA, plsacpr), 
+            plsecpr = ifelse(plsecpr < 0, NA, plsecpr),
+            plspr = ifelse(plspr < 0, NA, plspr))
+
+w4 <- w4 %>%
+  transmute(child_id = childid, 
+            par_id = parid, 
+            wave = as.factor(wave), 
+            plsacpr = ifelse(plsacpr < 0, NA, plsacpr), 
+            plsecpr = ifelse(plsecpr < 0, NA, plsecpr),
+            plspr = ifelse(plspr < 0, NA, plspr))
+
+w6 <- w6 %>%
+  transmute(child_id = childid, 
+            par_id = parid, 
+            wave = as.factor(wave), 
+            plsacpr = ifelse(plsacpr < 0, NA, plsacpr), 
+            plsecpr = ifelse(plsecpr < 0, NA, plsecpr),
+            plspr = ifelse(plspr < 0, NA, plspr))
+
+pls_long_rank <- full_join(full_join(w1, w4), w6)
+
+saveRDS(pls_long_rank, file="../data/pls_long_rank.dta")
+```
+
