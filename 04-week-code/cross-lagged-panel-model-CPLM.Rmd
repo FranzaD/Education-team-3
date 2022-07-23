@@ -1,26 +1,27 @@
 
-
+https://osf.io/9p4x5
 ```{r}
-#required packages
-library(foreign)
-library(tidyr)
-library(dplyr)
-library(data.table)
+install.packages("lavaan", dependencies = TRUE)
 ```
 
-https://osf.io/9p4x5
-
-```{r}
+```{r library}
 #### Load required packages ####
 
 library(foreign)
 library(tidyr)
 library(dplyr)
 library(data.table)
+library(corrplot) #plotting correlation matrices
+library(lavaan) #for fitting structural equation models
+library(semPlot)  #for automatically making diagrams 
+library(rmarkdown)
+library(knitr)
 ```
 ### DATA
 
 #### Example Data
+
+LATENT VARIABLES OF INTEREST:
 PSP is perfectionistic self-presentation
   * PSP, composed of three items
 SSA is state social anxiety
@@ -34,7 +35,7 @@ SSA items were measured using a 5-point scale from 0 to 4.
 
 * convert data to wide format (in which every participant receives a unique row, and each variable receives a unique column - participants and categorical variables SHOULD NOT occur across multiple rows)
 
-
+__HEY YOU DO NOT RUN THIS CHUNK__
 ```{r}
 #### Create a database with just the necessary variables ####
 
@@ -92,6 +93,7 @@ View (dat_long)
 
 write.csv(dat_wide, file = "Abridged Comp Data.csv")
 ```
+
 #### Our Data
 
 ```{r}
@@ -131,11 +133,85 @@ cplm_data <- cplm_data %>%
 cplm_data <- cplm_data %>% 
   add_column(ml_mean = rowMeans(cplm_data[ ,3:5], na.rm = TRUE)) 
 ```
+### Correlation EDA
+
+Reference:
+https://quantdev.ssri.psu.edu/sites/qdev/files/LongitudinalMeasurementInvariance_2017_1108.html
+
+```{r}
+#correlation matrix of just mealtimes and auditory comprehension across all waves
+round(cor(cplm_data[,3:10]),2)
+```
+```{r}
+#correlation matrix of just mealtimes and auditory comprehension across all waves
+corrplot(cor(cplm_data[,3:10]), order = "original", tl.col='black', tl.cex=.75) 
+```
+
 ### CREATING THE MODELS
+
+BIG PICTURE GOAL: Compare nested versions of our CPLM using CFA (confirmatory factor analysis) to determine the most appropriate parameters for our final structural model
+
+PROBLEM: I'VE ALREADY PRESELECTED THE PARAMETERS FOR THE FINAL STRUCTURAL MODEL
+    Unless the parameter selection is based on derived covariates from the one's I've already selected
+
 1) =~ , which is used for factor loadings, and can be thought of as “is measured by;”
 2) ~ , which is used for regression formulas, and can be thought of as “is regressed on;”
-3) ~~ , which is used for defining variance and residual covariance, and can be thought of as “varieswith;”and 
+3) ~~ , which is used for defining variance and residual covariance, and can be thought of as “varies with;”and 
 4) ~ 1, which is a special notation for defining intercepts.
 5) true cross-lagged model where directionality is assumed
 
 5 DAYS: 7 8 9 10 11
+
+__What are latent variables?__ (this is technically a latent variable model I suppose)
+  + latent variables are variables that are not directly observed but are rather inferred through a mathematical model from other variables that are observed (directly measured)
+  + also known as hypothetical variables or hypothetical constructs
+  __+ a potential latent variable for this model would be child development__
+  
+__What are factor loadings?__
+  + they show how representative each item is of its latent factor (for us it is child development)
+  
+__What is a Confirmatory Factor Analysis (CFA)?__
+  + confirmatory factor analysis is a statistical technique that allows us to test whether clusters of items in our measure are indeed reflective of the latent construct to which we have assigned them.
+  + we use a confirmatory factor analysis to test fo r measurement invariance
+  
+__What is Measurement Invariance (MI)?__
+  + measurement invariance is upheld in a study when all partecipants interpret questions asked them all the same way as well as the underlying latent factor in the same way
+  +This is an incredibly important assumption in longitudinal studies incorporating latent variables
+
+__General Parameters of Concern for this model are:__
+  1) factor loadings, which show how representative each item is of its latent factor; 
+  2) intercepts, which relate to the mean levels of each item; and 
+  3) residual variances, which represent the other unexplained influences predicting item responses besides latent variables. 
+
+It seems like the next step is to DEFINE the __Configural Model__, this requires:
+  1. mealtimes (ml) factor loadings to be defined for each wave
+  2. mealtimes (ml) variance constrained to 1 for each wave
+  3. auditory (acpr) factor loadings to be defined for each wave
+  4. auditory (acpr) variance constrained to 1 for each wave
+
+__How are Factor Loadings Defined?__ (how to define factor loadings for a configural model)
+  + Conceptual Understanding: A factor loading is how related a variable is to a theoretical factor that is implicitely being measured through a series of specific measurements (denoted by the variable). Factor loadings express the relation of each variable to the underlying factor. Observed variables have a common variance that a factor explains and this is quantified by an eigenvalue.
+  + factor loadings can be interpreted like/as standardized regression coefficients (specifically, like correlation with a factor)
+  + https://www.theanalysisfactor.com/factor-analysis-1-introduction/
+  + Factor Loadings seems to be defined through a Multiple Factor Analysis, essentially it seems I need to perform a Factor Analysis
+  + https://www.statisticshowto.com/factor-analysis/
+
+__How to Perform a Factor Analysis to define Factors and their Factor Loadings (correlation):__
+  + 
+  + https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/factor-analysis/
+  
+__Considering we are trying to confirm a conceptual understanding from the PI we want to perform a Confirmatory Factor Analysis:__
+  + https://methodenlehre.github.io/SGSCLM-R-course/cfa-and-sem-with-lavaan.html
+  + HOLY SHIT I JUST FIGURED OUT HOW TO DEFINE THE LATENT FACTORS THEY ARE DEFINED BY THE SUBQUESTIONS MEASURING THE LATENT FACTORS HOLY SHIT
+  
+__Questions about LAVAAN syntax can be answered here:__
+  + https://lavaan.ugent.be/tutorial/tutorial.pdf
+  
+__What is the purpose of NA* in specifying the latent variable__
+  + Answered in "More about the syntax" (https://lavaan.ugent.be/tutorial/tutorial.pdf)
+  + LAVANN automatically sets the first coefficient (factor loading) of a term/indicator to be 1, to have it be estimated by the model (aka forcing the loading factor to be free) instead we need to specify NA*, the following is an example: 
+  speed =~ NA*x7 + x8 + x9
+
+---
+CHECKPOINT
+  
