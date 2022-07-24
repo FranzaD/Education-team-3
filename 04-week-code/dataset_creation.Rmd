@@ -52,26 +52,22 @@ pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx") %>%
   clean_names() %>% 
   filter( pargen_mom_0_dad_1 == 0) %>% 
   rename(pargen = pargen_mom_0_dad_1) 
-
 ```
 
 ```{r}
 ignore_pls <- inner_join(pls_w1, pls_w4, by = c("childid"), suffix = c("_w1", "_w4"))
 
-pls_all <- full_join(ignore_pls, pls_w6, by = c("childid")) %>% 
-  glimpse()
+pls_all <- full_join(ignore_pls, pls_w6, by = c("childid"))
 
 ```
 
 ```{r}
 pls_all <- pls_all %>% 
-  select(childid, plsecpr_w1, plsecpr_w4, plsecpr_w6 = plsecpr, plsacpr_w1, plsacpr_w4, plsacpr_w6 = plsacpr) %>% 
-  glimpse()
+  select(childid, plsecpr_w1, plsecpr_w4, plsecpr_w6 = plsecpr, plsacpr_w1, plsacpr_w4, plsacpr_w6 = plsacpr) 
 ```
 
 ```{r}
-done <- inner_join(pls_all, media_tech_all, by = c("childid")) %>% 
-  glimpse()
+done <- inner_join(pls_all, media_tech_all, by = c("childid")) 
 
 done <- done %>% 
   mutate(mtz05_mean_w1 = (mt05c_w1 + mt05d_w1 + mtz05jz_w1)/3,
@@ -82,7 +78,7 @@ done <- done %>%
          plspr_mean_w6 = (plsecpr_w6 + plsacpr_w6)/2) %>% 
   glimpse()
 ```
-
+Alrighty, so let's fix the datatypes, something that has helped me in the past is using the zap_labels(column_name) function to get rid of the double+label type, and then converting them with the as.factor() or as.numeric() functions. Then all NA's should just be NA, and for the missing data codes (-111, -222, etc) let's just turn them into NA.
 
 
 
