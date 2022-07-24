@@ -17,6 +17,46 @@ library(semPlot)  #for automatically making diagrams
 library(rmarkdown)
 library(knitr)
 ```
+### CFA Model Assumptions
+
+
+Confirmatory factor analysis (CFA) is a tool that is used to confirm or reject the measurement theory.
+
+The assumptions of a CFA include multivariate normality, a sufficient sample size (n >200), the correct a priori model specification, and data must come from a random sample.
+
+1. Multivariate Normality Assumption (linear regression and CFA): aka data should be normally distributed
+  + still need to check this one, although I think PLS total_score was roughly linear in later waves
+  + need to check distribution of media questions
+  + need to check distribution of pls questions
+2. sufficient sample size (lmao like that's happening)
+3. correct priori model specification 
+  + this is done theoreticially, since the PI and former papers confirm a relationship b/w pls and media exposure then I think it's safe to say that measures of PLS are related to media
+4. random sample (Yes?)
+
+Reference:
+https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/confirmatory-factor-analysis/#:~:text=The%20assumptions%20of%20a%20CFA,come%20from%20a%20random%20sample.
+
+
+__Assumption of Homoscedasticity__
+This assumption states that the variance of error terms are similar across the values of the independent variables.  A plot of standardized residuals versus predicted values can show whether points are equally distributed across all values of the independent variables.
+
+__Checking Assumption of Homoscedasticity__
+A plot of standardized residuals versus predicted values can show whether points are equally distributed across all values of the independent variables.
+
+__Assumption of Multicollinearity__
+Multiple linear regression assumes that there is no multicollinearity in the data. Multicollinearity occurs when the independent variables are too highly correlated with each other.
+
+
+__Checking Assumption of Multicollinearity__
+1) Correlation matrix – When computing a matrix of Pearson’s bivariate correlations among all independent variables, the magnitude of the correlation coefficients should be less than .80.
+
+2) Variance Inflation Factor (VIF) – The VIFs of the linear regression indicate the degree that the variances in the regression estimates are increased due to multicollinearity. VIF values higher than 10 indicate that multicollinearity is a problem.
+
+Reference:
+https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/assumptions-of-multiple-linear-regression/
+
+General Info: https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/confirmatory-factor-analysis/
+
 ### DATA
 
 #### Example Data
