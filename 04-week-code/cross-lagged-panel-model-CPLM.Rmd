@@ -334,7 +334,29 @@ configural.fit <- cfa(configural.model,
 ```
 ### Troubleshooting
 
+Here I separated the warning messages to see if I can distinguish what exactly are the various warning messages and try to determine a method around them.
 ```{r}
-varTable(fit)
+#lavaan WARNING: some observed variances are (at least) a factor 1000 times larger than others; use varTable(fit) to investigate
+varTable(done)
 ```
+```{r}
+#Warning in lav_data_full(data = data, group = group, cluster = cluster,  :
+#  lavaan WARNING:
+#    due to missing values, some pairwise combinations have 0%
+#    coverage; use lavInspect(fit, "coverage") to investigate.
+
+lavInspect(done, "coverage")
+```
+```{r}
+#Warning in lav_mvnorm_missing_h1_estimate_moments(Y = X[[g]], wt = WT[[g]],  :
+#  lavaan WARNING:
+#    Maximum number of iterations reached when computing the sample
+#    moments using EM; use the em.h1.iter.max= argument to increase the
+#    number of iterations
+
+#Warning in lav_object_post_check(object) :
+#  lavaan WARNING: some estimated ov variances are negative
+```
+
+
 
