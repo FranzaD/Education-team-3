@@ -81,7 +81,8 @@ done <- done %>%
 Alrighty, so let's fix the datatypes, something that has helped me in the past is using the zap_labels(column_name) function to get rid of the double+label type, and then converting them with the as.factor() or as.numeric() functions. Then all NA's should just be NA, and for the missing data codes (-111, -222, etc) let's just turn them into NA.
 
 ```{r}
-glimpse(done)
+install.packages("naniar")
+library(naniar)
 
 done <- done %>% 
   zap_labels(mt05c_w1, mt05c_w4, mt05c_w6, mt05d_w1, mt05d_w4, mt05d_w6, mtz05jz_w1, mtz05jz_w4, mtz05jz_w6)
@@ -104,12 +105,30 @@ done <- done %>%
          mtz05jz_w6 = as.integer(mtz05jz_w6))
 
 done <- done %>% 
-  mutate(mtz05_mean_w1 = as.numeric(mtz05_mean_w1),
-         mtz05_mean_w4 = as.numeric(mtz05_mean_w5),
-         mtz05_mean_w6 = as.numeric(mtz05_mean_w6),
-         plspr_mean_w1 = as.numeric(plspr_mean_w1),
-         plspr_mean_w4 = as.numeric(plspr_mean_w4),
-         plspr_mean_w6 = as.numeric(plspr_mean_w6))
+  replace_with_na(replace = list(plsecpr_w1 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plsecpr_w4 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plsecpr_w6 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(pleacpr_w1 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plsacpr_w4 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plsacpr_w6 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plspr_mean_w1 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plspr_mean_w4 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+done <- done %>% 
+  replace_with_na(replace = list(plspr_mean_w6 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+#done <- done %>% 
+#  mutate(mtz05_mean_w1 = as.numeric(mtz05_mean_w1),
+ #        mtz05_mean_w4 = as.numeric(mtz05_mean_w5),
+  #       mtz05_mean_w6 = as.numeric(mtz05_mean_w6),
+   #      plspr_mean_w1 = as.numeric(plspr_mean_w1),
+    #     plspr_mean_w4 = as.numeric(plspr_mean_w4),
+     #    plspr_mean_w6 = as.numeric(plspr_mean_w6))
 ```
 
 
