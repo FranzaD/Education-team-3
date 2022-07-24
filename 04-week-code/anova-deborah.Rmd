@@ -311,6 +311,25 @@ anova_table%>%
 
 ```
 
+```{r}
+anova_table%>%
+  ggplot() +
+  aes(x = wave, y = daily_use, group = child_id, color = daily_use_cat) +
+  geom_point() +
+  geom_line() +
+  xlab("Waves (9mo and 24mo)") +
+  ylab("Daily Use of Media") +
+  ggtitle("Spaghetti Plot of Daily Use of Media Wave 1 and Wave 6") +
+  labs(color = "total_s") +
+  labs(color = "Infant Media Use") +
+  theme_bw() +
+  theme(
+  text = element_text(family = "Times"),
+  plot.title = element_text(hjust = 0.5)
+)
+
+```
+
 Observations:
 
 PLS scores are not normally distributed, however generally there's the least amount of counts for infants who had higher media exposure. It's worth noting that the mean for PLS scores for both waves looks a bit less than 100. Wave one is right skewed, potentially because of a few outliers, meanwhile wave 6 is well clustered.

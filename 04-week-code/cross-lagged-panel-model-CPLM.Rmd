@@ -1,26 +1,67 @@
 
-
+https://osf.io/9p4x5
 ```{r}
-#required packages
-library(foreign)
-library(tidyr)
-library(dplyr)
-library(data.table)
+#install.packages("lavaan", dependencies = TRUE)
 ```
 
-https://osf.io/9p4x5
-
-```{r}
+```{r library}
 #### Load required packages ####
 
 library(foreign)
 library(tidyr)
 library(dplyr)
 library(data.table)
+library(corrplot) #plotting correlation matrices
+library(lavaan) #for fitting structural equation models
+library(semPlot)  #for automatically making diagrams 
+library(rmarkdown)
+library(knitr)
 ```
+### CFA Model Assumptions
+
+
+Confirmatory factor analysis (CFA) is a tool that is used to confirm or reject the measurement theory.
+
+The assumptions of a CFA include multivariate normality, a sufficient sample size (n >200), the correct a priori model specification, and data must come from a random sample.
+
+1. Multivariate Normality Assumption (linear regression and CFA): aka data should be normally distributed
+  + still need to check this one, although I think PLS total_score was roughly linear in later waves
+  + need to check distribution of media questions
+  + need to check distribution of pls questions
+2. sufficient sample size (lmao like that's happening)
+3. correct priori model specification 
+  + this is done theoreticially, since the PI and former papers confirm a relationship b/w pls and media exposure then I think it's safe to say that measures of PLS are related to media
+4. random sample (Yes?)
+
+Reference:
+https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/confirmatory-factor-analysis/#:~:text=The%20assumptions%20of%20a%20CFA,come%20from%20a%20random%20sample.
+
+
+__Assumption of Homoscedasticity__
+This assumption states that the variance of error terms are similar across the values of the independent variables.  A plot of standardized residuals versus predicted values can show whether points are equally distributed across all values of the independent variables.
+
+__Checking Assumption of Homoscedasticity__
+A plot of standardized residuals versus predicted values can show whether points are equally distributed across all values of the independent variables.
+
+__Assumption of Multicollinearity__
+Multiple linear regression assumes that there is no multicollinearity in the data. Multicollinearity occurs when the independent variables are too highly correlated with each other.
+
+
+__Checking Assumption of Multicollinearity__
+1) Correlation matrix – When computing a matrix of Pearson’s bivariate correlations among all independent variables, the magnitude of the correlation coefficients should be less than .80.
+
+2) Variance Inflation Factor (VIF) – The VIFs of the linear regression indicate the degree that the variances in the regression estimates are increased due to multicollinearity. VIF values higher than 10 indicate that multicollinearity is a problem.
+
+Reference:
+https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/assumptions-of-multiple-linear-regression/
+
+General Info: https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/confirmatory-factor-analysis/
+
 ### DATA
 
 #### Example Data
+
+LATENT VARIABLES OF INTEREST:
 PSP is perfectionistic self-presentation
   * PSP, composed of three items
 SSA is state social anxiety
@@ -34,65 +75,7 @@ SSA items were measured using a 5-point scale from 0 to 4.
 
 * convert data to wide format (in which every participant receives a unique row, and each variable receives a unique column - participants and categorical variables SHOULD NOT occur across multiple rows)
 
-
-```{r}
-#### Create a database with just the necessary variables ####
-
-# 1.1 Load original dataset
-
-mydata <- read.spss("Total Dataset.sav",
-					use.value.labels = FALSE,
-					to.data.frame = TRUE)
-
-# 1.2 Select only variables of interest
-
-dat_subset_1 <- select(mydata, id, day, psp1, psp2, psp3,
-					   psp.mean, ssa1, ssa2, ssa3,
-					   ssa4, ssa5, ssa6, ssa7, ssa.mean)
-
-# 1.3 Filter for days 7 - 11 only
-
-dat_subset_2 <- subset(dat_subset_1, day>=7 & day<=11)
-
-# 1.4 Convert to fully long format
-
-dat_long_1 <- gather(dat_subset_2, key = var, value = score, psp1:ssa.mean)
-
-# 1.5 Combine day and var into a new variable
-
-dat_long_1$var.c <- paste(dat_long_1$var, dat_long_1$day)
-
-dat_long_2 <- select(dat_long_1, id, var.c, score)
-
-View(dat_long_2)
-
-# 1.6 Convert to wide format
-
-dat_wide <- spread(dat_long_2, var.c, score)
-
-# 1.7 Correct variable names
-
-name.orig <- colnames(dat_wide)
-
-name.new <- make.names(name.orig, unique = TRUE)
-
-setnames(dat_wide, old = name.orig, new = name.new)
-
-# 1.8 This data set now contains all variables of interest in wide format.
-
-View(dat_wide)
-
-# 1.9 Convert back to long format, with variables of item and score.
-
-# This format is similar, but not identical, to dat_long_2 above.
-
-dat_long <- gather(dat_wide, item, score, psp.mean.10:ssa7.9, factor_key=TRUE)
-
-View (dat_long)
-
-write.csv(dat_wide, file = "Abridged Comp Data.csv")
-```
-#### Our Data
+#### Data version 0.0
 
 ```{r}
 #child_id and mealtime scores
@@ -131,11 +114,249 @@ cplm_data <- cplm_data %>%
 cplm_data <- cplm_data %>% 
   add_column(ml_mean = rowMeans(cplm_data[ ,3:5], na.rm = TRUE)) 
 ```
+#### Data version 1.0
+```{r}
+
+```
+
+### Correlation EDA
+
+References:
+https://quantdev.ssri.psu.edu/sites/qdev/files/LongitudinalMeasurementInvariance_2017_1108.html
+https://www.r-bloggers.com/2021/05/correlation-in-r-na-friendliness-accepting-matrix-as-input-data-returning-p-values-visualization-and-pearson-vs-spearman/
+
+```{r}
+#correlation matrix of just mealtimes and auditory comprehension across all waves
+round(cor(done[,-1]),2)
+```
+
+
+```{r}
+#done %>% 
+#  na.omit() %>% 
+#  cor(, use = "complete.obs")
+#cor(na.omit(done))
+```
+
+
+```{r}
+#correlation matrix of just mealtimes and auditory comprehension across all waves
+corrplot(cor(done[,2:22]), order = "original", tl.col='black', tl.cex=.75) 
+```
+
 ### CREATING THE MODELS
+
+BIG PICTURE GOAL: Compare nested versions of our CPLM using CFA (confirmatory factor analysis) to determine the most appropriate parameters for our final structural model
+
+PROBLEM: I'VE ALREADY PRESELECTED THE PARAMETERS FOR THE FINAL STRUCTURAL MODEL
+    Unless the parameter selection is based on derived covariates from the one's I've already selected
+
 1) =~ , which is used for factor loadings, and can be thought of as “is measured by;”
 2) ~ , which is used for regression formulas, and can be thought of as “is regressed on;”
-3) ~~ , which is used for defining variance and residual covariance, and can be thought of as “varieswith;”and 
+3) ~~ , which is used for defining variance and residual covariance, and can be thought of as “varies with;”and 
 4) ~ 1, which is a special notation for defining intercepts.
 5) true cross-lagged model where directionality is assumed
 
 5 DAYS: 7 8 9 10 11
+
+__What are latent variables?__ (this is technically a latent variable model I suppose)
+  + latent variables are variables that are not directly observed but are rather inferred through a mathematical model from other variables that are observed (directly measured)
+  + also known as hypothetical variables or hypothetical constructs
+  __+ a potential latent variable for this model would be child development__
+  
+__What are factor loadings?__
+  + they show how representative each item is of its latent factor (for us it is child development)
+  
+__What is a Confirmatory Factor Analysis (CFA)?__
+  + confirmatory factor analysis is a statistical technique that allows us to test whether clusters of items in our measure are indeed reflective of the latent construct to which we have assigned them.
+  + we use a confirmatory factor analysis to test fo r measurement invariance
+  
+__What is Measurement Invariance (MI)?__
+  + measurement invariance is upheld in a study when all partecipants interpret questions asked them all the same way as well as the underlying latent factor in the same way
+  +This is an incredibly important assumption in longitudinal studies incorporating latent variables
+
+__General Parameters of Concern for this model are:__
+  1) factor loadings, which show how representative each item is of its latent factor; 
+  2) intercepts, which relate to the mean levels of each item; and 
+  3) residual variances, which represent the other unexplained influences predicting item responses besides latent variables. 
+
+It seems like the next step is to DEFINE the __Configural Model__, this requires:
+  1. mealtimes (ml) factor loadings to be defined for each wave
+  2. mealtimes (ml) variance constrained to 1 for each wave
+  3. auditory (acpr) factor loadings to be defined for each wave
+  4. auditory (acpr) variance constrained to 1 for each wave
+
+__How are Factor Loadings Defined?__ (how to define factor loadings for a configural model)
+  + Conceptual Understanding: A factor loading is how related a variable is to a theoretical factor that is implicitely being measured through a series of specific measurements (denoted by the variable). Factor loadings express the relation of each variable to the underlying factor. Observed variables have a common variance that a factor explains and this is quantified by an eigenvalue.
+  + factor loadings can be interpreted like/as standardized regression coefficients (specifically, like correlation with a factor)
+  + https://www.theanalysisfactor.com/factor-analysis-1-introduction/
+  + Factor Loadings seems to be defined through a Multiple Factor Analysis, essentially it seems I need to perform a Factor Analysis
+  + https://www.statisticshowto.com/factor-analysis/
+
+__How to Perform a Factor Analysis to define Factors and their Factor Loadings (correlation):__
+  + 
+  + https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/factor-analysis/
+  
+__Considering we are trying to confirm a conceptual understanding from the PI we want to perform a Confirmatory Factor Analysis:__
+  + https://methodenlehre.github.io/SGSCLM-R-course/cfa-and-sem-with-lavaan.html
+  + HOLY SHIT I JUST FIGURED OUT HOW TO DEFINE THE LATENT FACTORS THEY ARE DEFINED BY THE SUBQUESTIONS MEASURING THE LATENT FACTORS HOLY SHIT
+  
+__Questions about LAVAAN syntax can be answered here:__
+  + https://lavaan.ugent.be/tutorial/tutorial.pdf
+  
+__What is the purpose of NA* in specifying the latent variable__
+  + Answered in "More about the syntax" (https://lavaan.ugent.be/tutorial/tutorial.pdf)
+  + LAVANN automatically sets the first coefficient (factor loading) of a term/indicator to be 1, to have it be estimated by the model (aka forcing the loading factor to be free) instead we need to specify NA*, the following is an example: 
+  speed =~ NA*x7 + x8 + x9
+
+---
+CHECKPOINT
+
+### Error Structure
+Quote:
+Next, we define our error structure, which is complex. Because it takes up so many lines, we're doing this first to call it up as an object in our syntax later. This will just make our code tidier and shorter overall. Note also that we constrain our error term covariances to equality across waves. This greatly simplifies an already complex model. Note also that lavaan objects are saved as strings, not formulas: This will be relevant in the next step.
+
+we also constrained our residual covariances to equality across waves, as 
+justified in the previous section. We achieved this by assigning unique labels (e.g., “psp1cov”) to 
+the defined covariance parameters of each residual across all days in the study
+
+__Here I need to constrain the residual covariances to equality across waves__
+  + how to calculate the residual covariance for each variable (question variable)
+  + unless I don't need to assign specific variables for this value since it isn't in the adjusted dataset they provided, plus it would be the only unknown in the equations below
+  + most efficient course of action would be to just rerewrite the equations below with our variables
+
+```{r errorstructure}
+
+# Error term covariances constrained across waves
+# Observation: every question at every timepoint covaries with the same question at a different timepoint
+
+errorstructure <- 
+'
+#q1 (mt05c) mealtimes all time points (order doesnt matter), time isnt specified in the covariance term
+
+mt05c_w1 ~~ mt05ccov*mt05c_w4
+mt05c_w1 ~~ mt05ccov*mt05c_w6
+mt05c_w4 ~~ mt05ccov*mt05c_w6
+
+#q2 (mt05d) mealtimes all time points
+
+mt05d_w1 ~~ mt05dcov*mt05d_w4
+mt05d_w1 ~~ mt05dcov*mt05d_w6
+mt05d_w4 ~~ mt05dcov*mt05d_w6
+
+#q3 (mtz05jz) mealtimes all time points
+
+mtz05jz_w1 ~~ mtz05jzcov*mtz05jz_w4
+mtz05jz_w1 ~~ mtz05jzcov*mtz05jz_w6
+mtz05jz_w4 ~~ mtz05jzcov*mtz05jz_w6
+
+
+#q1 (plsecpr) expressive communication all time points
+
+plsecpr_w1 ~~ plsecprcov*plsecpr_w4
+plsecpr_w1 ~~ plsecprcov*plsecpr_w6
+plsecpr_w4 ~~ plsecprcov*plsecpr_w6
+
+#q2 (plsacpr) pls auditory comprehension all time points
+
+plsacpr_w1 ~~ plsacprcov*plsacpr_w4
+plsacpr_w1 ~~ plsacprcov*plsacpr_w6
+plsacpr_w4 ~~ plsacprcov*plsacpr_w6
+'
+
+
+```
+
+### Configural Model Definition (Confirmatory Factor Analysis - CFA)
+
+Quote:
+We will now compare nested versions of our model, using confirmatory factor analysis (CFA). We are looking for the simplest model (i.e. model estimating the fewest parameters) that maintains a good fit for our data, while also making good theoretical sense.
+
+First, we wish to establish configural invariance, which serves as the baseline model for assessing measurement invariance. In all of our models, we begin by defining the factor loadings of our latent variables. By default in lavaan, the first factor loading for each latent variable would normally be constrained to 1, whereas the variance of each latent variable would be unconstrained. However, because this will make later steps more inconvenient (e.g., metric invariance), we instead constrain the variance of each latent variable to 1 (e.g. `PSP.7 ~~ 1*PSP.7`), while allowing its first factor loading to vary freely (e.g. `NA*psp1.7`). 
+
+
+Note also the use of the "paste" command, which sticks two strings of text together (the model and the correlated error structure). This is not usually needed for lavaan models, but will shorten our code given the extremely complicated error structure. 
+
+```{r}
+configural.v1 <-
+  
+'
+# (ML) MEALTIMES factor loadings defined
+ML_W1 =~ NA*mt05c_w1 + mt05d_w1 + mtz05jz_w1
+ML_W4 =~ NA*mt05c_w4 + mt05d_w4 + mtz05jz_w4
+ML_W6 =~ NA*mt05c_w6 + mt05d_w6 + mtz05jz_w6
+
+# (ML) MEALTIMES variance constrained to 1
+ML_W1 ~~ 1*ML_W1
+ML_W4 ~~ 1*ML_W4
+ML_W6 ~~ 1*ML_W6
+
+# (PLS) RECEPTIVE AND EXPRESSIVE COMMUNICATION SKILLS PERCENTILE RANK factor loadings defined
+PLS_W1 =~ NA*plsecpr_w1 + plsacpr_w1
+PLS_W4 =~ NA*plsecpr_w4 + plsacpr_w4
+PLS_W6 =~ NA*plsecpr_w6 + plsacpr_w6
+
+# (PLS) RECEPTIVE AND EXPRESSIVE COMMUNICATION SKILLS PERCENTILE RANK variance constrained to 1
+PLS_W1 ~~ 1*PLS_W1
+PLS_W4 ~~ 1*PLS_W4
+PLS_W6 ~~ 1*PLS_W6
+'
+configural.model <- paste(configural.v1, errorstructure, sep = ' ', collapse 
+= NULL)
+```
+
+Quote:
+Having thus defined our model, we use it to run our first CFA. For this and all future analyses, we add the line `std.lv = TRUE` to account for our  change to lavaan's default constraint settings for each latent variable's first loading factor (i.e., instead constraining factor variance to 1.0). We then print the model results using the `summary()` command.
+
+Note that for this and all future analyses, we added the line “std.lv = TRUE.” This automatically 
+fixes the variance of factors to 1, rather than their factor loadings, which is the default setting in 
+lavaan. Because we will be predicting good model fits after imposing equality of factor loadings
+in our testing of measurement invariance, it is better to fix factor variance to 1 in this manner. As 
+for the other code statements: “data = model.test.dat” calls our dataset for use in the model; 
+“estimator = ‘MLR’” sets our model’s estimation method to maximum likelihood estimation 
+with robust standard errors; “se = ‘robust’” similarly implements robust standard errors in the 
+estimation; “missing = ‘ML’” implements full information maximum likelihood estimation for 
+missing data. Standard practice for comparing nested models dictates that investigators establish 
+increasingly strict levels of invariance, stopping once a model fails to display adequate fit 
+criteria. In our Results section, we discuss our model fit indices in more detail. Within this 
+section, however, we will simply acknowledge whether fit criteria were met and move on to test 
+all 4 levels of invariance for pedagogical purposes.
+
+(pg14 in pdf)
+
+```{r configural output}
+configural.fit <- cfa(configural.model,
+							data = done,
+							estimator = "MLR",
+							se = "robust",
+							missing = "ML",
+							std.lv = TRUE)
+```
+### Troubleshooting
+
+Here I separated the warning messages to see if I can distinguish what exactly are the various warning messages and try to determine a method around them.
+```{r}
+#lavaan WARNING: some observed variances are (at least) a factor 1000 times larger than others; use varTable(fit) to investigate
+varTable(configural.fit)
+```
+```{r}
+#Warning in lav_data_full(data = data, group = group, cluster = cluster,  :
+#  lavaan WARNING:
+#    due to missing values, some pairwise combinations have 0%
+#    coverage; use lavInspect(fit, "coverage") to investigate.
+
+lavInspect(configural.fit, "coverage")
+```
+```{r}
+#Warning in lav_mvnorm_missing_h1_estimate_moments(Y = X[[g]], wt = WT[[g]],  :
+#  lavaan WARNING:
+#    Maximum number of iterations reached when computing the sample
+#    moments using EM; use the em.h1.iter.max= argument to increase the
+#    number of iterations
+
+#Warning in lav_object_post_check(object) :
+#  lavaan WARNING: some estimated ov variances are negative
+```
+
+
+
