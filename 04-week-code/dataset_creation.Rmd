@@ -151,4 +151,7 @@ colSums(is.na(done))
 ```
 
 The codebook for wave 4 lists for the pls total
-wave 4 mto5c n=302, I would expect then approx 151 observations for this variable in the done dataframe. In the done dataframe I have only 177 obs and 60 NA values = 237 obs so there are 65 observations that have just completely disappeared (according to wave 4 codebook)
+wave 4 mt05c n=302, I would expect then approx 151 observations for this variable in the done dataframe. In the done dataframe I have only 177 obs and 60 NA values = 237 obs so there are 65 observations that have just completely disappeared (according to wave 4 codebook)
+
+Is it possoble another issue is that when calculating a mean if a value has NA the mean comes out as NA as well? We need to set the calculated means to ignore NA values.
+  + no the number of non-na values match in the columns and the mean columns
