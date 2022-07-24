@@ -222,7 +222,11 @@ CHECKPOINT
 
 ### Error Structure
 Quote:
-"Next, we define our error structure, which is complex. Because it takes up so many lines, we're doing this first to call it up as an object in our syntax later. This will just make our code tidier and shorter overall. Note also that we constrain our error term covariances to equality across waves. This greatly simplifies an already complex model. Note also that lavaan objects are saved as strings, not formulas: This will be relevant in the next step."
+Next, we define our error structure, which is complex. Because it takes up so many lines, we're doing this first to call it up as an object in our syntax later. This will just make our code tidier and shorter overall. Note also that we constrain our error term covariances to equality across waves. This greatly simplifies an already complex model. Note also that lavaan objects are saved as strings, not formulas: This will be relevant in the next step.
+
+we also constrained our residual covariances to equality across waves, as 
+justified in the previous section. We achieved this by assigning unique labels (e.g., “psp1cov”) to 
+the defined covariance parameters of each residual across all days in the study
 
 __Here I need to constrain the residual covariances to equality across waves__
   + how to calculate the residual covariance for each variable (question variable)
@@ -271,15 +275,24 @@ plsacpr_w4 ~~ plsacprcov*plsacpr_w6
 
 ```
 
-### Configural Model
+### Configural Model Definition (Confirmatory Factor Analysis - CFA)
+
+Quote:
+We will now compare nested versions of our model, using confirmatory factor analysis (CFA). We are looking for the simplest model (i.e. model estimating the fewest parameters) that maintains a good fit for our data, while also making good theoretical sense.
+
+First, we wish to establish configural invariance, which serves as the baseline model for assessing measurement invariance. In all of our models, we begin by defining the factor loadings of our latent variables. By default in lavaan, the first factor loading for each latent variable would normally be constrained to 1, whereas the variance of each latent variable would be unconstrained. However, because this will make later steps more inconvenient (e.g., metric invariance), we instead constrain the variance of each latent variable to 1 (e.g. `PSP.7 ~~ 1*PSP.7`), while allowing its first factor loading to vary freely (e.g. `NA*psp1.7`). 
+
+
+Note also the use of the "paste" command, which sticks two strings of text together (the model and the correlated error structure). This is not usually needed for lavaan models, but will shorten our code given the extremely complicated error structure. 
+
 ```{r}
-configural_v1 <-
+configural.v1 <-
   
 '
 # (ML) MEALTIMES factor loadings defined
-ML_W1 =~ NA*mt05c_w1 + mt05d_w1 + mtz05cjz_w1
-ML_W4 =~ NA*mt05c_w4 + mt05d_w4 + mtz05cjz_w4
-ML_W6 =~ NA*mt05c_w6 + mt05d_w6 + mtz05cjz_w6
+ML_W1 =~ NA*mt05c_w1 + mt05d_w1 + mtz05jz_w1
+ML_W4 =~ NA*mt05c_w4 + mt05d_w4 + mtz05jz_w4
+ML_W6 =~ NA*mt05c_w6 + mt05d_w6 + mtz05jz_w6
 
 # (ML) MEALTIMES variance constrained to 1
 ML_W1 ~~ 1*ML_W1
@@ -289,7 +302,7 @@ ML_W6 ~~ 1*ML_W6
 # (PLS) RECEPTIVE AND EXPRESSIVE COMMUNICATION SKILLS PERCENTILE RANK factor loadings defined
 PLS_W1 =~ NA*plsecpr_w1 + plsacpr_w1
 PLS_W4 =~ NA*plsecpr_w4 + plsacpr_w4
-PLS_W6 =~ NA*plsecpr_w6 + plsacpr_w5
+PLS_W6 =~ NA*plsecpr_w6 + plsacpr_w6
 
 # (PLS) RECEPTIVE AND EXPRESSIVE COMMUNICATION SKILLS PERCENTILE RANK variance constrained to 1
 PLS_W1 ~~ 1*PLS_W1
@@ -298,5 +311,33 @@ PLS_W6 ~~ 1*PLS_W6
 '
 configural.model <- paste(configural.v1, errorstructure, sep = ' ', collapse 
 = NULL)
+```
+
+Quote:
+Having thus defined our model, we use it to run our first CFA. For this and all future analyses, we add the line `std.lv = TRUE` to account for our  change to lavaan's default constraint settings for each latent variable's first loading factor (i.e., instead constraining factor variance to 1.0). We then print the model results using the `summary()` command.
+
+Note that for this and all future analyses, we added the line “std.lv = TRUE.” This automatically 
+fixes the variance of factors to 1, rather than their factor loadings, which is the default setting in 
+lavaan. Because we will be predicting good model fits after imposing equality of factor loadings
+in our testing of measurement invariance, it is better to fix factor variance to 1 in this manner. As 
+for the other code statements: “data = model.test.dat” calls our dataset for use in the model; 
+“estimator = ‘MLR’” sets our model’s estimation method to maximum likelihood estimation 
+with robust standard errors; “se = ‘robust’” similarly implements robust standard errors in the 
+estimation; “missing = ‘ML’” implements full information maximum likelihood estimation for 
+missing data. Standard practice for comparing nested models dictates that investigators establish 
+increasingly strict levels of invariance, stopping once a model fails to display adequate fit 
+criteria. In our Results section, we discuss our model fit indices in more detail. Within this 
+section, however, we will simply acknowledge whether fit criteria were met and move on to test 
+all 4 levels of invariance for pedagogical purposes.
+
+(pg14 in pdf)
+
+```{r configural output}
+configural.fit <- cfa(configural.model,
+							data = done,
+							estimator = "MLR",
+							se = "robust",
+							missing = "ML",
+							std.lv = TRUE)
 ```
 
