@@ -24,7 +24,7 @@ The datasets that we need include media and pls
 ```{r}
 #211
 media_tech_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta") %>% 
-  filter( pargen == 0) %>% 
+  filter( pargen == 0) 
 #165
 media_tech_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta") %>% 
   filter( pargen == 0)
@@ -140,11 +140,15 @@ done <- done %>%
 ```
 Troubleshooting:
 
-This counts the number of non-NA values in each column, once I know the number then I can check if it matches with the raw data
+This counts the number of non-NA values in each column, once I know the number then I can check if it matches with the raw data(pls_w6).
+
 ```{r}
 colSums(!is.na(done))
 ```
+counts the number of NA values in each column of the dataframe
+```{r}
+colSums(is.na(done))
+```
 
-
-
-
+The codebook for wave 4 lists for the pls total
+wave 4 mto5c n=302, I would expect then approx 151 observations for this variable in the done dataframe. In the done dataframe I have only 177 obs and 60 NA values = 237 obs so there are 65 observations that have just completely disappeared (according to wave 4 codebook)
