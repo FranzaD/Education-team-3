@@ -80,6 +80,37 @@ done <- done %>%
 ```
 Alrighty, so let's fix the datatypes, something that has helped me in the past is using the zap_labels(column_name) function to get rid of the double+label type, and then converting them with the as.factor() or as.numeric() functions. Then all NA's should just be NA, and for the missing data codes (-111, -222, etc) let's just turn them into NA.
 
+```{r}
+glimpse(done)
+
+done <- done %>% 
+  zap_labels(mt05c_w1, mt05c_w4, mt05c_w6, mt05d_w1, mt05d_w4, mt05d_w6, mtz05jz_w1, mtz05jz_w4, mtz05jz_w6)
+  
+done <- done %>% 
+  mutate(plsecpr_w1 = as.integer(plsecpr_w1),
+         plsecpr_w4 = as.integer(plsecpr_w4),
+         plsecpr_w6 = as.integer(plsecpr_w6),
+         plsacpr_w1 = as.integer(plsacpr_w1),
+         plsacpr_w4 = as.integer(plsacpr_w4),
+         plsacpr_w6 = as.integer(plsacpr_w6),
+         mt05c_w1 = as.integer(mt05c_w1),
+         mt05c_w4 = as.integer(mt05c_w4),
+         mt05c_w6 = as.integer(mt05c_w6),
+         mt05d_w1 = as.integer(mt05d_w1),
+         mt05d_w4 = as.integer(mt05d_w4),
+         mt05d_w6 = as.integer(mt05d_w6),
+         mtz05jz_w1 = as.integer(mtz05jz_w1),
+         mtz05jz_w4 = as.integer(mtz05jz_w4),
+         mtz05jz_w6 = as.integer(mtz05jz_w6))
+
+done <- done %>% 
+  mutate(mtz05_mean_w1 = as.numeric(mtz05_mean_w1),
+         mtz05_mean_w4 = as.numeric(mtz05_mean_w5),
+         mtz05_mean_w6 = as.numeric(mtz05_mean_w6),
+         plspr_mean_w1 = as.numeric(plspr_mean_w1),
+         plspr_mean_w4 = as.numeric(plspr_mean_w4),
+         plspr_mean_w6 = as.numeric(plspr_mean_w6))
+```
 
 
 
