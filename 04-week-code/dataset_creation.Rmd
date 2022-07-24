@@ -57,6 +57,10 @@ pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx") %>%
   clean_names() %>% 
   filter( pargen_mom_0_dad_1 == 0) %>% 
   rename(pargen = pargen_mom_0_dad_1)
+
+colSums(!is.na(pls_w6))
+#57 of the plsacpr variable have actual data
+sum(pls_w6$plsacpr >= 0)
 ```
 
 ```{r}
