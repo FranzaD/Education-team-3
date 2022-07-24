@@ -51,7 +51,7 @@ pls_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx") %>%
 pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx") %>%
   clean_names() %>% 
   filter( pargen_mom_0_dad_1 == 0) %>% 
-  rename(pargen = pargen_mom_0_dad_1) 
+  rename(pargen = pargen_mom_0_dad_1)
 ```
 
 ```{r}
@@ -70,9 +70,9 @@ pls_all <- pls_all %>%
 done <- inner_join(pls_all, media_tech_all, by = c("childid")) 
 
 done <- done %>% 
-  mutate(mtz05_mean_w1 = (mt05c_w1 + mt05d_w1 + mtz05jz_w1)/3,
-         mtz05_mean_w4 = (mt05c_w4 + mt05d_w4 + mtz05jz_w4)/3,
-         mtz05_mean_w6 = (mt05c_w6 + mt05d_w6 + mtz05jz_w6)/3,
+  mutate(ml_mean_w1 = (mt05c_w1 + mt05d_w1 + mtz05jz_w1)/3,
+         ml_mean_w4 = (mt05c_w4 + mt05d_w4 + mtz05jz_w4)/3,
+         ml_mean_w6 = (mt05c_w6 + mt05d_w6 + mtz05jz_w6)/3,
          plspr_mean_w1 = (plsecpr_w1 + plsacpr_w1)/2,
          plspr_mean_w4 = (plsecpr_w4 + plsacpr_w4)/2,
          plspr_mean_w6 = (plsecpr_w6 + plsacpr_w6)/2) %>% 
@@ -104,9 +104,9 @@ done <- done %>%
          mtz05jz_w6 = as.integer(mtz05jz_w6))
 
 done <- done %>% 
-  mutate(mtz05_mean_w1 = as.numeric(mtz05_mean_w1),
-         mtz05_mean_w4 = as.numeric(mtz05_mean_w5),
-         mtz05_mean_w6 = as.numeric(mtz05_mean_w6),
+  mutate(ml_mean_w1 = as.numeric(ml_mean_w1),
+         ml_mean_w4 = as.numeric(ml_mean_w4),
+         ml_mean_w6 = as.numeric(ml_mean_w6),
          plspr_mean_w1 = as.numeric(plspr_mean_w1),
          plspr_mean_w4 = as.numeric(plspr_mean_w4),
          plspr_mean_w6 = as.numeric(plspr_mean_w6))
