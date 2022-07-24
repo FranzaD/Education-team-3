@@ -219,7 +219,54 @@ __What is the purpose of NA* in specifying the latent variable__
 
 ---
 CHECKPOINT
+### Error Structure
 
+__Here I need to constrain the residual covariances to equality across waves__
+  + how to calculate the residual covariance for each variable (question variable)
+  + unless I don't need to assign specific variables for this value since it isn't in the adjusted dataset they provided, plus it would be the only unknown in the equations below
+  + most efficient course of action would be to just rerewrite the equations below with our variables
+
+```{r errorstructure}
+
+# Error term covariances constrained across waves
+# Observation: every question at every timepoint covaries with the same question at a different timepoint
+
+errorstructure <- 
+'
+#q1 (mt05c) mealtimes all time points (order doesnt matter), time isnt specified in the covariance term
+
+mt05c_w1 ~~ mt05ccov*mt05c_w4
+mt05c_w1 ~~ mt05ccov*mt05c_w6
+mt05c_w4 ~~ mt05ccov*mt05c_w6
+
+#q2 (mt05d) mealtimes all time points
+
+mt05d_w1 ~~ mt05dcov*mt05d_w4
+mt05d_w1 ~~ mt05dcov*mt05d_w6
+mt05d_w4 ~~ mt05dcov*mt05d_w6
+
+#q3 (mt05jz) mealtimes all time points
+
+mt05jz_w1 ~~ mt05jzcov*mt05jz_w4
+mt05jz_w1 ~~ mt05jzcov*mt05jz_w6
+mt05jz_w4 ~~ mt05jzcov*mt05jz_w6
+
+
+#q1 (plsecpr) expressive communication all time points
+
+plsecpr_w1 ~~ plsecprcov*plsecpr_w4
+plsecpr_w1 ~~ plsecprcov*plsecpr_w6
+plsecpr_w4 ~~ plsecprcov*plsecpr_w6
+
+#q2 (plsacpr) pls auditory comprehension all time points
+
+plsacpr_w1 ~~ plsacprcov*plsacpr_w4
+plsacpr_w1 ~~ plsacprcov*plsacpr_w6
+plsacpr_w4 ~~ plsacprcov*plsacpr_w6
+'
+
+
+```
 ### Configural Model
 ```{r}
 configural_v1 <-
@@ -249,4 +296,3 @@ configural.model <- paste(configural.v1, errorstructure, sep = ' ', collapse
 = NULL)
 ```
 
-  
