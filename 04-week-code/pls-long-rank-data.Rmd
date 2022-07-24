@@ -11,23 +11,32 @@ w1 <- w1 %>%
             wave = as.factor(wave),
             plsacpr = ifelse(plsacpr < 0, NA, plsacpr), 
             plsecpr = ifelse(plsecpr < 0, NA, plsecpr),
-            plspr = ifelse(plspr < 0, NA, plspr))
+            plspr = ifelse(plspr < 0, NA, plspr),
+            plsacss = ifelse(plsacss < 0, NA, plsacss),
+            plsecss = ifelse(plsecss < 0, NA, plsecss),
+            plsss = ifelse(plsss < 0, NA, plsss))
 
 w4 <- w4 %>%
   transmute(child_id = childid, 
             par_id = parid, 
-            wave = as.factor(wave), 
+            wave = as.factor(wave),
             plsacpr = ifelse(plsacpr < 0, NA, plsacpr), 
             plsecpr = ifelse(plsecpr < 0, NA, plsecpr),
-            plspr = ifelse(plspr < 0, NA, plspr))
+            plspr = ifelse(plspr < 0, NA, plspr),
+            plsacss = ifelse(plsacss < 0, NA, plsacss),
+            plsecss = ifelse(plsecss < 0, NA, plsecss),
+            plsss = ifelse(plsss < 0, NA, plsss))
 
 w6 <- w6 %>%
   transmute(child_id = childid, 
             par_id = parid, 
-            wave = as.factor(wave), 
+            wave = as.factor(wave),
             plsacpr = ifelse(plsacpr < 0, NA, plsacpr), 
             plsecpr = ifelse(plsecpr < 0, NA, plsecpr),
-            plspr = ifelse(plspr < 0, NA, plspr))
+            plspr = ifelse(plspr < 0, NA, plspr),
+            plsacss = ifelse(plsacss < 0, NA, plsacss),
+            plsecss = ifelse(plsecss < 0, NA, plsecss),
+            plsss = ifelse(plsss < 0, NA, plsss))
 
 pls_long_rank <- full_join(full_join(w1, w4), w6)
 

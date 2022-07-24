@@ -787,11 +787,122 @@ summary(model)
 pls <- readRDS("../data/pls_long_rank.dta")
 bit_mother <- readRDS("../data/BIT_long_mother.dta")
 bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
 demo <- readRDS("../data/demography.dta")
 media <- readRDS("../data/media_long.dta")
 grouping <- readRDS("../data/grouping_data.dta")
 
-## hopefully we find something
 
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(select(demo, child_id, par_id, father), by = c("child_id", "par_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(select(demo, child_id, par_id, father), by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(select(demo, child_id, par_id, father), by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+  
+
+# base models
+
+summary(model <- lmer(plspr ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(plsacpr ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(plsecpr ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(plspr ~ behavior_management + + (1 | child_id), REML = FALSE, data = media_pls_mother))
+summary(model <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(plsacpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(plsecpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+
+# anova comparison # 0.241
+model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1)
+
+# anova comparison # 0.3548
+model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + condition * behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1)
+
+# anova comparison # 0.6779
+model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + condition : behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1)
+
+# anova comparison # 0.9331
+model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + condition : behavior_management + behavior_management : father + condition : father + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1)
+
+# anova comparison # 2.2e-16 ############# adding wave
+model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls_mother)
+## adding condition # 0.3409
+model1 <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plspr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+## adding interaction wave:behavior ##### 0.007591
+model1 <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + (1 | child_id), REML = FALSE, data = media_pls)
+## adding condition # 0.3257
+model2 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + (1 | child_id), REML = FALSE, data = media_pls_mother)
+model3 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model2)
+anova(model2, model3) 
+
+# anova comparison # 3.27e-16 ############# adding wave
+model0 <- lmer(plsacpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plsacpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1) 
+
+# anova comparison # 2.2e-16 ############# adding wave
+model0 <- lmer(plsecpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plsecpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1) 
+
+# anova comparison # 0.3409 --- adding condition
+model0 <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model0, model1)
+
+
+# data set exploration
+media_pls %>% 
+  select(par_id, child_id, behavior_management, condition, father) %>%
+  arrange(child_id)
+
+
+glimpse(media)
+
+media %>%
+  group_by(child_id)
+
+glimpse(bit)
+
+bit %>%
+  group_by(child_id)
 ```
+
+
 
