@@ -1,0 +1,77 @@
+
+
+
+I have all the necessary data sets but when I'm joining them using inner join the 
+data set gets bigger which doesn't make sense considering what inner join is 
+supposed to do. Besides that I have all the items you asked for but idk why like media_tech_all has 1056 observations:/
+
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(ggcorrplot)
+library(here)
+```
+
+
+The datasets that we need include media and pls
+```{r}
+media_tech_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
+
+media_tech_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta")
+
+media_tech_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6-MT.dta")
+```
+
+```{r}
+ignore <- inner_join(media_tech_w1, media_tech_w4, by = c("childid"), suffix = c("_w1", "_w4"))
+
+media_tech_all <- inner_join(ignore, media_tech_w6, by = c("childid"))
+```
+
+```{r}
+media_tech_all <- media_tech_all %>% 
+  select(childid, mt05c_w1, mt05c_w4, mt05c_w6 = mt05c, mt05d_w1, mt05d_w4, mt05d_w6= mt05d,  mtz05jz_w1, mtz05jz_w4, mtz05jz_w6 = mtz05jz)
+```
+
+```{r}
+pls_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+
+pls_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx")
+
+pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+```
+
+```{r}
+ignore_pls <- inner_join(pls_w1, pls_w4, by = c("childid"), suffix = c("_w1", "_w4"))
+
+pls_all <- inner_join(ignore_pls, pls_w6, by = c("childid"))
+
+```
+
+```{r}
+pls_all <- pls_all %>% 
+  select(childid, plsecpr_w1, plsecpr_w4, plsecpr_w6 = plsecpr, plsacpr_w1, plsacpr_w4, plsacpr_w6 = plsacpr)
+```
+
+```{r}
+done <- inner_join(pls_all, media_tech_all, by = c("childid")) 
+
+done <- done %>% 
+  mutate(mtz05_mean_w1 = (mt05c_w1 + mt05d_w1 + mtz05jz_w1)/3,
+         mtz05_mean_w4 = (mt05c_w4 + mt05d_w4 + mtz05jz_w4)/3,
+         mtz05_mean_w6 = (mt05c_w6 + mt05d_w6 + mtz05jz_w6)/3,
+         plspr_mean_w1 = (plsecpr_w1 + plsacpr_w1)/2,
+         plspr_mean_w4 = (plsecpr_w4 + plsacpr_w4)/2,
+         plspr_mean_w6 = (plsecpr_w6 + plsacpr_w6)/2)
+```
+
+
+
+
+
+
