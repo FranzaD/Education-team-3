@@ -245,11 +245,11 @@ mt05d_w1 ~~ mt05dcov*mt05d_w4
 mt05d_w1 ~~ mt05dcov*mt05d_w6
 mt05d_w4 ~~ mt05dcov*mt05d_w6
 
-#q3 (mt05jz) mealtimes all time points
+#q3 (mtz05jz) mealtimes all time points
 
-mt05jz_w1 ~~ mt05jzcov*mt05jz_w4
-mt05jz_w1 ~~ mt05jzcov*mt05jz_w6
-mt05jz_w4 ~~ mt05jzcov*mt05jz_w6
+mtz05jz_w1 ~~ mtz05jzcov*mtz05jz_w4
+mtz05jz_w1 ~~ mtz05jzcov*mtz05jz_w6
+mtz05jz_w4 ~~ mtz05jzcov*mtz05jz_w6
 
 
 #q1 (plsecpr) expressive communication all time points
@@ -273,9 +273,9 @@ configural_v1 <-
   
 '
 # (ML) MEALTIMES factor loadings defined
-ML_W1 =~ NA*mt05c_w1 + mt05d_w1 + mt05cjz_w1
-ML_W4 =~ NA*mt05c_w4 + mt05d_w4 + mt05cjz_w4
-ML_W6 =~ NA*mt05c_w6 + mt05d_w6 + mt05cjz_w6
+ML_W1 =~ NA*mt05c_w1 + mt05d_w1 + mtz05cjz_w1
+ML_W4 =~ NA*mt05c_w4 + mt05d_w4 + mtz05cjz_w4
+ML_W6 =~ NA*mt05c_w6 + mt05d_w6 + mtz05cjz_w6
 
 # (ML) MEALTIMES variance constrained to 1
 ML_W1 ~~ 1*ML_W1
