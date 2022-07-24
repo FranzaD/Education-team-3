@@ -219,7 +219,10 @@ __What is the purpose of NA* in specifying the latent variable__
 
 ---
 CHECKPOINT
+
 ### Error Structure
+Quote:
+"Next, we define our error structure, which is complex. Because it takes up so many lines, we're doing this first to call it up as an object in our syntax later. This will just make our code tidier and shorter overall. Note also that we constrain our error term covariances to equality across waves. This greatly simplifies an already complex model. Note also that lavaan objects are saved as strings, not formulas: This will be relevant in the next step."
 
 __Here I need to constrain the residual covariances to equality across waves__
   + how to calculate the residual covariance for each variable (question variable)
@@ -267,6 +270,7 @@ plsacpr_w4 ~~ plsacprcov*plsacpr_w6
 
 
 ```
+
 ### Configural Model
 ```{r}
 configural_v1 <-
