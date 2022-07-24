@@ -20,11 +20,14 @@ library(here)
 
 The datasets that we need include media and pls
 ```{r}
-media_tech_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta")
+media_tech_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta") %>% 
+  filter( pargen == 0)
 
-media_tech_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta")
+media_tech_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta") %>% 
+  filter( pargen == 0)
 
-media_tech_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6-MT.dta")
+media_tech_w6 <- read_dta("../data/wave-6-(24-mo)/BB2_W6-MT.dta") %>% 
+  filter( pargen == 0)
 ```
 
 ```{r}
@@ -39,11 +42,14 @@ media_tech_all <- media_tech_all %>%
 ```
 
 ```{r}
-pls_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta")
+pls_w1 <- read_dta("../data/wave-1-(9-mo)/26_PLS_w1.dta") %>% 
+  filter( pargen == 0)
 
-pls_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx")
+pls_w4 <- read_excel("../data/wave-4-(18-mo)/PLS_W4_Final.xlsx") %>% 
+  filter( pargen == 0)
 
-pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx")
+pls_w6 <- read_excel("../data/wave-6-(24-mo)/PLS_W6.xlsx") %>% 
+  filter( pargen == 0)
 ```
 
 ```{r}
