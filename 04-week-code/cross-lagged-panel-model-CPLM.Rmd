@@ -1,7 +1,7 @@
 
 https://osf.io/9p4x5
 ```{r}
-install.packages("lavaan", dependencies = TRUE)
+#install.packages("lavaan", dependencies = TRUE)
 ```
 
 ```{r library}
@@ -185,11 +185,11 @@ https://quantdev.ssri.psu.edu/sites/qdev/files/LongitudinalMeasurementInvariance
 
 ```{r}
 #correlation matrix of just mealtimes and auditory comprehension across all waves
-round(cor(cplm_data[,3:10]),2)
+round(cor(done[,-1]),2)
 ```
 ```{r}
 #correlation matrix of just mealtimes and auditory comprehension across all waves
-corrplot(cor(cplm_data[,3:10]), order = "original", tl.col='black', tl.cex=.75) 
+corrplot(cor(done[,2:22]), order = "original", tl.col='black', tl.cex=.75) 
 ```
 
 ### CREATING THE MODELS
@@ -379,5 +379,10 @@ configural.fit <- cfa(configural.model,
 							se = "robust",
 							missing = "ML",
 							std.lv = TRUE)
+```
+### Troubleshooting
+
+```{r}
+varTable(fit)
 ```
 
