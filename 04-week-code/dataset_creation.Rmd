@@ -15,6 +15,8 @@ library(dplyr)
 library(janitor)
 library(ggcorrplot)
 library(here)
+#install.packages("naniar")
+library(naniar)
 ```
 Inner join omits key observations that don't exist in both datasets, so it cuts down further on an already sparse dataframe! So I'm converting to full_join()
 
@@ -22,7 +24,7 @@ The datasets that we need include media and pls
 ```{r}
 #211
 media_tech_w1 <- read_dta("../data/wave-1-(9-mo)/10_MT_w1.dta") %>% 
-  filter( pargen == 0)
+  filter( pargen == 0) %>% 
 #165
 media_tech_w4 <- read_dta("../data/wave-4-(18-mo)/BB2_W4-MT.dta") %>% 
   filter( pargen == 0)
@@ -84,12 +86,9 @@ done <- done %>%
 Alrighty, so let's fix the datatypes, something that has helped me in the past is using the zap_labels(column_name) function to get rid of the double+label type, and then converting them with the as.factor() or as.numeric() functions. Then all NA's should just be NA, and for the missing data codes (-111, -222, etc) let's just turn them into NA.
 
 ```{r}
-#install.packages("naniar")
-library(naniar)
-
 done <- done %>% 
   zap_labels(mt05c_w1, mt05c_w4, mt05c_w6, mt05d_w1, mt05d_w4, mt05d_w6, mtz05jz_w1, mtz05jz_w4, mtz05jz_w6)
-#160  
+#160 now 237
 done <- done %>% 
   mutate(plsecpr_w1 = as.integer(plsecpr_w1),
          plsecpr_w4 = as.integer(plsecpr_w4),
@@ -124,7 +123,8 @@ done <- done %>%
 done <- done %>% 
   replace_with_na(replace = list(plspr_mean_w4 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
 done <- done %>% 
-  replace_with_na(replace = list(plspr_mean_w6 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999)))
+  replace_with_na(replace = list(plspr_mean_w6 = c(-111, -222, -333, -444, -555, -666, -777, -888, -999))) %>% 
+  glimpse()
 #done <- done %>% 
 #  mutate(mtz05_mean_w1 = as.numeric(mtz05_mean_w1),
  #        mtz05_mean_w4 = as.numeric(mtz05_mean_w5),
@@ -133,6 +133,12 @@ done <- done %>%
     #     plspr_mean_w4 = as.numeric(plspr_mean_w4),
      #    plspr_mean_w6 = as.numeric(plspr_mean_w6))
 
+```
+Troubleshooting:
+
+This counts the number of non-NA values in each column, once I know the number then I can check if it matches with the raw data
+```{r}
+colSums(!is.na(done))
 ```
 
 
