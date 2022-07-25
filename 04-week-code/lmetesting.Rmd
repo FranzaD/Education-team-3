@@ -110,21 +110,151 @@ media_pls_father <- media %>%
   filter(par_id >= 30000)
 ```
 
-# Assumptions for LMER
-We are currently dealing Linear-Mixed Effects Model with a Random Intercept (child_id) with a triple interaction term and a categorical fixed effect
+## Data for lmer assumption checking
 
-  1. Positively Correlated Clustered Measurements (Ex: mealtimes_w1 v mealtimes_w4)
-  2. Normality Distribution of Model Residuals/Error
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+media <- readRDS("../data/media_long.dta") %>% glimpse()
+
+pls <- pls %>% 
+  mutate(child_id = as.character(child_id))
+
+pls_cond <- pls %>% 
+  inner_join(grouping, by = c("child_id"))
+
+bm <- media %>% 
+  select(child_id, par_id, behavior_management, wave)
+
+bm_cond <- media %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  select(child_id, par_id, behavior_management, condition)
+
+# pls by wave
+pls_w1 <- pls %>% 
+  filter(wave == 1) 
+pls_w4 <- pls %>%
+  filter(wave == 4)
+pls_w6 <- pls %>% 
+  filter(wave == 6)
+
+
+# pls by condition
+pls_cond_1 <- pls_cond %>%
+  filter(condition == 1)
+pls_cond_2 <- pls_cond %>%
+  filter(condition == 2)
+pls_cond_3 <- pls_cond %>%
+  filter(condition == 3)
+pls_cond_4 <- pls_cond %>%
+  filter(condition == 4)
+
+
+# behavior management by wave
+bm_w1 <- bm %>%
+  filter(wave == 1)
+bm_w4 <- bm %>%
+  filter(wave == 4)
+bm_w6 <- bm %>%
+  filter(wave == 6)
+
+# behavior management by condition
+bm_cond_1 <- bm_cond %>% 
+  filter(condition == 1)
+bm_cond_2 <- bm_cond %>% 
+  filter(condition == 1)
+bm_cond_3 <- bm_cond %>% 
+  filter(condition == 1)
+bm_cond_4 <- bm_cond %>% 
+  filter(condition == 1)
+
+
+```
+
+# Assumptions for LMER
+__We are currently dealing Linear-Mixed Effects Model with a Random Intercept (child_id) with a triple interaction term and a categorical fixed effect__
+
+  1. Positively Correlated Clustered Measurements (Ex: mealtimes_w1 v mealtimes_w4) (a)
+  2. Normality Distribution of Model Residuals/Error (c)
         + may apply a transform to achieve this
-  3. Homoscedasiticity/Homogeneity of Residuals/Error Variance
+  3. Homoscedasiticity/Homogeneity of Residuals/Error Variance (b & c)
         + (same thing?) Constant Variance b/w Transformed Residuals & Transformed Predicted Value
-  4. No autocorrelation
-  5. No Multicollinearity
+  4. No autocorrelation (b)
+  5. No Multicollinearity (b)
   
 References:
-https://bookdown.org/animestina/phd_july_19/testing-the-assumptions.html
-STATS 112 HW4
+  a. https://link.springer.com/article/10.1007/s41237-020-00130-8#:~:text=The%20LME%20incorrectly%20assumed%20a,estimated%20SEs%20under%20both%20models.
+  b. https://bookdown.org/animestina/phd_july_19/testing-the-assumptions.html
+  c. STATS 112 HW4
+
+## Positively Correlated Clustered Measurements
+Response: 
+* plspr
+
+Clustered by: 
+* Wave (3 levels)
+* Condition (4 levels)
+* father
+
+Data Variables Needed:
+
+__Table 1:__
+(Key) child_id
+1. plspr_w1
+2. plspr_w4
+3. plspr_w6
+
+```{r}
+
+
+corr_pls_wave <-
+```
+
+
+__Table 2:__
+(Key) child_id
+4. plspr_cond1
+5. plspr_cond2
+6. plspr_cond3
+7. plspr_cond4
+
+__Table 3:__
+(Key) child_id
+8. behavior_management_w1
+9. behavior_management_w4
+10. behavior_management_w6
+
+__Table 4:__
+(Key) child_id
+4. behavior_management_cond1
+5. behavior_management_cond2
+6. behavior_management_cond3
+7. behavior_management_cond4
+
+__Table 5:__
+(Key) child_id
+4. behavior_management_fatherTRUE
+5. behavior_management_fatherFALSE
+
+```{r}
+
+```
+Questions:
+1. Do we need to include behavior-management in this analysis to see if it's positively correlated b/w clusters
+  + "it assumes that observations within clusters are always positively correlated" (d)
+  + based on that this statement we probably should check behavior management
   
+References: 
+ d. https://www.researchgate.net/publication/348750306_Small_and_negative_correlations_among_clustered_observations_limitations_of_the_linear_mixed_effects_model
+## Normality Distribution of Model Residuals/Error (c)
+
+## Homoscedasiticity/Homogeneity of Residuals/Error Variance (b & c)
+
+## No autocorrelation (b)
+
+## No Multicollinearity (b)
+
+
 # Final Model
 ```{r}
 # final significant found before we got tired
