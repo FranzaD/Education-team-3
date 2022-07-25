@@ -1,0 +1,160 @@
+
+```{r library}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(magrittr)
+library(ggcorrplot)
+```
+# Data 
+
+```{r}
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+```
+
+```{r}
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+glimpse(media_pls)
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) 
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+glimpse(demo)
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+glimpse(media_pls)
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) 
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+```
+
+# Assumptions for LMER
+
+# Final Model
+```{r}
+# final significant found before we got tired
+model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+```
+
+
+
+# EDA
+```{r}
+ggplot(cplm_data,
+       aes(x = ml_w1,
+           y = ml_w4))  +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+  
+ggplot(cplm_data,
+       aes(x = acpr_w1,
+           y = acpr_w4))  +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+```{r}
+#correlation matrix of just mealtimes and auditory comprehension across all waves
+corrplot(cor(cplm_data[,3:10]), order = "original", tl.col='black', tl.cex=.75) 
+```
+Need wide format data of all waves for (indented means variables have been included): 
+ *    mealtimes 
+ * behavior management
+ * daily_use
+ * total_score
+ *    auditory_comprehension
+ * expressive_communication
+ * social-emotional_problem
+ * social_emotional_competencies
+
+Expressive Communication
+```{r}
+
+```
+
+IDEA to consider if everything is bad:
+Take average of each variable across all time points and assign clusters based off condition, see if correlations are positive then maybe we can build a model based off that instead of across waves.
