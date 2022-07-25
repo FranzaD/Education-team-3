@@ -10,8 +10,8 @@ library(janitor)
 library(magrittr)
 library(ggcorrplot)
 ```
-# Data 
 
+# Data 
 ```{r}
 media_data <- readRDS(file="../data/media_data.dta")
 demography <- readRDS(file="../data/demography.dta")
@@ -30,6 +30,7 @@ pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
 pls_long <- readRDS(file="../data/PLS_long_mother.dta")
 pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
 ```
+
 
 ```{r}
 demo <- demo %>% 
