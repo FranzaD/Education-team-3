@@ -111,7 +111,20 @@ media_pls_father <- media %>%
 ```
 
 # Assumptions for LMER
+We are currently dealing Linear-Mixed Effects Model with a Random Intercept (child_id) with a triple interaction term and a categorical fixed effect
 
+  1. Positively Correlated Clustered Measurements (Ex: mealtimes_w1 v mealtimes_w4)
+  2. Normality Distribution of Model Residuals/Error
+        + may apply a transform to achieve this
+  3. Homoscedasiticity/Homogeneity of Residuals/Error Variance
+        + (same thing?) Constant Variance b/w Transformed Residuals & Transformed Predicted Value
+  4. No autocorrelation
+  5. No Multicollinearity
+  
+References:
+https://bookdown.org/animestina/phd_july_19/testing-the-assumptions.html
+STATS 112 HW4
+  
 # Final Model
 ```{r}
 # final significant found before we got tired
