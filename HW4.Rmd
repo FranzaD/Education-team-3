@@ -1,0 +1,304 @@
+---
+title: "HW4"
+author: "Deborah Franza"
+date: "5/24/2022"
+output: pdf_document
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. This question will use the progesterone.csv file on the class website. The hormone data are from a study of early pregnancy loss conducted by the Institute for Toxicology and Environmental Health at the Reproductive Epidemiology Section of the California Department of Health Services, Berkeley, California. The data consist of repeated progesterone metabolite (pregnanediol-3-glucuronide, PdG) measures from day -8 to day 15 in the menstrual cycle (day 0 denotes ovulation day) on a sample of 22 conceptive cycles from 22 women and 29 non-conceptive cycles from another 29 women.
+Load the data and packages as follows:
+
+(Nay need to install some of the packages using install.packages("mcgv") for example)
+```{r  include=FALSE}
+library(tidyverse)
+library(nlme)
+library(lme4)
+library(ggplot2)
+library(mgcv)
+library(readr)
+library(geepack)
+prog = read.csv("progesterone.csv", header = TRUE)
+```
+
+a. Create a spaghetti plot with ‘PDG‘ on the y-axis and ‘time‘ on the x-axis. Use different colors to distinguish conceptive group and non-conceptive group participants.
+
+```{r}
+prog %>%
+group_by(group) %>%
+ggplot(aes(time, PDG, group = id, color = as.factor(group))) +
+geom_point() +
+geom_line() +
+labs(x = "Day",
+y = "Distance dental growth (mm)")
+
+```
+b. Consider the following linear mixed effects model:
+
+$$ Y_{ij} = \beta_1+\beta_2 t_{ij}+ \beta_4 group_i \times t_{ij}+\beta_5 group_i \times t_{ij}^2+b_{1i}+ b_{2i}t_{ij}+b_{3i}t_{ij}^2 +\epsilon_{ij} $$
+where $group_i = 0$ for the ‘non-conceptive‘ group and $group_i = 1$ for the ‘conceptive‘ group. Use ‘lme‘ to fit the linear mixed effects model, and include the output of the ‘summary()‘ of the model.
+
+```{r}
+prog$group = as.factor(prog$group)
+prog = prog %>%
+  mutate(timeSqr = time^2, timeCub = time^3)
+
+model1 <- lme(PDG ~ time + group : time + timeSqr + group: timeSqr ,
+              data = prog,
+              random = ~ 1 + time + timeSqr| id,
+              method = "REML")
+summary(model1)
+```
+c. Use R to find out the transformed residuals for all participants with each occasions, and plot the histogram of transformed residuals. Explain the reason that we have to use transformed residuals instead of general residuals, for example why we have to transform them first to do further model diagnostic.
+
+```{r}
+res_population = residuals(model1, type = "response", level = 0)
+
+Sigma_i = extract.lme.cov(model1, prog)
+L_i = t(chol(Sigma_i)) #block matrix of lower triangular Cholesky factors
+
+res_transformed <- solve(L_i) %*% res_population
+tibble(r_star = res_transformed) %>%
+  ggplot(aes(x = r_star)) +
+  geom_histogram(aes(y = stat(density)), bins = 14, color = "black", fill =
+  "gray") +
+  geom_function(fun = dnorm, color = "blue") +
+  labs(x = "Residuals", y = "Density")
+```
+We need to transform the residuals because they are correlated to the covariates, resulting in a non-constant variance. This violates the assumptions needed for using a Linear Mixed Effects Model (LME). In order to use LME the errors must be independent, identically distributed and follow a normal distribution with mean zero and variance sigma squared. Hence we transform the residuals in the linear mixed effects model to abide by the assumption of constant variance for LME.
+
+d. Construct a scatterplot of the transformed residuals versus the transformed predicted values, summarize what you observed.
+```{r}
+mu_hat = fitted(model1, level = 0)
+mu_hat_transformed = solve(L_i) %*% mu_hat
+abs_res_transformed = abs(res_transformed)
+tibble(x = mu_hat_transformed, y = abs_res_transformed) %>%
+  ggplot(aes(x = x, y = y)) +
+  geom_hline(yintercept = 0.8, linetype = "dashed") +
+  geom_point(shape = 1) +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(x = "Transformed Predicted Value", y = "Absolute Transformed Residual")
+```
+When plotting the transformed residuals against the transformed predicted value a constant range is not observed, there is a high concentration of residuals for predicted value 0.75 and there is a high concentration of residuals between 0 and 2 for the absolute transformed residual scale, however a fair amount exceed 2. Just based off of this plot we may conclude non-constant variance, the transformed residuals are not normal
+
+e. Construct a qq plot for the transformed residuals and summarize what you observed.
+```{r}
+tibble(r_star = res_transformed) %>%
+  ggplot(aes(sample = r_star)) +
+  geom_qq_line(color = "blue") +
+  geom_qq(shape = 1) +
+  labs(x = "Quantiles of Standard Normal", y = "Quantiles of Transformed Residuals")
+```
+The QQ plot tests the normality assumption of the transformed residuals. So far it seems after the transformation of the residuals we still cannot say that they follow a normal distribution on account of the two distributions quantiles not following the linear diagonal in the bottom left corner and upper right corner of the graph.
+
+f. Calculate Mahalanobis distance, how many potential outlying individuals do you observe?
+
+```{r}
+mahalanobis_distance <- function(x){
+  x <- as.matrix(x)
+  t(x) %*% x
+}
+
+mahalanobis_data <- tibble(id = prog$id, r_star = res_transformed) %>%
+  group_by(id) %>%
+  nest() %>%
+  mutate(df = map_dbl(data, ~nrow(.x)))%>%
+  mutate(d = map_dbl(data, ~mahalanobis_distance(.x)))%>%
+  mutate(p_value = pchisq(d, df, lower.tail = FALSE))
+
+mahalanobis_data %>%
+  arrange(p_value)
+
+sum(mahalanobis_data$p_value<0.05)
+```
+There are nine outliers as specified by the code, showing observations that were only a statistically significant distance of a potential outlier. 
+
+g. Plot Semi Variogram, summarize what you observed.
+
+```{r}
+Variogram(model1,
+  data = prog,
+  form = ~ 1 + time + timeSqr| id ,
+  resType = "normalized") %>%
+
+as_tibble() %>%
+  ggplot(aes(x = dist, y = variog)) +
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  geom_point(shape = 1) +
+  geom_smooth(method = "loess", se = FALSE, span = 0.1)
+```
+The average decrease in similarity between two random variables as the distance increases fluctuates a fair amount as shown by the variogram diagram, hence pairs of observations are seen to be very similar when the distance in low and very high, however in the middle the pairs of observations are very different and fluctuate in similarity with no consistent trend.
+
+2. This question will use the toenails-data.txt file on the class website. This study concerns treatment effect on toenail infections. Subjects were observed at week 0 (baseline) and weeks 4, 8,12, 24, 36, and 48 (coded as Month in the dataset, will be treated as quantitative). At each visit,the binary response, Y, is if infection was present (0 for none/mild and 1 for moderate/severe).
+Treatment is coded to be 0 for existing treatment (Itraconazole) and 1 for the new treatment (Terbinafine).
+
+```{r}
+#load toenails dataset into R
+toe = read.table("./toenail-data.txt", na.strings=".")
+
+```
+
+a. Create a plot of the estimated proportion of moderate/severe infection by treatment group
+across the different months. For both treatments, comment on the trend of proportions as month
+increases.
+
+```{r}
+toes = read.table("./toenail-data.txt", header=FALSE)
+names(toes) = c("ID","Y","Trt","Month","Visit")
+toes$Trt = factor(toes$Trt, levels=c(0,1), labels=c("Itra","Terb"))
+toes$ID = factor(toes$ID)
+ 
+toes$Month.cat = cut(toes$Month, breaks=quantile(toes$Month, seq(0,1,.2)), 
+    include.lowest=TRUE)
+prop.I = table(toes$Y[toes$Trt=="Itra"], 
+   toes$Month.cat[toes$Trt=="Itra"])[2,]/table(toes$Month.cat[toes$Trt=="Itra"])
+prop.T = table(toes$Y[toes$Trt=="Terb"], 
+   toes$Month.cat[toes$Trt=="Terb"])[2,]/table(toes$Month.cat[toes$Trt=="Terb"])
+plot( unlist( lapply(split(toes$Month[toes$Trt=="Itra"], 
+   toes$Month.cat[toes$Trt=="Itra"]), mean)), as.numeric(prop.I), type="o", 
+   pch=16, col="blue",xlab="Month", ylab="Moderate or Severe Outcome", 
+      main="Proportion Mod-Severe Outcomes by Treatment and Month", ylim=c(0,0.35))
+points( unlist( lapply(split(toes$Month[toes$Trt=="Terb"], 
+   toes$Month.cat[toes$Trt=="Terb"]), mean)), as.numeric(prop.T), type="o", 
+   pch=17, col="red")
+legend(10,.3,c("Itra","Terb"), col=c("blue","red"), pch=c(16,17))
+```
+As the month increases (time goes by) the general trend is for the moderate or severe outcome of people with toenail infections generally decreases, plateauing at about month seven. What is interesting is this trend stands for both treatment groups, suggesting that both treatments have the same outcomes.
+
+b. Say a marginal model is fit using GEE (generalized estimating equations), with covariates being month and treatment along with an interaction term. Write out the model to be estimated using a logit link (log odds of moderate/severe infection).
+
+$$g(\mu_i) = log (\frac{\mu_i}{1-\mu_i}) = \beta_0 + \beta_1 month_i + \beta_2 trt_i + \beta_3 trt_i \times month_i $$
+
+c. Fit the model from part b., and report the output. Assume an exchangeable correlation
+structure.
+
+```{r}
+mod = glmer(Y ~ 1+Month*Trt  + (1 | ID), family=binomial, data=toes, nAGQ =  5) 
+
+mod1 = glmer(Y ~ 1+Month+Trt  + (1 | ID), family=binomial, data=toes, nAGQ =  5) 
+
+summary(mod)
+coef(mod)$ID[1:5,]
+```
+
+d. Interpret the effect of a unit increase in Month (consider both treatment groups).
+
+A unit increase in month for the base treatment (Itraconazole $trt_i = 0$) would result in the infection decreasing by just the month coefficient $\beta_1 = -0.38210$, since $\beta_2$ and $\beta_3$ get canceled out from the treatment base line group being set to zero.
+
+A unit increase in month for the second treatment (Terbinafine $trt_i = 1$) would result in the infection decreasing by all coefficients $\beta_1 = -0.38210$ $\beta_2 = -0.12982$ $\beta_3 = -0.13364$, in total the infection would decrease for every unit increase in month by -0.64556.
+
+e. Conduct a Wald test of whether or not Month should be in the model from part b. This
+includes the main effect of Month and the interaction term.
+
+```{r}
+mod1gee= geeglm(Y ~ 1+Month*Trt , family=binomial, id=ID, corstr="exchangeable", data=toes)
+
+mod2gee= geeglm(Y ~ 1+Month+Trt , family=binomial, id=ID, corstr="exchangeable", data=toes)
+
+mod3gee = geeglm(Y ~ 1+Trt , family=binomial, id=ID, corstr="exchangeable", data=toes)
+
+summary(mod1gee)
+```
+
+f. Why can’t you use AIC or the likelihood ratio test to conduct the test in part e.?
+
+The reason why we can't use the AIC or the likelihood ratio test to conduct the test above is because the binary variable treatment in this model and it doesn't make sense to check for correlations/covariance for models with binary variables. 
+
+g. Now write out a random effects model for the log odds model in part b. Consider the case
+of a random intercept only. Write out this generalized linear mixed effect model with covariates Treatment and Month along with an interaction and a random intercept.
+
+$$g(\mu_i) = log (\frac{\mu_i}{1-\mu_i}) = \beta_0 + b_{0i} + \beta_1 month_i + \beta_2 trt_i + \beta_3 trt_i \times month_i $$
+
+h. Fit the model from part g. in R and report the output.
+
+```{r}
+V=mod1gee$geese$vbeta
+V
+
+beta.hat = coef(mod1gee)
+L= matrix(c(0,1,0,0,0,0,0,1),2,4, byrow=TRUE)
+
+# (Matrix multiplication in R -->  %*% )
+L %*% beta.hat
+# Wald statistic to test for interaction:
+# (Transpose in R --> t()
+#  Matrix inversion in R --> solve() )
+W2 = t(L%*%beta.hat) %*% solve(L%*%V%*%t(L)) %*% L%*%beta.hat
+# approximate p-value:
+pchisq(W2, df=1, lower.tail=FALSE)
+```
+
+
+i. Explain how you can use AIC to conduct the test of whether or not to include Month in the model (main effect and interaction).
+
+We can use AIC to conduct the test of whether or not to include month in the model by comparing the model with just the intercept and treatment, and then creating a second model with the intercept, treatment, month and the interaction term. Ath that point we compare the AIC of each model and pick the model with the lower AIC, as it indicates the better fit model.
+
+j. For the average or typical subject in the dataset, interpret the estimated effect of a unit increase in Month on the odds of moderate/severe infection.
+
+For the typical subject in the dataset the estimated effect of a unit increase in month on the odds of moderate/sever infection is the estimated value for the coefficient of month exponentiated, calculated to be $\exp{\beta_1 = 0.8426}$.
+
+k. Write out the estimated mixed effect model for subject ID=1.
+
+$$g(E(Y_i | b_i)) = X_i \beta + Z b_i$$
+
+l. What question is the model in part b. addressing as compared to the model in part g.? (compare marginal and conditional models)
+
+The model in part b answers the question of what are the dependencies between the covariates meanwhile the model in part g answers the question of whether there are correlations within clusters since it includes random effects.
+
+3. This question will use the skin.csv file on the class website. This study concerns treatment effect on preventing non-melanoma skin cancer. The outcome variable Y is the count of new skin cancers per year. Treatment is coded 1 = treatment (beta carotene), 0 = placebo. The variable Year denotes the year of follow-up.
+```{r}
+skin = read.csv("skin.csv")
+```
+
+a. Say a marginal model is fit using GEE, with covariates being year and treatment along with an interaction term. Write out the theoretical model to be estimated using a log link function.
+
+$$ Y = \beta_0 + \beta_1 year_i + \beta_2 trt_i + \beta_3 year_i trt_i + \epsilon_i$$
+
+b. Why did we not include the offset term in the model in part b?
+
+The reason we didn't include an offset term is because between the treatment and the placebo the levels of exposure should be the same, the reason why we would want to include an offset term is if the exposure levels differed for the placebo and the treatment.
+
+c. Assume an AR (1) correlation structure. Fit the model from part b., and report the output.
+
+```{r}
+skin$trt_num = skin$trt
+skin$trt = factor(skin$trt, levels=c('0','1'),labels=c('Placebo','beta carotene'))
+
+gee_2 = geeglm(y ~ year + trt + year*trt,data = skin,family = poisson(link = "log"),id = id,  corstr = "ar1")
+summary(gee_2)  
+
+```
+
+
+d. What is the interpretation of the coefficient of Treatment?
+
+The estimated coefficient states that with the use of the treatment of beat carotene it's effect increases the prevention of non-melanoma skin cancer by a factor of 0.0657.
+
+e. What is the interpretation of the coefficient of Year?
+
+The interpretation of the coefficient of year states that with every increase in year the effect of preventing non-melanoma skin cancer decreases by a factor of  -0.0116. This may be a result of more exposure as time goes by in the study.
+
+f. What is the interpretation of the coefficient of the interaction term?
+
+The interpretation of the interaction term states that the effect of prevent non-melanoma skin cancer increases by 0.0327 for every year the treatment is used.
+
+g. Now consider a random effects model for the log model in part b, include a random intercept and a random slope. Write out this generalized linear mixed effect model.
+
+$$ Y = \beta_0 + b_{0i} +\beta_1 year_i + b_{1i} +\beta_2 trt_i + \beta_3 year_i trt_i + \epsilon_i$$
+
+h. Fit the model from part g. in R and report the output.
+```{r}
+glmm_3 = glmer(y ~ trt*year + (year | id), offset=log(year),family=poisson, data=skin)
+summary(glmm_3) 
+```
+
+i. Interpret the estimated coefficient of Treatment in part h.
+
+The interpretation for the estimated coefficient of treatment is that for each observation there is extra variation in the effect of preventing non-melanoma skin cancer that varies from the average for the placebo and beta carotene groups, this effect can be seen as an added effect of the original coefficient for the intercept and the coefficient for the random effect for intercept.
+
+j. Interpret the coefficient of the estimated interaction term in part h.
+
+The interpretation for the estimated interaction term is that in measuring the effect of preventing non-melanoma skin cancer that there is extra variance on top of the effect of interaction that increases the preventability of skin cancer when taking into account the extra variation that occurs as time goes by and as the intercept takes into account baseline variation from person to person in the study.
