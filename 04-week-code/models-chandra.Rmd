@@ -976,12 +976,12 @@ demo <- readRDS("../data/demography.dta")
 media <- readRDS("../data/media_long.dta")
 grouping <- readRDS("../data/grouping_data.dta")
 
-demo <- demo %>% 
-  transmute(par_id, child_id, 
-            bill_difficulty = as.factor(bill_difficulty),
-            marital_status = as.factor(marital_status),
-            assistance,
-            father)
+# demo <- demo %>% 
+#   transmute(par_id, child_id, 
+#             bill_difficulty = as.factor(bill_difficulty),
+#             marital_status = as.factor(marital_status),
+#             assistance,
+#             father)
 
 #library(naniar)
 #vis_miss(demo)
@@ -1025,12 +1025,63 @@ model1 <- lmer(plsecpr ~ behavior_management + wave + (1 | child_id), REML = FAL
 model2 <- lmer(plsecpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
 # final significant found before we got tired
-model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model0 <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 model <- lmer(plsacpr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 model <- lmer(plsecpr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
 anova(model, model1)
+summary(model0)
+
+
+##  potential covariate explorations
+### par_ethnicity
+model <- lmer(plspr ~ behavior_management:father:wave + condition + par_ethnicity + (1 | child_id), REML = FALSE, data = media_pls)
 summary(model)
+
+### enough_money_medical_care
+model <- lmer(plspr ~ behavior_management:father:wave + condition + enough_money_medical_care + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### ssi_ssdi
+model <- lmer(plspr ~ behavior_management:father:wave + condition + ssi_and_ssdi + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### planned_preg
+model <- lmer(plspr ~ behavior_management:father:wave + condition + planned_preg + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### parenting_class_taken
+model <- lmer(plspr ~ behavior_management:father:wave + condition + parenting_class_taken + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### data_site
+model <- lmer(plspr ~ behavior_management:father:wave + condition + data_site + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### state_welfare
+model <- lmer(plspr ~ behavior_management:father:wave + condition + state_welfare + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### span_lang_form
+model <- lmer(plspr ~ behavior_management:father:wave + condition + span_lang_form + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### receive_childcare
+model <- lmer(plspr ~ behavior_management:father:wave + condition + recieve_childcare + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### highest_degree_completed
+model <- lmer(plspr ~ behavior_management:father:wave + condition + highest_degree_completed + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### years_school_complete -- condition became significant
+model <- lmer(plspr ~ behavior_management:father:wave + condition + years_school_complete + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
+### adding all covariates as suggested by Dr. Reich's email
+model <- lmer(plspr ~ behavior_management:father:wave + condition + span_lang_form + highest_degree_completed + years_school_complete + parenting_class_taken + recieve_childcare + assistance + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model)
+
 ```
 
 ## Data for lmer assumption checking
@@ -1038,7 +1089,7 @@ summary(model)
 ```{r}
 pls <- readRDS("../data/pls_long_rank.dta")
 grouping <- readRDS("../data/grouping_data.dta")
-media <- readRDS("../data/media_long.dta") %>% glimpse()
+media <- readRDS("../data/media_long.dta")
 
 pls <- pls %>% 
   mutate(child_id = as.character(child_id))
