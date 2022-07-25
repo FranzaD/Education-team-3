@@ -792,29 +792,38 @@ demo <- readRDS("../data/demography.dta")
 media <- readRDS("../data/media_long.dta")
 grouping <- readRDS("../data/grouping_data.dta")
 
+glimpse(demo)
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
 
 pls <- pls %>%
   mutate(par_id = as.character(par_id),
          child_id = as.character(child_id))
 
+glimpse(media_pls)
+
 media_pls <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
-  inner_join(select(demo, child_id, par_id, father), by = c("child_id", "par_id"))
+  inner_join(demo, by = c("child_id", "par_id")) 
 
 media_pls_mother <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
-  inner_join(select(demo, child_id, par_id, father), by = c("child_id", "par_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
   filter(par_id < 30000)
 
 media_pls_father <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
-  inner_join(select(demo, child_id, par_id, father), by = c("child_id", "par_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
   filter(par_id >= 30000)
   
 
@@ -823,10 +832,17 @@ media_pls_father <- media %>%
 summary(model <- lmer(plspr ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
 summary(model <- lmer(plsacpr ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
 summary(model <- lmer(plsecpr ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
-summary(model <- lmer(plspr ~ behavior_management + + (1 | child_id), REML = FALSE, data = media_pls_mother))
 summary(model <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
 summary(model <- lmer(plsacpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
 summary(model <- lmer(plsecpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+
+# bit models
+summary(model <- lmer(BITprobavg ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(BITcompavg ~ mealtimes + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(BITprobavg ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(BITcompavg ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(BITprobavg ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
+summary(model <- lmer(BITcompavg ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls))
 
 # anova comparison # 0.241
 model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
@@ -862,7 +878,7 @@ model2 <- lmer(plspr ~ behavior_management + wave + condition + (1 | child_id), 
 model1 <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
 model2 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + (1 | child_id), REML = FALSE, data = media_pls)
 ## adding condition # 0.3257
-model2 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + (1 | child_id), REML = FALSE, data = media_pls_mother)
+model2 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + (1 | child_id), REML = FALSE, data = media_pls)
 model3 <- lmer(plspr ~ behavior_management + wave + behavior_management:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
 summary(model2)
@@ -871,21 +887,66 @@ anova(model2, model3)
 # anova comparison # 3.27e-16 ############# adding wave
 model0 <- lmer(plsacpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
 model1 <- lmer(plsacpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsacpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
+summary(model2)
 anova(model0, model1) 
+anova(model1, model2) 
+
+
+# anova comparison - add marital status - not sig anova didn't work
+model1 <- lmer(plsacpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsacpr ~ behavior_management + wave + marital_status + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model2)
+anova(model1, model2) 
+
+# anova comparison - add bill_difficulty - 0.98
+model1 <- lmer(plsacpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsacpr ~ behavior_management + wave + bill_difficulty + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model2)
+anova(model1, model2) 
+
+# anova comparison - add assistance - 0.987
+model1 <- lmer(plsacpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsacpr ~ behavior_management + wave + assistance + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model2)
+anova(model1, model2) 
 
 # anova comparison # 2.2e-16 ############# adding wave
-model0 <- lmer(plsecpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
-model1 <- lmer(plsecpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model0 <- lmer(plsecpr ~ behavior_management:father + wave + behavior_management:wave + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plsecpr ~ behavior_management:father + wave + (1 | child_id), REML = FALSE, data = media_pls)
 
-anova(model0, model1) 
+summary(model0)
+anova(model1, model0) 
 
 # anova comparison # 0.3409 --- adding condition
 model0 <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
 model1 <- lmer(plspr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsacpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model3 <- lmer(plsecpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model4 <- lmer(plspr ~ behavior_management + wave + condition + father + (1 | child_id), REML = FALSE, data = media_pls)
+model5 <- lmer(plspr ~ behavior_management:father + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+
+
+summary(model1)
+summary(model2)
+summary(model3)
+summary(model4)
+summary(model5)
 
 anova(model0, model1)
 
+
+# anova comparison # 0.3409 --- adding condition
+model0 <- lmer(plspr ~ condition + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plspr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model0)
+anova(model0, model1)
 
 # data set exploration
 media_pls %>% 
@@ -905,4 +966,113 @@ bit %>%
 ```
 
 
+
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+glimpse(demo)
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+glimpse(media_pls)
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) 
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+glimpse(demo)
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+glimpse(media_pls)
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) 
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+
+# plspr significant models found
+model <- lmer(plspr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls_mother)
+
+# plsacpr significant models found
+model0 <- lmer(plsacpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plsacpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsacpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+# plsecpr significant models found
+model0 <- lmer(plsecpr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+model1 <- lmer(plsecpr ~ behavior_management + wave + (1 | child_id), REML = FALSE, data = media_pls)
+model2 <- lmer(plsecpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+# final significant found before we got tired
+model <- lmer(plspr ~ behavior_management:father + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model <- lmer(plsacpr ~ behavior_management:father + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model <- lmer(plsecpr ~ behavior_management:father + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+anova(model, model1)
+summary(model)
+```
 
