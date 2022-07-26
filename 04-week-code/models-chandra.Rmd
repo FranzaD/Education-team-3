@@ -986,6 +986,20 @@ grouping <- readRDS("../data/grouping_data.dta")
 #library(naniar)
 #vis_miss(demo)
 
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
 pls <- pls %>%
   mutate(par_id = as.character(par_id),
          child_id = as.character(child_id))
@@ -994,7 +1008,7 @@ media_pls <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
-  inner_join(demo, by = c("child_id", "par_id")) 
+  inner_join(demo, by = c("child_id", "par_id"))
 
 media_pls_mother <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
@@ -1025,7 +1039,7 @@ model1 <- lmer(plsecpr ~ behavior_management + wave + (1 | child_id), REML = FAL
 model2 <- lmer(plsecpr ~ behavior_management + wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
 # final significant found before we got tired
-model0 <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+model0 <- lmer(plspr ~ behavior_management:father:wave + treatment + (1 | child_id), REML = FALSE, data = media_pls)
 model <- lmer(plsacpr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 model <- lmer(plsecpr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
@@ -1082,7 +1096,139 @@ summary(model)
 model <- lmer(plspr ~ behavior_management:father:wave + condition + span_lang_form + highest_degree_completed + years_school_complete + parenting_class_taken + recieve_childcare + assistance + (1 | child_id), REML = FALSE, data = media_pls)
 summary(model)
 
+### Jame's suggestion
+model <- lmer(plspr ~ behavior_management:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+
+# Dr Reich's email
+
+## Dr Reich's suggestion #1
+model <- lmer(plspr ~ behavior_management:father:wave + treatment + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+
+## Dr Reich's suggestion #2
+model <- lmer(plspr ~ behavior_management:father:wave + control + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+
+## Dr Reich's suggestion #3
+model <- lmer(plspr ~ behavior_management + behavior_management:father:wave + behavior_management:treatment + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+
+## Dr Reich's request #4
+### behavior management
+bm_summary_waves <- media_pls %>% 
+  group_by(wave) %>% 
+  summarize(mean = mean(behavior_management, na.rm = TRUE), 
+            min = min(behavior_management, na.rm = TRUE), 
+            max = max(behavior_management, na.rm = TRUE), 
+            sd = sd(behavior_management, na.rm = TRUE))
+
+bm_treatment_summary <- media_pls %>%
+  group_by(treatment) %>%
+  summarize(mean = mean(behavior_management, na.rm = TRUE), 
+            min = min(behavior_management, na.rm = TRUE), 
+            max = max(behavior_management, na.rm = TRUE), 
+            sd = sd(behavior_management, na.rm = TRUE))
+ 
+bm_fater_summary <- media_pls %>% 
+  group_by(father) %>% 
+  summarize(mean = mean(behavior_management, na.rm = TRUE), 
+            min = min(behavior_management, na.rm = TRUE), 
+            max = max(behavior_management, na.rm = TRUE), 
+            sd = sd(behavior_management, na.rm = TRUE))
+  
+bm_summary_waves <- media_pls %>% 
+  group_by(wave) %>% 
+  summarize(mean = mean(behavior_management, na.rm = TRUE), 
+            min = min(behavior_management, na.rm = TRUE), 
+            max = max(behavior_management, na.rm = TRUE), 
+            sd = sd(behavior_management, na.rm = TRUE))
+
+### plspr
+plspr_summary_waves <- media_pls %>% 
+  group_by(wave) %>% 
+  summarize(mean = mean(plspr, na.rm = TRUE), 
+            min = min(plspr, na.rm = TRUE), 
+            max = max(plspr, na.rm = TRUE), 
+            sd = sd(plspr, na.rm = TRUE))
+
+plspr_treatment_summary <- media_pls %>%
+  group_by(treatment) %>%
+  summarize(mean = mean(plspr, na.rm = TRUE), 
+            min = min(plspr, na.rm = TRUE), 
+            max = max(plspr, na.rm = TRUE), 
+            sd = sd(plspr, na.rm = TRUE))
+ 
+plspr_fater_summary <- media_pls %>% 
+  group_by(father) %>% 
+  summarize(mean = mean(plspr, na.rm = TRUE), 
+            min = min(plspr, na.rm = TRUE), 
+            max = max(plspr, na.rm = TRUE), 
+            sd = sd(plspr, na.rm = TRUE))
+  
+plspr_summary_waves <- media_pls %>% 
+  group_by(wave) %>% 
+  summarize(mean = mean(plspr, na.rm = TRUE), 
+            min = min(plspr, na.rm = TRUE), 
+            max = max(plspr, na.rm = TRUE), 
+            sd = sd(plspr, na.rm = TRUE))
+
+### behavior management by group for each wave
+bm_group_summary_w1 <- media_pls %>%
+  filter(wave == 1) %>% 
+  group_by(treatment) %>%
+  summarize(mean_bm_w1 = mean(behavior_management, na.rm = TRUE), 
+            min_bm_w1 = min(behavior_management, na.rm = TRUE), 
+            max_bm_w1 = max(behavior_management, na.rm = TRUE), 
+            sd_bm_w1 = sd(behavior_management, na.rm = TRUE))
+
+bm_group_summary_w4 <- media_pls %>%
+  filter(wave == 4) %>% 
+  group_by(treatment) %>%
+  summarize(mean_bm_w4 = mean(behavior_management, na.rm = TRUE), 
+            min_bm_w4= min(behavior_management, na.rm = TRUE), 
+            max_bm_w4 = max(behavior_management, na.rm = TRUE), 
+            sd_bm_w4 = sd(behavior_management, na.rm = TRUE))
+
+bm_group_summary_w6 <- media_pls %>%
+  filter(wave == 6) %>% 
+  group_by(treatment) %>%
+  summarize(mean_bm_w6 = mean(behavior_management, na.rm = TRUE), 
+            min_bm_w6 = min(behavior_management, na.rm = TRUE), 
+            max_bm_w6 = max(behavior_management, na.rm = TRUE), 
+            sd_bm_w6 = sd(behavior_management, na.rm = TRUE))
+
+### PLS percentil rank by group for each wave
+plspr_group_summary_w1 <- media_pls %>%
+  filter(wave == 1) %>% 
+  group_by(treatment) %>%
+  summarize(mean_plspr_w1 = mean(plspr, na.rm = TRUE), 
+            min_plspr_w1 = min(plspr, na.rm = TRUE), 
+            max_plspr_w1 = max(plspr, na.rm = TRUE), 
+            sd_plspr_w1 = sd(plspr, na.rm = TRUE))
+
+plspr_group_summary_w4 <- media_pls %>%
+  filter(wave == 4) %>% 
+  group_by(treatment) %>%
+  summarize(mean_plspr_w4 = mean(plspr, na.rm = TRUE), 
+            min_plspr_w4 = min(plspr, na.rm = TRUE), 
+            max_plspr_w4 = max(plspr, na.rm = TRUE), 
+            sd_plspr_w4 = sd(plspr, na.rm = TRUE))
+
+plspr_group_summary_w6 <- media_pls %>%
+  filter(wave == 6) %>% 
+  group_by(treatment) %>%
+  summarize(mean_plspr_w6 = mean(plspr, na.rm = TRUE), 
+            min_plspr_w6 = min(plspr, na.rm = TRUE), 
+            max_plspr_w6 = max(plspr, na.rm = TRUE), 
+            sd_plspr_w6 = sd(plspr, na.rm = TRUE))
+
 ```
+
 
 ## Data for lmer assumption checking
 
@@ -1141,5 +1287,10 @@ bm_cond_3 <- bm_cond %>%
   filter(condition == 1)
 bm_cond_4 <- bm_cond %>% 
   filter(condition == 1)
+```
+
+```{r}
+model0 <- lmer(plspr ~ behavior_management + (1 | child_id), REML = FALSE, data = media_pls)
+summary(model0)
 ```
 
