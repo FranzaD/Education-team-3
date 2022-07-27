@@ -1,0 +1,131 @@
+#data
+```{r}
+library(tidyverse)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(nlme)
+
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(magrittr)
+library(ggcorrplot)
+```
+
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
+```
+
+Main Effect Additions to Model:
+Listed here are variables that need to be included in the model because they hold such important weight in the literature it’s non-negotiable:
+-Parent_education
+-Parage
+-Nativity and/or lang_form (look out for collinearity, if it exists too just much select one)
+-Behavior_management
+
+```{r}
+bg <- background %>% 
+  zap_labels() %>% 
+  transmute(par_id = as.character(parid),
+            child_id = as.character(childid),
+            hhincome = as.numeric(hhincome))
+
+bg1 <- demographic_background %>% 
+  zap_labels() %>% 
+  transmute(par_id = as.character(parid),
+            child_id = as.character(childid),
+            par_age = as.integer(parage))
+
+ demo <- demo %>% 
+   transmute(par_id, child_id, 
+             bill_difficulty = as.factor(bill_difficulty),
+             marital_status = as.factor(marital_status),
+             assistance,
+             father)
+
+#library(naniar)
+#vis_miss(demo)
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>% 
+  full_join(bg, by = c("child_id", "par_id")) %>% 
+  full_join(bg1, by = c("child_id", "par_id")) %>% 
+  mutate( wave = as.factor(wave))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000) %>% 
+  full_join(bg, by = c("child_id", "par_id")) %>% 
+  full_join(bg1, by = c("child_id", "par_id")) %>% 
+  mutate( wave = as.factor(wave))
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000) %>% 
+  full_join(bg, by = c("child_id", "par_id")) %>% 
+  full_join(bg1, by = c("child_id", "par_id")) %>% 
+  mutate( wave = as.factor(wave))
+
+```
+#model before
+
+```{r}
+# final significant found before we got tired
+model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+```
+
+#model after
+
+```{r}
+model1 <- lmer(plspr ~ behavior_management + hhincome + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model1)
+
+```
+```{r}
+summary(media_pls)
+```
+

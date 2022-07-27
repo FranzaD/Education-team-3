@@ -239,6 +239,7 @@ __Table 5:__
 ```{r}
 
 ```
+
 Questions:
 1. Do we need to include behavior-management in this analysis to see if it's positively correlated b/w clusters
   + "it assumes that observations within clusters are always positively correlated" (d)
