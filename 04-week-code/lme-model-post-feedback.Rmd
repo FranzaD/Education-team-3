@@ -1,11 +1,9 @@
-#data
-```{r}
-library(tidyverse)
-library(haven)
-library(lme4)
-library(lmerTest)
-library(nlme)
 
+
+# Data
+
+##libraries
+```{r}
 library(forcats)
 library(haven)
 library(readxl)
@@ -15,8 +13,15 @@ library(dplyr)
 library(janitor)
 library(magrittr)
 library(ggcorrplot)
+
+library(tidyverse)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(nlme)
 ```
 
+## data loading
 ```{r}
 pls <- readRDS("../data/pls_long_rank.dta")
 bit_mother <- readRDS("../data/BIT_long_mother.dta")
@@ -25,40 +30,41 @@ bit <- readRDS("../data/BIT_long_par.dta")
 demo <- readRDS("../data/demography.dta")
 media <- readRDS("../data/media_long.dta")
 grouping <- readRDS("../data/grouping_data.dta")
-
-demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+#hhincome, pargen, childid, parid
 background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 ```
 
-Main Effect Additions to Model:
-Listed here are variables that need to be included in the model because they hold such important weight in the literature it’s non-negotiable:
--Parent_education
--Parage
--Nativity and/or lang_form (look out for collinearity, if it exists too just much select one)
--Behavior_management
-
+## data wrangling
 ```{r}
-bg <- background %>% 
+
+bg_income <- background %>% 
   zap_labels() %>% 
   transmute(par_id = as.character(parid),
             child_id = as.character(childid),
-            hhincome = as.numeric(hhincome))
+            hhincome = as.numeric(hhincome),
+            household_income = hhincome/1000,
+            father = as.logical(pargen))
 
-bg1 <- demographic_background %>% 
+bg_age <- demographic_background %>% 
   zap_labels() %>% 
   transmute(par_id = as.character(parid),
             child_id = as.character(childid),
-            par_age = as.integer(parage))
+            parent_age = as.numeric(parage),
+            father = as.logical(pargen))
 
- demo <- demo %>% 
-   transmute(par_id, child_id, 
+
+# if hhincome isn't a good predictor let's include bill_difficulty
+demo <- demo %>% 
+   transmute(par_id, 
+             child_id, 
              bill_difficulty = as.factor(bill_difficulty),
              marital_status = as.factor(marital_status),
              assistance,
-             father)
-
-#library(naniar)
-#vis_miss(demo)
+             father,
+             par_us_born,
+             highest_degree_completed,
+             span_lang_form)
 
 grouping <- grouping %>% 
   mutate(treatment = case_when(
@@ -75,57 +81,61 @@ grouping <- grouping %>%
     control = ifelse(condition == "4", TRUE, FALSE))
 
 pls <- pls %>%
+  zap_labels() %>% 
   mutate(par_id = as.character(par_id),
          child_id = as.character(child_id))
+ 
 
 media_pls <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
   inner_join(demo, by = c("child_id", "par_id")) %>% 
-  full_join(bg, by = c("child_id", "par_id")) %>% 
-  full_join(bg1, by = c("child_id", "par_id")) %>% 
-  mutate( wave = as.factor(wave))
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id"))
 
 media_pls_mother <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
   inner_join(demo, by = c("child_id", "par_id")) %>%
-  filter(par_id < 30000) %>% 
-  full_join(bg, by = c("child_id", "par_id")) %>% 
-  full_join(bg1, by = c("child_id", "par_id")) %>% 
-  mutate( wave = as.factor(wave))
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  filter(par_id < 30000)
 
 media_pls_father <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
   full_join(pls, by = c("par_id", "child_id", "wave")) %>%
   inner_join(grouping, by = c("child_id")) %>%
   inner_join(demo, by = c("child_id", "par_id")) %>%
-  filter(par_id >= 30000) %>% 
-  full_join(bg, by = c("child_id", "par_id")) %>% 
-  full_join(bg1, by = c("child_id", "par_id")) %>% 
-  mutate( wave = as.factor(wave))
-
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  filter(par_id >= 30000)
 ```
-#model before
+
+
+
+# model
 
 ```{r}
-# final significant found before we got tired
 model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
 summary(model)
 ```
 
-#model after
+Main Effect Additions to Model:
+Listed here are variables that need to be included in the model because they hold such important weight in the literature it’s non-negotiable
+ * Parent_education
+ * Parage
+ * Nativity and/or lang_form (look out for collinearity, if it exists too just much select one)
+ * Behavior_management
+
 
 ```{r}
-model1 <- lmer(plspr ~ behavior_management + hhincome + (1 | child_id), REML = FALSE, data = media_pls)
+#+ treatment + wave + par_us_born
+model <- lmer(plspr ~ behavior_management  + parent_age + father  + span_lang_form + highest_degree_completed + behavior_management:treatment + (1 | child_id), REML = FALSE, data = media_pls)
 
-summary(model1)
+summary(model)
+```
 
-```
-```{r}
-summary(media_pls)
-```
 
