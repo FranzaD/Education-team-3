@@ -13,6 +13,8 @@ library(dplyr)
 library(janitor)
 library(magrittr)
 library(ggcorrplot)
+library(viridis)
+
 
 library(tidyverse)
 library(haven)
@@ -133,9 +135,171 @@ Listed here are variables that need to be included in the model because they hol
 
 ```{r}
 #+ treatment + wave + par_us_born
-model <- lmer(plspr ~ behavior_management  + parent_age + father  + span_lang_form + highest_degree_completed + behavior_management:treatment + (1 | child_id), REML = FALSE, data = media_pls)
+model <- lmer(plspr ~ behavior_management  + parent_age + father  + span_lang_form + year_school_complete + behavior_management:treatment + (1 | child_id), REML = FALSE, data = media_pls)
 
 summary(model)
 ```
 
+```{r}
+summary(media_pls$highest_degree_completed)
+```
+#HERE
+```{r}
+#hardly any difference b/w mothers and fathers (could test anova but the graph is pretty telling)
+g <- media_pls %>%
+  ggplot( aes(behavior_management, plspr)) +
+  geom_point(aes(color = behavior_management)) +
+  geom_smooth(method = "lm", color = "grey", size=0.7, se=FALSE) + 
+  facet_grid(treatment~wave) +
+  scale_color_viridis(option = "D") +
+  xlab("Media as Behavior Management Frequency") +
+  ylab("Infant Communication Skills") +
+  theme_light() +
+  ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
 
+g + theme(legend.position="none")
+```
+```{r}
+ggplot(media_pls, aes(behavior_management, plspr))+
+  geom_point(size = 1, aes(color = treatment)) +
+  geom_smooth(aes(color = treatment, fill = treatment), method = "lm") + 
+  scale_color_viridis(discrete = TRUE, option = "G")+
+  scale_fill_viridis(discrete = TRUE) +
+  facet_grid(treatment~wave)
+```
+
+
+```{r}
+g<-media_pls %>%
+  ggplot( aes(behavior_management, plspr, fill = treatment)) + 
+  geom_boxplot() +
+  geom_jitter() +
+  xlab("Media Used as a Tool for Behavior Management") +
+  ylab("Infant Communication Skills Percentile Rank") +
+  labs(color = "BB Treatment") +
+  facet_grid(~wave) +
+  theme_bw() +
+  ggtitle("Mean of PLS Percentile Rank across Waves Controlled by BB Treatment")
+
+g + scale_fill_brewer(palette="RdBu") 
+#later include year_school_complete and look at correlation
+```
+
+```{r}
+#order the treatment 
+ g <- media_pls %>%
+  mutate(treatment = fct_reorder(treatment, plspr, .fun='median')) %>%
+  ggplot( aes(x=reorder(treatment, plspr), y = plspr, fill = treatment)) + 
+  geom_boxplot() +
+  #geom_jitter() +
+  xlab("Media Used as a Tool for Behavior Management") +
+  ylab("Infant Communication Skills Percentile Rank") +
+  labs(color = "BB Treatment") +
+  facet_grid(~wave) +
+  theme_minimal() +
+  ggtitle("Mean of PLS Percentile Rank across Waves Controlled by BB Treatment")
+
+g
+#g + scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) 
+
+
+#reorder(class, hwy),
+#arrange(data, gclass)
+```
+
+
+```{r}
+media_pls%>%
+  ggplot() +
+  aes(x = wave, y = plspr, group = child_id, color = treatment) +
+  geom_point() +
+  geom_line() +
+  xlab("Waves (9mo and 24mo)") +
+  ylab("PLS Scores") +
+  ggtitle("Spaghetti Plot of PLS Scores") +
+  labs(color = "total_s") +
+  labs(color = "BB Treatment") +
+  theme_bw() +
+  facet_grid(father~treatment) +
+  theme(
+  #text = element_text(family = "Times"),
+  plot.title = element_text(hjust = 0.5)
+)
+```
+Is there a change in media management based of condition over time? 
+
+Since behavior management is observed by both mothers and fathers should we seperate
+```{r}
+# is there a change in media management based of condition over time?
+media_pls%>%
+  ggplot() +
+  aes(x = wave, y = behavior_management, group = child_id, color = treatment) +
+  geom_point() +
+  geom_line() +
+  xlab("Waves (9mo and 24mo)") +
+  ylab("Behavior Management") +
+  ggtitle("Spaghetti Plot of Behavior Management Scores") +
+  #labs(color = "total_s") +
+  #labs(color = "BB Treatment") +
+  theme_bw() +
+  facet_grid(father~treatment) +
+  theme(
+  text = element_text(family = "Times"),
+  plot.title = element_text(hjust = 0.5)
+)
+```
+```{r}
+interaction.plot(
+x.factor = media_pls$wave,
+trace.factor = media_pls$child_id,
+response = media_pls$behavior_management,
+type = "o",
+xlab = "Waves",
+ylab = "Behavior management",
+lty = 1,
+pch = 19,
+legend = FALSE,
+main = "Spaghetti Plot of Behavior Management"
+)
+```
+### Hypothesis Testing
+```{r}
+g<-media_pls %>%
+  filter(father == FALSE) %>% 
+  ggplot( aes(x = treatment, y = behavior_management, color = treatment)) + 
+  geom_boxplot() +
+  geom_jitter() +
+  xlab("BB Treatment") +
+  ylab("Media as Behavior Management") +
+  labs(color = "BB Treatment") +
+  facet_grid(~wave) +
+  theme_bw() +
+  ggtitle("Media as Behavior Management across Waves Controlled by BB Treatment")
+
+g + scale_fill_brewer(palette="RdBu") 
+```
+
+```{r}
+bm_cond_w <- aov(behavior_management ~ treatment + wave, media_pls)
+
+summary(bm_cond_w)
+```
+This anova table says there isn't enough evidence to conclude that mean behavior management within each treatment category are different from one another
+
+Also, one mean of behavior_management across the different waves
+
+##### Contingency Table of CHANGE in PLS and daily use Rec/Not Rec
+
+```{r}
+cont_table_bm_cond_w <- table(media_pls$treatment, media_pls$wave)
+cont_table_bm_cond_w
+```
+
+##### Chi-Squared Test of Indepdendence
+
+H0: pls_change and daily_use are independent (unrelated)
+H1: PLs_change and daily_use are dependent (related)
+
+```{r}
+chisq.test(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
+```
