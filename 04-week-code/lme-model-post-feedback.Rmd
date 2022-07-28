@@ -23,7 +23,7 @@ library(lmerTest)
 library(nlme)
 ```
 
-## data loading
+## data loading and wrangling
 ```{r}
 pls <- readRDS("../data/pls_long_rank.dta")
 bit_mother <- readRDS("../data/BIT_long_mother.dta")
@@ -35,10 +35,6 @@ grouping <- readRDS("../data/grouping_data.dta")
 #hhincome, pargen, childid, parid
 background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
-```
-
-## data wrangling
-```{r}
 
 bg_income <- background %>% 
   zap_labels() %>% 
@@ -143,7 +139,7 @@ summary(model)
 ```{r}
 summary(media_pls$highest_degree_completed)
 ```
-#HERE
+#HERE main graph
 ```{r}
 #hardly any difference b/w mothers and fathers (could test anova but the graph is pretty telling)
 g <- media_pls %>%
@@ -278,12 +274,138 @@ g<-media_pls %>%
 
 g + scale_fill_brewer(palette="RdBu") 
 ```
-
+# ANOVA Tests
 ```{r}
 bm_cond_w <- aov(behavior_management ~ treatment + wave, media_pls)
-
 summary(bm_cond_w)
+
+pl_cond_w <- aov(plspr ~ treatment + wave + treatment:wave, media_pls)
+summary(pl_cond_w)
+
 ```
+```{r}
+tukey.test <- TukeyHSD(bm_cond_w)
+plot(tukey.test)
+
+
+TukeyHSD(bm_cond_w)
+```
+
+```{r}
+tukey.test <- TukeyHSD(pl_cond_w)
+plot(tukey.test)
+
+
+TukeyHSD(pl_cond_w)
+```
+```{r}
+g <- media_pls %>%
+  ggplot( aes(behavior_management, plspr)) +
+  geom_point(aes(color = behavior_management)) +
+  geom_smooth(method = "lm", color = "grey", size=0.7, se=FALSE) + 
+  facet_grid(treatment~wave) +
+  scale_color_viridis(option = "D") +
+  xlab("Media as Behavior Management Frequency") +
+  ylab("Infant Communication Skills") +
+  theme_light() +
+  ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
+
+g + theme(legend.position="none")
+```
+```{r}
+#, colour = manufacturer
+#geom_density() +
+#, scales = "free_x"
+
+t <- media_pls %>% 
+ggplot( aes(plspr, fill = treatment, color = treatment)) +
+  geom_density(alpha =  0.1) +
+  #geom_histogram(bins = 30) +
+  facet_grid(treatment~wave) +
+  theme_light()
+
+t + geom_vline(aes(xintercept=mean(plspr), fill = treatment), color="grey", linetype="dashed", size=1)
+```
+#HERE behavior management
+
+```{r}
+#trying to implement mean line in graph, can't figure it out for now
+dummy <- media_pls %>%
+  group_by( wave, treatment) %>%
+  summarize(mean = mean(behavior_management))
+
+media_pls %>% 
+ggplot( aes(x = behavior_management, fill = treatment)) +
+  geom_density(alpha = 0.3) +
+  #geom_histogram(bins = 30) +
+  facet_grid(~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Density") +
+  theme_bw()
+  #geom_line(data = dummy, aes(xintercept = mean, color = treatment))
+#na.rm = TRUE
+
+```
+```{r}
+#trying to do color blind friendly plots
+d <- media_pls %>% 
+ggplot( aes(x = behavior_management, fill = treatment)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(position = "dodge", bins =  10, alpha = 0.8) +
+  facet_grid(~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Counts") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+```{r}
+#trying to do color blind friendly plots
+d <- media_pls %>% 
+ggplot( aes(x = plspr, fill = treatment)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(binwidth = 5, position = "dodge",alpha = 0.7) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Infant Communication by BB Treatment Across Waves")+
+  xlab("Percentile Rank of Infant Communication Skills") + 
+  ylab("Counts") +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+
+```{r}
+#, colour = manufacturer
+#geom_density() +
+#, scales = "free_x"
+
+t <- media_pls %>% 
+ggplot( aes(x = plspr, fill = treatment)) +
+  geom_density(alpha =  0.7) +
+  #geom_histogram(binwidth = 5, position = "dodge",alpha = 0.7) +
+  facet_grid( treatment~wave) +
+  ggtitle("Distributions of Infant Communication by BB Treatment Across Waves")+
+  xlab("Percentile Rank of Infant Communication Skills") + 
+  ylab("Density") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+t + scale_fill_viridis_d()
+```
+
+```{r}
+t <- media_pls %>% 
+ggplot( aes(x = behavior_management, fill = treatment)) +
+  geom_density() +
+  #geom_histogram(bins = 30) +
+  facet_grid( treatment~wave)
+
+t + geom_vline(aes(xintercept=mean(plspr), fill = treatment), color="grey", linetype="dashed", size=1)
+```
+
 This anova table says there isn't enough evidence to conclude that mean behavior management within each treatment category are different from one another
 
 Also, one mean of behavior_management across the different waves
