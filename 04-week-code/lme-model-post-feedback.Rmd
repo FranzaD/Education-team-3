@@ -496,7 +496,28 @@ ggplot( aes(x = BITcompavg, fill = wave)) +
 
 d + scale_fill_viridis_d()
 ```
-
+```{r}
+media_pls %>% 
+ggplot( aes(BITcompavg, fill = wave, color = wave)) +
+  geom_density(alpha =  0.1) +
+  #geom_histogram(bins = 30) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Avg Social-Emo Compentencies by BB Treatment Across Waves")+
+  xlab("Average Social-Emotional Competencies") + 
+  ylab("Density") +
+  theme_light()
+```
+```{r}
+media_pls %>% 
+ggplot( aes(BITprobavg, fill = wave, color = wave)) +
+  geom_density(alpha =  0.1) +
+  #geom_histogram(bins = 30) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Avg Social-Emo Problems by BB Treatment Across Waves")+
+  xlab("Average social-emotional problems") + 
+  ylab("Density") +
+  theme_light()
+```
 
 #ANOVA on pls
 
