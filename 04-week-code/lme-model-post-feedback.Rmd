@@ -36,6 +36,16 @@ grouping <- readRDS("../data/grouping_data.dta")
 background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 
+#changed bitsea wave 2 to wave 1 and bitsea from wave 5 to wave 4
+bit_updated <- bit %>% 
+  mutate( wave = case_when(
+    wave == "2" ~ "1",
+    wave == "5" ~ "4",
+    wave == "6" ~ "6"),
+    wave = as.factor(wave)) %>% 
+  subset(!is.nan(BITcompavg), !is.nan(BITprobavg)) %>% 
+  transmute(child_id, wave, BITcompavg, BITprobavg)
+
 bg_income <- background %>% 
   zap_labels() %>% 
   transmute(par_id = as.character(parid),
@@ -90,7 +100,9 @@ media_pls <- media %>%
   inner_join(grouping, by = c("child_id")) %>%
   inner_join(demo, by = c("child_id", "par_id")) %>% 
   inner_join(bg_age, by = c("child_id", "par_id")) %>% 
-  inner_join(bg_income, by = c("child_id", "par_id"))
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  mutate(wave = as.factor(wave)) %>% 
+  full_join(bit_updated, by = c("child_id","wave", "BITprobavg", "BITcompavg"))
 
 media_pls_mother <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
@@ -110,7 +122,6 @@ media_pls_father <- media %>%
   inner_join(bg_income, by = c("child_id", "par_id")) %>% 
   filter(par_id >= 30000)
 ```
-
 
 
 # model
@@ -425,3 +436,106 @@ H1: PLs_change and daily_use are dependent (related)
 ```{r}
 chisq.test(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
 ```
+
+# Anova on other media variables
+
+##tv ~ trt + wave
+```{r}
+tv_cond_w <- aov(tv_exposure ~ treatment + wave, media_pls)
+summary(tv_cond_w)
+```
+##parent_age ~ trt + wave
+```{r}
+tv_cond_w <- aov(parent_age ~ treatment + wave, media_pls)
+summary(tv_cond_w)
+```
+##mealtimes ~ trt + wave
+```{r}
+ml_cond_w <- aov(mealtimes ~ treatment + wave, media_pls)
+summary(ml_cond_w)
+```
+##digital_babysitting ~ trt + wave
+```{r}
+db_cond_w <- aov(digital_babysitting ~ treatment + wave, media_pls)
+summary(db_cond_w)
+```
+##positive_beliefs_media ~ trt + wave
+```{r}
+pb_cond_w <- aov(positive_beliefs_media ~ treatment + wave, media_pls)
+summary(pb_cond_w)
+```
+##solo ~ trt + wave
+```{r}
+solo_cond_w <- aov(solo ~ treatment + wave, media_pls)
+summary(solo_cond_w)
+```
+##passive ~ trt + wave
+```{r}
+pass_cond_w <- aov(passive ~ treatment + wave, media_pls)
+summary(pass_cond_w)
+```
+##coop ~ trt + wave
+```{r}
+coop_cond_w <- aov(coop ~ treatment + wave, media_pls)
+summary(coop_cond_w)
+```
+##discipline_behavior_management ~ trt + wave
+```{r}
+dbm_cond_w <- aov(discipline_behavior_management ~ treatment + wave, media_pls)
+summary(dbm_cond_w)
+```
+
+#ANOVA on bitsea 
+both BItprobavg and Bitcompavg have issues
+##bitcompavg ~ trt + wave
+```{r}
+bca_cond_w <- aov(BITprobavg ~ treatment + wave, media_pls)
+summary(bca_cond_w)
+```
+What does the distribution of BITSEA scores look like?
+
+## BITSEA Histograms
+```{r}
+d <- media_pls %>% 
+ggplot( aes(x = BITprobavg, fill = wave)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(position = "dodge", bins =  30, alpha = 0.8) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Counts") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+According to this diagram above, BITSEA measurements haven't been paired with their corresponding treatments based on child id, why would this be?
+
+```{r}
+d <- media_pls %>% 
+ggplot( aes(x = BITcompavg, fill = wave)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(position = "dodge", bins =  30, alpha = 0.7) +
+  facet_grid(~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Counts") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+#ANOVA on pls sub assessments
+
+##plsEcpr ~ trt + wave
+```{r}
+plsepr_cond_w <- aov(plsecpr ~ treatment + wave, media_pls)
+summary(plsepr_cond_w)
+```
+##plsAcpr ~ trt + wave
+```{r}
+plsapr_cond_w <- aov(plsacpr ~ treatment + wave, media_pls)
+summary(plsapr_cond_w)
+```
+
+
