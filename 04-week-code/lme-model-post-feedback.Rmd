@@ -37,7 +37,7 @@ background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 
 #changed bitsea wave 2 to wave 1 and bitsea from wave 5 to wave 4
-bit_updated <- bit %>% 
+bit<- bit %>% 
   mutate( wave = case_when(
     wave == "2" ~ "1",
     wave == "5" ~ "4",
@@ -101,8 +101,8 @@ media_pls <- media %>%
   inner_join(demo, by = c("child_id", "par_id")) %>% 
   inner_join(bg_age, by = c("child_id", "par_id")) %>% 
   inner_join(bg_income, by = c("child_id", "par_id")) %>% 
-  mutate(wave = as.factor(wave)) %>% 
-  full_join(bit_updated, by = c("child_id","wave", "BITprobavg", "BITcompavg"))
+  mutate(wave = as.factor(wave)) #%>% 
+  #inner_join(bit_updated, by = c("child_id"))
 
 media_pls_mother <- media %>%
   full_join(bit, by = c("child_id", "wave")) %>% 
@@ -255,36 +255,7 @@ media_pls%>%
   plot.title = element_text(hjust = 0.5)
 )
 ```
-```{r}
-interaction.plot(
-x.factor = media_pls$wave,
-trace.factor = media_pls$child_id,
-response = media_pls$behavior_management,
-type = "o",
-xlab = "Waves",
-ylab = "Behavior management",
-lty = 1,
-pch = 19,
-legend = FALSE,
-main = "Spaghetti Plot of Behavior Management"
-)
-```
-### Hypothesis Testing
-```{r}
-g<-media_pls %>%
-  filter(father == FALSE) %>% 
-  ggplot( aes(x = treatment, y = behavior_management, color = treatment)) + 
-  geom_boxplot() +
-  geom_jitter() +
-  xlab("BB Treatment") +
-  ylab("Media as Behavior Management") +
-  labs(color = "BB Treatment") +
-  facet_grid(~wave) +
-  theme_bw() +
-  ggtitle("Media as Behavior Management across Waves Controlled by BB Treatment")
 
-g + scale_fill_brewer(palette="RdBu") 
-```
 # ANOVA Tests
 ```{r}
 bm_cond_w <- aov(behavior_management ~ treatment + wave, media_pls)
@@ -324,10 +295,6 @@ g <- media_pls %>%
 g + theme(legend.position="none")
 ```
 ```{r}
-#, colour = manufacturer
-#geom_density() +
-#, scales = "free_x"
-
 t <- media_pls %>% 
 ggplot( aes(plspr, fill = treatment, color = treatment)) +
   geom_density(alpha =  0.1) +
@@ -437,7 +404,7 @@ H1: PLs_change and daily_use are dependent (related)
 chisq.test(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
 ```
 
-# Anova on other media variables
+# ANOVA on media
 
 ##tv ~ trt + wave
 ```{r}
@@ -486,13 +453,17 @@ summary(dbm_cond_w)
 ```
 
 #ANOVA on bitsea 
-both BItprobavg and Bitcompavg have issues
+
+##bitprobavg ~ trt + wave
+```{r}
+bpa_cond_w <- aov(BITprobavg ~ treatment + wave, media_pls)
+summary(bpa_cond_w)
+```
 ##bitcompavg ~ trt + wave
 ```{r}
-bca_cond_w <- aov(BITprobavg ~ treatment + wave, media_pls)
+bca_cond_w <- aov(BITcompavg ~ treatment + wave, media_pls)
 summary(bca_cond_w)
 ```
-What does the distribution of BITSEA scores look like?
 
 ## BITSEA Histograms
 ```{r}
@@ -525,7 +496,9 @@ ggplot( aes(x = BITcompavg, fill = wave)) +
 
 d + scale_fill_viridis_d()
 ```
-#ANOVA on pls sub assessments
+
+
+#ANOVA on pls
 
 ##plsEcpr ~ trt + wave
 ```{r}
