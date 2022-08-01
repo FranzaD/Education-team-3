@@ -16,8 +16,10 @@ library(haven)
 library(lme4)
 library(lmerTest)
 library(nlme)
+library(car) # for levene's test for Homo of Var
+#install.packages("car")
+require("lattice")
 ```
-
 ##data
 ```{r}
 pls <- readRDS("../data/pls_long_rank.dta")
@@ -154,11 +156,79 @@ summary(model)
 ```
 Explanation:
 
+
 # Checking final lmer model assumptions
+
+## Linearity
+Good case is if there is a random pattern in the scatter of the data, since there is a patter this suggests we need to transform the predictor or a response.
+
+Log, square, and exp on the response to not yeild a random scatter plot. 
+
+__Conclusion is this assumption is violated.__
 ```{r}
+#checking Linearity
+model_linearity <- plot(resid(model),media_pls1$plspr)
+```
+
+### log transform on response still shows a pattern
+```{r}
+plot(resid(model),log(media_pls1$plspr))
+```
+
+### square transform on response still shows a pattern
+```{r}
+plot(resid(model),(media_pls1$plspr)^2)
+```
+```{r}
+#checking Linearity
+model_linearity <- plot(resid(model),(media_pls1$plspr)/2)
+```
+
+
+## Homogeneity of Variance
+Regression assumes variance of residuals is equal for every individual
+
+In the residual vs fitted graph we would expect to find an even spread around the center line, that seems to be the case for the plot below.
+
+__Conclusion is this assumption is met.__
+```{r}
+plot(model)
+```
+
+### Levene's Test (manual)for homogeneity of variance 
+Computationally we'd like to see if this assumption holds, we can use Levene's Test for this.
+
+Since the p-value is less than 0.05 we can conclude that there is enough evidence to conclude that we can reject the null hypothesis that states that the residual variances are equal. Hence we conclude that at least one residual variance is not equalt to the others.
+__Conclusion is this assumption is violated.__
+```{r}
+media_pls1$model_residuals<- residuals(model) #extracts the residuals and places them in a new column in our original data table
+media_pls1$abs_model_residuals <- abs(media_pls1$model_residuals) #creates a new column with the absolute value of the residuals
+media_pls1$model_residuals_squared <- media_pls1$abs_model_residuals ^2 #squares the absolute values of the residuals to provide the more robust estimate
+levene_model <- lm(model_residuals_squared ~ child_id, data=media_pls1) #ANOVA of the squared residuals
+anova(levene_model) #displays the results
+```
+### Levene's Test (Automatic) for Homogeneity of Variance
+potentially get back to this
+```{r}
+# Levene's test with multiple independent variables
+#leveneTest(len ~ supp*dose, data = media_pls1)
+```
+
+### Bartlett's for homogeneity of variance
+https://www.datanovia.com/en/lessons/homogeneity-of-variance-test-in-r/
+```{r}
+#maybe for later
+
 
 ```
-Explanation:
+## Residuals of Model are Normally Distributed
+QQplots provide a estimation of where the standardized residuals lie with respect to the normal quantiles, strong deviation from the line indicates the residuals are not normally distributed.
+
+__Conclusion is this assumption is met.__
+```{r}
+qqmath(model)
+```
+
 
 ##notable lmers from the data
 ```{r}
