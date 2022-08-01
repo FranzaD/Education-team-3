@@ -39,9 +39,9 @@ demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 #changed bitsea wave 2 to wave 1 and bitsea from wave 5 to wave 4
 bit<- bit %>% 
   mutate( wave = case_when(
-    wave == "2" ~ "1",
-    wave == "5" ~ "4",
-    wave == "6" ~ "6"),
+    wave == "2" ~ "Wave 1",
+    wave == "5" ~ "Wave 4",
+    wave == "6" ~ "Wave 6"),
     wave = as.factor(wave)) %>% 
   subset(!is.nan(BITcompavg), !is.nan(BITprobavg)) %>% 
   transmute(child_id, wave, BITcompavg, BITprobavg)
@@ -121,6 +121,29 @@ media_pls_father <- media %>%
   inner_join(bg_age, by = c("child_id", "par_id")) %>% 
   inner_join(bg_income, by = c("child_id", "par_id")) %>% 
   filter(par_id >= 30000)
+
+media_pls <- media_pls %>% 
+  mutate(
+    treatment = case_when(
+    condition == "4" ~ " Control",
+    condition == "1" ~ " Mom",
+    condition == "2" ~ " Dad",
+    condition == "3" ~ " Both"),
+    treatment = fct_relevel(
+      treatment,
+      " Control",
+      " Mom",
+      " Dad",
+      " Both"),
+    wave = case_when(
+    wave == "1" ~ "Wave 1",
+    wave == "4" ~ "Wave 4",
+    wave == "6" ~ "Wave 6"),
+    wave = fct_relevel(
+      wave,
+      "Wave 1",
+      "Wave 4",
+      "Wave 6"))
 ```
 
 
@@ -161,7 +184,7 @@ g <- media_pls %>%
   scale_color_viridis(option = "D") +
   xlab("Media as Behavior Management Frequency") +
   ylab("Infant Communication Skills") +
-  theme_light() +
+  theme_minimal() +
   ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
 
 g + theme(legend.position="none")
@@ -289,7 +312,7 @@ g <- media_pls %>%
   scale_color_viridis(option = "D") +
   xlab("Media as Behavior Management Frequency") +
   ylab("Infant Communication Skills") +
-  theme_light() +
+  theme_minimal() +
   ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
 
 g + theme(legend.position="none")
