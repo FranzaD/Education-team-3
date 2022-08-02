@@ -147,8 +147,8 @@ media_pls <- media_pls %>%
 ```
 
 
-# model
 
+# model
 ```{r}
 model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
 
@@ -279,7 +279,7 @@ media_pls%>%
 )
 ```
 
-# ANOVA Tests
+#Main ANOVA Tests
 ```{r}
 bm_cond_w <- aov(behavior_management ~ treatment + wave, media_pls)
 summary(bm_cond_w)
