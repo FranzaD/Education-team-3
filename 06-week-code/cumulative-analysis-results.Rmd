@@ -19,6 +19,11 @@ library(nlme)
 library(car) # for levene's test for Homo of Var
 #install.packages("car")
 require("lattice")
+install.packages("effects")
+library(effects)
+install.packages("sjPlot")
+library(sjPlot)
+install.packages("glmmTMB")
 ```
 ##data
 ```{r}
@@ -188,14 +193,14 @@ model_linearity <- plot(resid(model),(media_pls1$plspr)/2)
 ## Homogeneity of Variance
 Regression assumes variance of residuals is equal for every individual
 
-In the residual vs fitted graph we would expect to find an even spread around the center line, that seems to be the case for the plot below.
+In the residual vs fitted graph we would expect to find an even spread around the center line.
 
-__Conclusion is this assumption is met.__
+__Conclusion is this assumption is Violated.__
 ```{r}
 plot(model)
 ```
 
-### Levene's Test (manual)for homogeneity of variance 
+#### Levene's Test (manual)for homogeneity of variance 
 Computationally we'd like to see if this assumption holds, we can use Levene's Test for this.
 
 Since the p-value is less than 0.05 we can conclude that there is enough evidence to conclude that we can reject the null hypothesis that states that the residual variances are equal. Hence we conclude that at least one residual variance is not equalt to the others.
@@ -229,6 +234,12 @@ __Conclusion is this assumption is met.__
 qqmath(model)
 ```
 
+
+
+## All in One of the Three Main Assumptions
+```{r}
+plot_model(model, type='diag')
+```
 
 ##notable lmers from the data
 ```{r}
