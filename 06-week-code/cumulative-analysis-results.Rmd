@@ -19,11 +19,12 @@ library(nlme)
 library(car) # for levene's test for Homo of Var
 #install.packages("car")
 require("lattice")
-install.packages("effects")
+#install.packages("effects")
 library(effects)
-install.packages("sjPlot")
+#install.packages("sjPlot")
 library(sjPlot)
-install.packages("glmmTMB")
+#install.packages("glmmTMB")
+
 ```
 ##data
 ```{r}
@@ -34,6 +35,7 @@ bit <- readRDS("../data/BIT_long_par.dta")
 demo <- readRDS("../data/demography.dta")
 media <- readRDS("../data/media_long.dta")
 grouping <- readRDS("../data/grouping_data.dta")
+#grouping_data <- readRDS(file = "../data/grouping_data.dta")
 #hhincome, pargen, childid, parid
 background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
 demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
@@ -53,13 +55,14 @@ bg_income <- background %>%
             child_id = as.character(childid),
             hhincome = as.numeric(hhincome),
             household_income = hhincome/1000,
-            father = as.logical(pargen))
+            father = as.logical(pargen),
+            years_of_education = as.numeric(bgz16))
 
 bg_age <- demographic_background %>% 
   zap_labels() %>% 
   transmute(par_id = as.character(parid),
             child_id = as.character(childid),
-            parent_age = as.numeric(parage),
+            par_age = as.numeric(parage),
             father = as.logical(pargen))
 
 
@@ -144,18 +147,97 @@ media_pls <- media_pls %>%
       wave,
       "Wave 1",
       "Wave 4",
-      "Wave 6"))
+      "Wave 6")) 
+
+#media_pls1 <- media_pls %>% 
+#  select(plspr, behavior_management, father,wave, treatment , par_age, years_school_complete, span_lang_form, child_id) %>% 
+#  na.omit()
+```
+
+#run this chunk for the data and model
+```{r}
+# copy from Chandra's 
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+
+
+# demo <- demo %>% 
+#   transmute(par_id, child_id, 
+#             bill_difficulty = as.factor(bill_difficulty),
+#             marital_status = as.factor(marital_status),
+#             assistance,
+#             father)
+
+#library(naniar)
+#vis_miss(demo)
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+pls %>% 
+  filter(wave == 6) %>% 
+  nrow()
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+media_pls <- media_pls %>% 
+  inner_join(transmute(demographic_background, par_age = parage,
+    child_id = as.character(childid),
+      par_id = as.character(parid)), by = c("child_id", "par_id"))
 
 media_pls1 <- media_pls %>% 
   select(plspr, behavior_management, father,wave, treatment , par_age, years_school_complete, span_lang_form, child_id) %>% 
   na.omit()
-```
 
-
-#final lmer model
-```{r}
 model <- media_pls1 %>% 
   lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+
+summary(model)
+```
+
+#ignore
+```{r}
+model <- media_pls %>% 
+  lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ household_income+ span_lang_form+ years_of_education + (1 | child_id), REML = FALSE, data = .)
 
 summary(model)
 ```
@@ -240,6 +322,39 @@ qqmath(model)
 ```{r}
 plot_model(model, type='diag')
 ```
+```{r}
+plot(model, which = 1:4)
+```
+
+https://sites.globalhealth.duke.edu/rdac/wp-content/uploads/sites/27/2020/08/Core-Guide_Correlation-Structures-in-Longitudinal-Data-Analysis_09-19-17.pdf
+
+"When data are positively correlated within individual, ignoring the correlation in the analysis (e.g., fitting
+an ordinary least squares linear regression) will lead to inflated type I error rates for time-independent
+variables (e.g., sex, race) because of underestimated standard errors and inflated type II error rates for
+time-dependent variables (e.g., the time effect, certain biologic measurements and weight)..
+4"
+ 
+* Modeling of different types of within-person correlation structures
+* correlation of repeated measures on the same individual can be accounted for by including random effects 𝜸 and by specifying a structure for G.
+* the commonly used ‘exchangeable’ (or compound
+symmetry) correlation structure, in which the same correlation is assumed for all pairs of measurements
+on the same person irrespective of their timing, can be modeled either by (1) including a random
+intercept for each person
+
+
+https://stats.stackexchange.com/questions/213719/r-default-correlation-in-nlmelme
+
+## No autocorrelation
+```{r}
+
+```
+
+
+## No Multicollinearity 
+```{r}
+
+```
+
 
 ##notable lmers from the data
 ```{r}
