@@ -1,0 +1,172 @@
+__Conclusion is this assumption is violated.__
+```{r}
+#checking Linearity
+model_linearity <- plot(resid(model),media_pls1$plspr)
+```
+
+### log transform on response still shows a pattern
+```{r}
+plot(resid(model),log(media_pls1$plspr))
+```
+
+### square transform on response still shows a pattern
+```{r}
+plot(resid(model),(media_pls1$plspr)^2)
+```
+
+```{r}
+#checking Linearity
+model_linearity <- plot(resid(model),(media_pls1$plspr)/2)
+```
+
+
+```{r}
+plot(resid(model),1/(media_pls1$plspr))
+#oof
+```
+
+```{r}
+plot(resid(model),(media_pls1$plspr))
+#oof
+```
+
+Now what if we say screw it and mess around with the inputs instead >:)
+
+So in terms of doing a log transform the only predictors that we are allowed to 
+do are behavior management, par_age, and years_school_complete
+```{r}
+#transform log behavior management
+model_2.0 <- media_pls1 %>% 
+  lmer(plspr ~ log(behavior_management)+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_2.0),(media_pls1$plspr))
+```
+
+```{r}
+#transform log par_age
+model_2.0 <- media_pls1 %>% 
+  lmer(plspr ~ behavior_management+ father+wave+ treatment + log(par_age)+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_2.0),(media_pls1$plspr))
+```
+
+```{r}
+#transform log years_school_complete
+model_2.0 <- media_pls1 %>% 
+  lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ log(years_school_complete)+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_2.0),(media_pls1$plspr))
+```
+
+```{r}
+#transform log all
+model_2.0 <- media_pls1 %>% 
+  lmer(plspr ~ log(behavior_management + par_age + years_school_complete)+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_2.0),(media_pls1$plspr))
+```
+
+
+__Well what about square root transform__
+
+```{r}
+#transform log all
+model_3.0 <- media_pls1 %>% 
+  lmer(plspr ~ sqrt(behavior_management + par_age + years_school_complete)+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_3.0),(media_pls1$plspr))
+```
+
+__Well what about 1/predictor__
+
+```{r}
+#transform log all
+model_3.0 <- media_pls1 %>% 
+  lmer(plspr ~ 1/(behavior_management + par_age + years_school_complete)+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_3.0),(media_pls1$plspr))
+```
+
+__well what about predictor/2__
+side note this code below does not work. sadge
+```{r}
+#transform 2/predict
+model_3.0 <- media_pls1 %>% 
+  lmer(plspr ~ behavior_management/2 + par_age/2 + years_school_complete/2+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_3.0),(media_pls1$plspr))
+```
+
+```{r}
+plot(resid(model),(media_pls1$plspr)) #original
+plot(resid(model),(media_pls1$plspr)/2) #useless
+plot(resid(model),log(media_pls1$plspr)) #change but bad
+plot(resid(model),sqrt(media_pls1$plspr))# not too shabby?
+plot(resid(model),1/(media_pls1$plspr)) #BAD
+
+```
+
+
+
+OKAY WAIT I HAVE AN IDEA, if we're changing the model output we can adjust the predictors by inverse!
+
+```{r}
+#sqrt:
+#transform sqrt all
+model_4.0 <- media_pls1 %>% 
+  lmer(plspr ~ (behavior_management + par_age + years_school_complete)^2+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#plot 
+plot(resid(model_4.0),sqrt(media_pls1$plspr))
+#HEyyyy, not too bad i think
+plot(resid(model),media_pls1$plspr)
+cor(resid(model),media_pls1$plspr)
+cor(resid(model_2.0),(media_pls1$plspr))
+
+```
+
+```{r}
+#log:
+#transform 10^ for all
+model_4.0 <- media_pls1 %>% 
+  lmer(plspr ~ 10^(behavior_management) + par_age + years_school_complete+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#note, this did not work
+#plot 
+plot(resid(model_4.0),log(media_pls1$plspr))
+#HEyyyy, not too bad i think
+```
+
+im losing hope so i guess we can try changing the predictor
+```{r}
+#log:
+model_5.0 <- media_pls1 %>% 
+  lmer(log(plspr) ~ behavior_management + par_age + years_school_complete+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#note, this did not work
+#plot 
+plot(resid(model_5.0),(media_pls1$plspr))
+#HEyyyy, not too bad i think
+cor(resid(model_5.0),(media_pls1$plspr))
+model_5.0
+```
+
+```{r}
+#sqrt:
+model_5.0 <- media_pls1 %>% 
+  lmer(sqrt(plspr) ~ (behavior_management + par_age + years_school_complete)^2+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#note, this did not work
+#plot 
+plot(resid(model_5.0),(media_pls1$plspr))
+#HEyyyy, not too bad i think
+cor(resid(model_5.0),(media_pls1$plspr))
+```
+
+```{r}
+#sqrt:
+model_5.0 <- media_pls1 %>% 
+  lmer(1/(plspr) ~ behavior_management + par_age + years_school_complete+ father+wave+ treatment + span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#note, this did not work
+#plot 
+plot(resid(model_5.0),(media_pls1$plspr))
+#HEyyyy, not too bad i think
+cor(resid(model_5.0),(media_pls1$plspr))
+```
+
