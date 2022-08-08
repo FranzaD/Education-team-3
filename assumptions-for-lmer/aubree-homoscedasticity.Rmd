@@ -133,5 +133,11 @@ Note there is a slight change in estimates and standard errors.
 plot(robustmodel)
 
 ```
+#What is robustness?
+Robust statistics is statistics with good performance for data drawn from a wide range of probability distributions, especially for distributions that are not normal. 
 
+#I Think
+The closer to 1 the better, because higher robustness, the better the performance.
 
+#All about the package I have been using 
+https://cran.r-project.org/web/packages/robustlmm/vignettes/rlmer.pdf 
