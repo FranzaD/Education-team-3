@@ -32,6 +32,8 @@ library(effects)
 #install.packages("sjPlot")
 library(sjPlot)
 #install.packages("glmmTMB")
+install.packages("robustlmm")
+library(robustlmm)
 ```
 
 #run this chunk for the data and model
@@ -114,5 +116,14 @@ model <- media_pls1 %>%
 summary(model)
 ```
 
+#Reestimate the model with robust errors
+```{r}
+robustmodel <- media_pls1 %>% 
+  rlmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+
+summary(robustmodel)
+```
+
+Note there is a slight change in estimates and standard errors. 
 
 
