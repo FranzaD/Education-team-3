@@ -1,0 +1,89 @@
+```{r}
+library(tidyverse)
+library(ggcorrplot)
+```
+
+
+```{r}
+# data prep
+pls <- readRDS("../data/pls_long_rank.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+media_wide <- readRDS("../data/media_wide.dta")
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id"))
+
+
+```
+
+## behavior management
+
+### correlation matrix
+```{r}
+media_wide %>% 
+  select(matches("^behavior")) %>% 
+  cor(use = "complete.obs")
+```
+
+### correlation graph
+```{r}
+media_wide %>% 
+  select(matches("^behavior")) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
+## plspr
+
+### correlation matrix
+```{r}
+media_pls %>% 
+  distinct() %>% 
+  select(par_id, plspr, wave) %>% 
+  pivot_wider(names_from = wave, 
+              values_from = plspr,
+              values_fill = NA,
+              names_prefix = "wave") %>% 
+  select(matches("^wave")) %>% 
+  cor(use = "complete.obs")
+```
+
+
+### correlation graph
+```{r}
+media_pls %>% 
+  distinct() %>% 
+  select(par_id, plspr, wave) %>% 
+  pivot_wider(names_from = wave, 
+              values_from = plspr,
+              values_fill = NA,
+              names_prefix = "wave") %>% 
+  select(matches("^wave")) %>% 
+  cor(use = "complete.obs") %>% 
+  ggcorrplot(hc.order = TRUE, type = "lower", outline.color = "white")
+```
+
