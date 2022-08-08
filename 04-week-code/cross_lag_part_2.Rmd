@@ -117,9 +117,9 @@ media_pls <- inner_join(pls_all, media_wide, by = c("child_id", "par_id"))
 # mealtime predicting auditory comprehension scores
 ```{r}
 #x across waves
-mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls)
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls)
 summary(mod1)
 #y across waves
 mod1 <- lm(auditory_comprehension_percentile.y ~ auditory_comprehension_percentile.x, data = media_pls)
@@ -127,23 +127,23 @@ summary(mod1)
 mod1 <- lm(auditory_comprehension_percentile ~ auditory_comprehension_percentile.y, data = media_pls)
 summary(mod1)
 #y ~x
-mod1 <- lm(auditory_comprehension_percentile.y ~ mealtimes.1 + auditory_comprehension_percentile.x, data = media_pls)
+mod1 <- lm(auditory_comprehension_percentile.y ~ behavior_management.1 + auditory_comprehension_percentile.x, data = media_pls)
 summary(mod1)
-mod1 <- lm(auditory_comprehension_percentile ~ mealtimes.4 + auditory_comprehension_percentile.y, data = media_pls)
+mod1 <- lm(auditory_comprehension_percentile ~ behavior_management.4 + auditory_comprehension_percentile.y, data = media_pls)
 summary(mod1)
 #x ~ y
-mod1 <- lm(mealtimes.4 ~ auditory_comprehension_percentile.x + mealtimes.1, data = media_pls)
+mod1 <- lm(behavior_management.4 ~ auditory_comprehension_percentile.x + behavior_management.1, data = media_pls)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ auditory_comprehension_percentile.y + mealtimes.4, data = media_pls)
+mod1 <- lm(behavior_management.6 ~ auditory_comprehension_percentile.y + behavior_management.4, data = media_pls)
 summary(mod1)
 ```
 
 # mealtime predicting expressive communication percentile 
 ```{r}
 #x across waves
-mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls)
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls)
 summary(mod1)
 #y across waves
 mod1 <- lm(expressive_communication_percentile.y ~ expressive_communication_percentile.x, data = media_pls)
@@ -151,23 +151,23 @@ summary(mod1)
 mod1 <- lm(expressive_communication_percentile ~ expressive_communication_percentile.y, data = media_pls)
 summary(mod1)
 #y ~x
-mod1 <- lm(expressive_communication_percentile.y ~ mealtimes.1 + expressive_communication_percentile.x, data = media_pls)
+mod1 <- lm(expressive_communication_percentile.y ~ behavior_management.1 + expressive_communication_percentile.x, data = media_pls)
 summary(mod1)
-mod1 <- lm(expressive_communication_percentile ~ mealtimes.4 + expressive_communication_percentile.y, data = media_pls)
+mod1 <- lm(expressive_communication_percentile ~ behavior_management.4 + expressive_communication_percentile.y, data = media_pls)
 summary(mod1)
 #x ~ y
-mod1 <- lm(mealtimes.4 ~ expressive_communication_percentile.x + mealtimes.1, data = media_pls)
+mod1 <- lm(behavior_management.4 ~ expressive_communication_percentile.x + behavior_management.1, data = media_pls)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ expressive_communication_percentile.y + mealtimes.4, data = media_pls)
+mod1 <- lm(behavior_management.6 ~ expressive_communication_percentile.y + behavior_management.4, data = media_pls)
 summary(mod1)
 ```
 
-#mealtimes predicting percentile rank 
+#behavior_management predicting percentile rank 
 ```{r}
 #x across waves
-mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls)
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls)
 summary(mod1)
 #y across waves
 mod1 <- lm(percentile_rank.y ~ percentile_rank.x, data = media_pls)
@@ -175,14 +175,14 @@ summary(mod1)
 mod1 <- lm(percentile_rank ~ percentile_rank.y, data = media_pls)
 summary(mod1)
 #y ~x
-mod1 <- lm(percentile_rank.y ~ mealtimes.1 + percentile_rank.x, data = media_pls)
+mod1 <- lm(percentile_rank.y ~ behavior_management.1 + percentile_rank.x, data = media_pls)
 summary(mod1)
-mod1 <- lm(percentile_rank ~ mealtimes.4 + percentile_rank.y, data = media_pls)
+mod1 <- lm(percentile_rank ~ behavior_management.4 + percentile_rank.y, data = media_pls)
 summary(mod1)
 #x ~ y
-mod1 <- lm(mealtimes.4 ~ percentile_rank.x + mealtimes.1, data = media_pls)
+mod1 <- lm(behavior_management.4 ~ percentile_rank.x + behavior_management.1, data = media_pls)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ percentile_rank.y + mealtimes.4, data = media_pls)
+mod1 <- lm(behavior_management.6 ~ percentile_rank.y + behavior_management.4, data = media_pls)
 summary(mod1)
 ```
 
@@ -193,14 +193,14 @@ intervention <- read_xlsx("../data/UMD_UCI Condition_7.20.22.xlsx") %>%
 media_pls <- full_join(media_pls, intervention, by = c("child_id"))
 ```
 
-#mealtimes predicting percentile rank 
+#behavior_management predicting percentile rank 
 ```{r}
 media_pls_both <- media_pls %>% 
-  filter(par_id >25000)
+  filter(Condition == "Dad")
 #x across waves
-mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_both)
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_both)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls_both)
 summary(mod1)
 #y across waves
 mod1 <- lm(percentile_rank.y ~ percentile_rank.x, data = media_pls_both)
@@ -208,25 +208,25 @@ summary(mod1)
 mod1 <- lm(percentile_rank ~ percentile_rank.y, data = media_pls_both)
 summary(mod1)
 #y ~x
-mod1 <- lm(percentile_rank.y ~ mealtimes.1 + percentile_rank.x, data = media_pls_both)
+mod1 <- lm(percentile_rank.y ~ behavior_management.1 + percentile_rank.x, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(percentile_rank ~ mealtimes.4 + percentile_rank.y, data = media_pls_both)
+mod1 <- lm(percentile_rank ~ behavior_management.4 + percentile_rank.y, data = media_pls_both)
 summary(mod1)
 #x ~ y
-mod1 <- lm(mealtimes.4 ~ percentile_rank.x + mealtimes.1, data = media_pls_both)
+mod1 <- lm(behavior_management.4 ~ percentile_rank.x + behavior_management.1, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ percentile_rank.y + mealtimes.4, data = media_pls_both)
+mod1 <- lm(behavior_management.6 ~ percentile_rank.y + behavior_management.4, data = media_pls_both)
 summary(mod1)
 ```
 
-#mealtimes predicting ec rank 
+#behavior_management predicting ec rank 
 ```{r}
 media_pls_both <- media_pls %>% 
-  filter(par_id >25000)
+  filter(Condition == "Dad")
 #x across waves
-mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_both)
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_both)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls_both)
 summary(mod1)
 #y across waves
 mod1 <- lm(expressive_communication_percentile.y ~ expressive_communication_percentile.x, data = media_pls_both)
@@ -234,25 +234,25 @@ summary(mod1)
 mod1 <- lm(expressive_communication_percentile ~ expressive_communication_percentile.y, data = media_pls_both)
 summary(mod1)
 #y ~x
-mod1 <- lm(expressive_communication_percentile.y ~ mealtimes.1 + expressive_communication_percentile.x, data = media_pls_both)
+mod1 <- lm(expressive_communication_percentile.y ~ behavior_management.1 + expressive_communication_percentile.x, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(expressive_communication_percentile ~ mealtimes.4 + expressive_communication_percentile.y, data = media_pls_both)
+mod1 <- lm(expressive_communication_percentile ~ behavior_management.4 + expressive_communication_percentile.y, data = media_pls_both)
 summary(mod1)
 #x ~ y
-mod1 <- lm(mealtimes.4 ~ expressive_communication_percentile.x + mealtimes.1, data = media_pls_both)
+mod1 <- lm(behavior_management.4 ~ expressive_communication_percentile.x + behavior_management.1, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ expressive_communication_percentile.y + mealtimes.4, data = media_pls_both)
+mod1 <- lm(behavior_management.6 ~ expressive_communication_percentile.y + behavior_management.4, data = media_pls_both)
 summary(mod1)
 ```
 
-#mealtimes predicting AC rank 
+#behavior_management predicting AC rank 
 ```{r}
 media_pls_both <- media_pls %>% 
-  filter(par_id >25000)
+  filter(Condition == "Dad")
 #x across waves
-mod1 <- lm(mealtimes.4 ~ mealtimes.1, data = media_pls_both)
+mod1 <- lm(behavior_management.4 ~ behavior_management.1, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ mealtimes.4, data = media_pls_both)
+mod1 <- lm(behavior_management.6 ~ behavior_management.4, data = media_pls_both)
 summary(mod1)
 #y across waves
 mod1 <- lm(auditory_comprehension_percentile.y ~ auditory_comprehension_percentile.x, data = media_pls_both)
@@ -260,13 +260,13 @@ summary(mod1)
 mod1 <- lm(auditory_comprehension_percentile ~ auditory_comprehension_percentile.y, data = media_pls_both)
 summary(mod1)
 #y ~x
-mod1 <- lm(auditory_comprehension_percentile.y ~ mealtimes.1 + auditory_comprehension_percentile.x, data = media_pls_both)
+mod1 <- lm(auditory_comprehension_percentile.y ~ behavior_management.1 + auditory_comprehension_percentile.x, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(auditory_comprehension_percentile ~ mealtimes.4 + auditory_comprehension_percentile.y, data = media_pls_both)
+mod1 <- lm(auditory_comprehension_percentile ~ behavior_management.4 + auditory_comprehension_percentile.y, data = media_pls_both)
 summary(mod1)
 #x ~ y
-mod1 <- lm(mealtimes.4 ~ auditory_comprehension_percentile.x + mealtimes.1, data = media_pls_both)
+mod1 <- lm(behavior_management.4 ~ auditory_comprehension_percentile.x + behavior_management.1, data = media_pls_both)
 summary(mod1)
-mod1 <- lm(mealtimes.6 ~ auditory_comprehension_percentile.y + mealtimes.4, data = media_pls_both)
+mod1 <- lm(behavior_management.6 ~ auditory_comprehension_percentile.y + behavior_management.4, data = media_pls_both)
 summary(mod1)
 ```
