@@ -155,3 +155,13 @@ wave 4 mt05c n=302, I would expect then approx 151 observations for this variabl
 
 Is it possoble another issue is that when calculating a mean if a value has NA the mean comes out as NA as well? We need to set the calculated means to ignore NA values.
   + no the number of non-na values match in the columns and the mean columns
+  
+  
+  
+  
+```{r}
+pls_long_mother <- read_dta("../data/PLS_long_father.dta")
+
+```
+  
+  
