@@ -1,0 +1,558 @@
+
+
+# Data
+
+##libraries
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(magrittr)
+library(ggcorrplot)
+library(viridis)
+
+
+library(tidyverse)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(nlme)
+```
+
+## data loading and wrangling
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+#hhincome, pargen, childid, parid
+background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+
+#changed bitsea wave 2 to wave 1 and bitsea from wave 5 to wave 4
+bit<- bit %>% 
+  mutate( wave = case_when(
+    wave == "2" ~ "Wave 1",
+    wave == "5" ~ "Wave 4",
+    wave == "6" ~ "Wave 6"),
+    wave = as.factor(wave)) %>% 
+  subset(!is.nan(BITcompavg), !is.nan(BITprobavg)) %>% 
+  transmute(child_id, wave, BITcompavg, BITprobavg)
+
+bg_income <- background %>% 
+  zap_labels() %>% 
+  transmute(par_id = as.character(parid),
+            child_id = as.character(childid),
+            hhincome = as.numeric(hhincome),
+            household_income = hhincome/1000,
+            father = as.logical(pargen))
+
+bg_age <- demographic_background %>% 
+  zap_labels() %>% 
+  transmute(par_id = as.character(parid),
+            child_id = as.character(childid),
+            parent_age = as.numeric(parage),
+            father = as.logical(pargen))
+
+
+# if hhincome isn't a good predictor let's include bill_difficulty
+demo <- demo %>% 
+   transmute(par_id, 
+             child_id, 
+             bill_difficulty = as.factor(bill_difficulty),
+             marital_status = as.factor(marital_status),
+             assistance,
+             father,
+             par_us_born,
+             highest_degree_completed,
+             span_lang_form)
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  zap_labels() %>% 
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+ 
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  mutate(wave = as.factor(wave)) #%>% 
+  #inner_join(bit_updated, by = c("child_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  filter(par_id >= 30000)
+
+media_pls <- media_pls %>% 
+  mutate(
+    treatment = case_when(
+    condition == "4" ~ " Control",
+    condition == "1" ~ " Mom",
+    condition == "2" ~ " Dad",
+    condition == "3" ~ " Both"),
+    treatment = fct_relevel(
+      treatment,
+      " Control",
+      " Mom",
+      " Dad",
+      " Both"),
+    wave = case_when(
+    wave == "1" ~ "Wave 1",
+    wave == "4" ~ "Wave 4",
+    wave == "6" ~ "Wave 6"),
+    wave = fct_relevel(
+      wave,
+      "Wave 1",
+      "Wave 4",
+      "Wave 6"))
+```
+
+
+
+# model
+```{r}
+model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+```
+
+Main Effect Additions to Model:
+Listed here are variables that need to be included in the model because they hold such important weight in the literature it’s non-negotiable
+ * Parent_education
+ * Parage
+ * Nativity and/or lang_form (look out for collinearity, if it exists too just much select one)
+ * Behavior_management
+
+
+```{r}
+#+ treatment + wave + par_us_born
+model <- lmer(plspr ~ behavior_management  + parent_age + father  + span_lang_form + year_school_complete + behavior_management:treatment + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+```
+
+```{r}
+summary(media_pls$highest_degree_completed)
+```
+#HERE main graph
+```{r}
+#hardly any difference b/w mothers and fathers (could test anova but the graph is pretty telling)
+g <- media_pls %>%
+  ggplot( aes(behavior_management, plspr)) +
+  geom_point(aes(color = behavior_management)) +
+  geom_smooth(method = "lm", color = "grey", size=0.7, se=FALSE) + 
+  facet_grid(treatment~wave) +
+  scale_color_viridis(option = "D") +
+  xlab("Media as Behavior Management Frequency") +
+  ylab("Infant Communication Skills") +
+  theme_minimal() +
+  ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
+
+g + theme(legend.position="none")
+```
+```{r}
+ggplot(media_pls, aes(behavior_management, plspr))+
+  geom_point(size = 1, aes(color = treatment)) +
+  geom_smooth(aes(color = treatment, fill = treatment), method = "lm") + 
+  scale_color_viridis(discrete = TRUE, option = "G")+
+  scale_fill_viridis(discrete = TRUE) +
+  facet_grid(treatment~wave)
+```
+
+
+```{r}
+g<-media_pls %>%
+  ggplot( aes(behavior_management, plspr, fill = treatment)) + 
+  geom_boxplot() +
+  geom_jitter() +
+  xlab("Media Used as a Tool for Behavior Management") +
+  ylab("Infant Communication Skills Percentile Rank") +
+  labs(color = "BB Treatment") +
+  facet_grid(~wave) +
+  theme_bw() +
+  ggtitle("Mean of PLS Percentile Rank across Waves Controlled by BB Treatment")
+
+g + scale_fill_brewer(palette="RdBu") 
+#later include year_school_complete and look at correlation
+```
+
+```{r}
+#order the treatment 
+ g <- media_pls %>%
+  mutate(treatment = fct_reorder(treatment, plspr, .fun='median')) %>%
+  ggplot( aes(x=reorder(treatment, plspr), y = plspr, fill = treatment)) + 
+  geom_boxplot() +
+  #geom_jitter() +
+  xlab("Media Used as a Tool for Behavior Management") +
+  ylab("Infant Communication Skills Percentile Rank") +
+  labs(color = "BB Treatment") +
+  facet_grid(~wave) +
+  theme_minimal() +
+  ggtitle("Mean of PLS Percentile Rank across Waves Controlled by BB Treatment")
+
+g
+#g + scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9")) 
+
+
+#reorder(class, hwy),
+#arrange(data, gclass)
+```
+
+
+```{r}
+media_pls%>%
+  ggplot() +
+  aes(x = wave, y = plspr, group = child_id, color = treatment) +
+  geom_point() +
+  geom_line() +
+  xlab("Waves (9mo and 24mo)") +
+  ylab("PLS Scores") +
+  ggtitle("Spaghetti Plot of PLS Scores") +
+  labs(color = "total_s") +
+  labs(color = "BB Treatment") +
+  theme_bw() +
+  facet_grid(father~treatment) +
+  theme(
+  #text = element_text(family = "Times"),
+  plot.title = element_text(hjust = 0.5)
+)
+```
+Is there a change in media management based of condition over time? 
+
+Since behavior management is observed by both mothers and fathers should we seperate
+```{r}
+# is there a change in media management based of condition over time?
+media_pls%>%
+  ggplot() +
+  aes(x = wave, y = behavior_management, group = child_id, color = treatment) +
+  geom_point() +
+  geom_line() +
+  xlab("Waves (9mo and 24mo)") +
+  ylab("Behavior Management") +
+  ggtitle("Spaghetti Plot of Behavior Management Scores") +
+  #labs(color = "total_s") +
+  #labs(color = "BB Treatment") +
+  theme_bw() +
+  facet_grid(father~treatment) +
+  theme(
+  text = element_text(family = "Times"),
+  plot.title = element_text(hjust = 0.5)
+)
+```
+
+#Main ANOVA Tests
+```{r}
+bm_cond_w <- aov(behavior_management ~ treatment + wave, media_pls)
+summary(bm_cond_w)
+
+pl_cond_w <- aov(plspr ~ treatment + wave + treatment:wave, media_pls)
+summary(pl_cond_w)
+
+```
+```{r}
+tukey.test <- TukeyHSD(bm_cond_w)
+plot(tukey.test)
+
+
+TukeyHSD(bm_cond_w)
+```
+
+```{r}
+tukey.test <- TukeyHSD(pl_cond_w)
+plot(tukey.test)
+
+
+TukeyHSD(pl_cond_w)
+```
+```{r}
+g <- media_pls %>%
+  ggplot( aes(behavior_management, plspr)) +
+  geom_point(aes(color = behavior_management)) +
+  geom_smooth(method = "lm", color = "grey", size=0.7, se=FALSE) + 
+  facet_grid(treatment~wave) +
+  scale_color_viridis(option = "D") +
+  xlab("Media as Behavior Management Frequency") +
+  ylab("Infant Communication Skills") +
+  theme_minimal() +
+  ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
+
+g + theme(legend.position="none")
+```
+```{r}
+t <- media_pls %>% 
+ggplot( aes(plspr, fill = treatment, color = treatment)) +
+  geom_density(alpha =  0.1) +
+  #geom_histogram(bins = 30) +
+  facet_grid(treatment~wave) +
+  theme_light()
+
+t + geom_vline(aes(xintercept=mean(plspr), fill = treatment), color="grey", linetype="dashed", size=1)
+```
+#HERE behavior management
+
+```{r}
+#trying to implement mean line in graph, can't figure it out for now
+dummy <- media_pls %>%
+  group_by( wave, treatment) %>%
+  summarize(mean = mean(behavior_management))
+
+media_pls %>% 
+ggplot( aes(x = behavior_management, fill = treatment)) +
+  geom_density(alpha = 0.3) +
+  #geom_histogram(bins = 30) +
+  facet_grid(~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Density") +
+  theme_bw()
+  #geom_line(data = dummy, aes(xintercept = mean, color = treatment))
+#na.rm = TRUE
+
+```
+```{r}
+#trying to do color blind friendly plots
+d <- media_pls %>% 
+ggplot( aes(x = behavior_management, fill = treatment)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(position = "dodge", bins =  10, alpha = 0.8) +
+  facet_grid(~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Counts") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+```{r}
+#trying to do color blind friendly plots
+d <- media_pls %>% 
+ggplot( aes(x = plspr, fill = treatment)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(binwidth = 5, position = "dodge",alpha = 0.7) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Infant Communication by BB Treatment Across Waves")+
+  xlab("Percentile Rank of Infant Communication Skills") + 
+  ylab("Counts") +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+
+```{r}
+#, colour = manufacturer
+#geom_density() +
+#, scales = "free_x"
+
+t <- media_pls %>% 
+ggplot( aes(x = plspr, fill = treatment)) +
+  geom_density(alpha =  0.7) +
+  #geom_histogram(binwidth = 5, position = "dodge",alpha = 0.7) +
+  facet_grid( treatment~wave) +
+  ggtitle("Distributions of Infant Communication by BB Treatment Across Waves")+
+  xlab("Percentile Rank of Infant Communication Skills") + 
+  ylab("Density") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+t + scale_fill_viridis_d()
+```
+
+```{r}
+t <- media_pls %>% 
+ggplot( aes(x = behavior_management, fill = treatment)) +
+  geom_density() +
+  #geom_histogram(bins = 30) +
+  facet_grid( treatment~wave)
+
+t + geom_vline(aes(xintercept=mean(plspr), fill = treatment), color="grey", linetype="dashed", size=1)
+```
+
+This anova table says there isn't enough evidence to conclude that mean behavior management within each treatment category are different from one another
+
+Also, one mean of behavior_management across the different waves
+
+##### Contingency Table of CHANGE in PLS and daily use Rec/Not Rec
+
+```{r}
+cont_table_bm_cond_w <- table(media_pls$treatment, media_pls$wave)
+cont_table_bm_cond_w
+```
+
+##### Chi-Squared Test of Indepdendence
+
+H0: pls_change and daily_use are independent (unrelated)
+H1: PLs_change and daily_use are dependent (related)
+
+```{r}
+chisq.test(anova_table_no_double$pls_change_cat, anova_table_no_double$daily_use_cat)
+```
+
+# ANOVA on media
+
+##tv ~ trt + wave
+```{r}
+tv_cond_w <- aov(tv_exposure ~ treatment + wave, media_pls)
+summary(tv_cond_w)
+```
+##parent_age ~ trt + wave
+```{r}
+tv_cond_w <- aov(parent_age ~ treatment + wave, media_pls)
+summary(tv_cond_w)
+```
+##mealtimes ~ trt + wave
+```{r}
+ml_cond_w <- aov(mealtimes ~ treatment + wave, media_pls)
+summary(ml_cond_w)
+```
+##digital_babysitting ~ trt + wave
+```{r}
+db_cond_w <- aov(digital_babysitting ~ treatment + wave, media_pls)
+summary(db_cond_w)
+```
+##positive_beliefs_media ~ trt + wave
+```{r}
+pb_cond_w <- aov(positive_beliefs_media ~ treatment + wave, media_pls)
+summary(pb_cond_w)
+```
+##solo ~ trt + wave
+```{r}
+solo_cond_w <- aov(solo ~ treatment + wave, media_pls)
+summary(solo_cond_w)
+```
+##passive ~ trt + wave
+```{r}
+pass_cond_w <- aov(passive ~ treatment + wave, media_pls)
+summary(pass_cond_w)
+```
+##coop ~ trt + wave
+```{r}
+coop_cond_w <- aov(coop ~ treatment + wave, media_pls)
+summary(coop_cond_w)
+```
+##discipline_behavior_management ~ trt + wave
+```{r}
+dbm_cond_w <- aov(discipline_behavior_management ~ treatment + wave, media_pls)
+summary(dbm_cond_w)
+```
+
+#ANOVA on bitsea 
+
+##bitprobavg ~ trt + wave
+```{r}
+bpa_cond_w <- aov(BITprobavg ~ treatment + wave, media_pls)
+summary(bpa_cond_w)
+```
+##bitcompavg ~ trt + wave
+```{r}
+bca_cond_w <- aov(BITcompavg ~ treatment + wave, media_pls)
+summary(bca_cond_w)
+```
+
+## BITSEA Histograms
+```{r}
+d <- media_pls %>% 
+ggplot( aes(x = BITprobavg, fill = wave)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(position = "dodge", bins =  30, alpha = 0.8) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Counts") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+According to this diagram above, BITSEA measurements haven't been paired with their corresponding treatments based on child id, why would this be?
+
+```{r}
+d <- media_pls %>% 
+ggplot( aes(x = BITcompavg, fill = wave)) +
+  #geom_density(alpha = 0.3) +
+  geom_histogram(position = "dodge", bins =  30, alpha = 0.7) +
+  facet_grid(~wave) +
+  ggtitle("Distributions of Media as Behavior Management by BB Treatment Across Waves")+
+  xlab("Media as Behavior Management") + 
+  ylab("Counts") +
+  guides(fill=guide_legend(title="BB Treatment")) +
+  theme_bw()
+
+d + scale_fill_viridis_d()
+```
+```{r}
+media_pls %>% 
+ggplot( aes(BITcompavg, fill = wave, color = wave)) +
+  geom_density(alpha =  0.1) +
+  #geom_histogram(bins = 30) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Avg Social-Emo Compentencies by BB Treatment Across Waves")+
+  xlab("Average Social-Emotional Competencies") + 
+  ylab("Density") +
+  theme_light()
+```
+```{r}
+media_pls %>% 
+ggplot( aes(BITprobavg, fill = wave, color = wave)) +
+  geom_density(alpha =  0.1) +
+  #geom_histogram(bins = 30) +
+  facet_grid(treatment~wave) +
+  ggtitle("Distributions of Avg Social-Emo Problems by BB Treatment Across Waves")+
+  xlab("Average social-emotional problems") + 
+  ylab("Density") +
+  theme_light()
+```
+
+#ANOVA on pls
+
+##plsEcpr ~ trt + wave
+```{r}
+plsepr_cond_w <- aov(plsecpr ~ treatment + wave, media_pls)
+summary(plsepr_cond_w)
+```
+##plsAcpr ~ trt + wave
+```{r}
+plsapr_cond_w <- aov(plsacpr ~ treatment + wave, media_pls)
+summary(plsapr_cond_w)
+```
+
+

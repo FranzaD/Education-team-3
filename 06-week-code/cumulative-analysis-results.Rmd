@@ -1,0 +1,436 @@
+This is a document for us to compile all significant findings from our research this summer.
+
+# libraries
+```{r}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(magrittr)
+library(ggcorrplot)
+library(viridis)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(nlme)
+library(car) # for levene's test for Homo of Var
+#install.packages("car")
+require("lattice")
+#install.packages("effects")
+library(effects)
+#install.packages("sjPlot")
+library(sjPlot)
+#install.packages("glmmTMB")
+
+```
+##data
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+#grouping_data <- readRDS(file = "../data/grouping_data.dta")
+#hhincome, pargen, childid, parid
+background <- read_dta("../data/wave-1-(9-mo)/2_BCK_w1.dta")
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+
+bit<- bit %>% 
+  mutate( wave = case_when(
+    wave == "2" ~ "Wave 1",
+    wave == "5" ~ "Wave 4",
+    wave == "6" ~ "Wave 6"),
+    wave = as.factor(wave)) %>% 
+  subset(!is.nan(BITcompavg), !is.nan(BITprobavg)) %>% 
+  transmute(child_id, wave, BITcompavg, BITprobavg)
+
+bg_income <- background %>% 
+  zap_labels() %>% 
+  transmute(par_id = as.character(parid),
+            child_id = as.character(childid),
+            hhincome = as.numeric(hhincome),
+            household_income = hhincome/1000,
+            father = as.logical(pargen),
+            years_of_education = as.numeric(bgz16))
+
+bg_age <- demographic_background %>% 
+  zap_labels() %>% 
+  transmute(par_id = as.character(parid),
+            child_id = as.character(childid),
+            par_age = as.numeric(parage),
+            father = as.logical(pargen))
+
+
+# if hhincome isn't a good predictor let's include bill_difficulty
+demo <- demo %>% 
+   transmute(par_id, 
+             child_id, 
+             bill_difficulty = as.factor(bill_difficulty),
+             marital_status = as.factor(marital_status),
+             assistance,
+             father,
+             par_us_born,
+             highest_degree_completed,
+             span_lang_form)
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  zap_labels() %>% 
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+ 
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  mutate(wave = as.factor(wave)) #%>% 
+  #inner_join(bit_updated, by = c("child_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  inner_join(bg_age, by = c("child_id", "par_id")) %>% 
+  inner_join(bg_income, by = c("child_id", "par_id")) %>% 
+  filter(par_id >= 30000)
+
+media_pls <- media_pls %>% 
+  mutate(
+    treatment = case_when(
+    condition == "4" ~ " Control",
+    condition == "1" ~ " Mom",
+    condition == "2" ~ " Dad",
+    condition == "3" ~ " Both"),
+    treatment = fct_relevel(
+      treatment,
+      " Control",
+      " Mom",
+      " Dad",
+      " Both"),
+    wave = case_when(
+    wave == "1" ~ "Wave 1",
+    wave == "4" ~ "Wave 4",
+    wave == "6" ~ "Wave 6"),
+    wave = fct_relevel(
+      wave,
+      "Wave 1",
+      "Wave 4",
+      "Wave 6")) 
+
+#media_pls1 <- media_pls %>% 
+#  select(plspr, behavior_management, father,wave, treatment , par_age, years_school_complete, span_lang_form, child_id) %>% 
+#  na.omit()
+```
+
+#run this chunk for the data and model
+```{r}
+# copy from Chandra's 
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+
+
+# demo <- demo %>% 
+#   transmute(par_id, child_id, 
+#             bill_difficulty = as.factor(bill_difficulty),
+#             marital_status = as.factor(marital_status),
+#             assistance,
+#             father)
+
+#library(naniar)
+#vis_miss(demo)
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+pls %>% 
+  filter(wave == 6) %>% 
+  nrow()
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+media_pls <- media_pls %>% 
+  inner_join(transmute(demographic_background, par_age = parage,
+    child_id = as.character(childid),
+      par_id = as.character(parid)), by = c("child_id", "par_id"))
+
+media_pls1 <- media_pls %>% 
+  select(plspr, behavior_management, father,wave, treatment , par_age, years_school_complete, span_lang_form, child_id) %>% 
+  na.omit()
+
+model <- media_pls1 %>% 
+  lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+
+summary(model)
+```
+
+#ignore
+```{r}
+model <- media_pls %>% 
+  lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ household_income+ span_lang_form+ years_of_education + (1 | child_id), REML = FALSE, data = .)
+
+summary(model)
+```
+Explanation:
+
+
+# Checking final lmer model assumptions
+
+## Linearity
+Good case is if there is a random pattern in the scatter of the data, since there is a patter this suggests we need to transform the predictor or a response.
+
+Log, square, and exp on the response to not yeild a random scatter plot. 
+
+__Conclusion is this assumption is violated.__
+```{r}
+#checking Linearity
+model_linearity <- plot(resid(model),media_pls1$plspr)
+```
+
+### log transform on response still shows a pattern
+```{r}
+plot(resid(model),log(media_pls1$plspr))
+```
+
+### square transform on response still shows a pattern
+```{r}
+plot(resid(model),(media_pls1$plspr)^2)
+```
+```{r}
+#checking Linearity
+model_linearity <- plot(resid(model),(media_pls1$plspr)/2)
+```
+
+
+## Homogeneity of Variance
+Regression assumes variance of residuals is equal for every individual
+
+In the residual vs fitted graph we would expect to find an even spread around the center line.
+
+__Conclusion is this assumption is Violated.__
+```{r}
+plot(model)
+```
+
+#### Levene's Test (manual)for homogeneity of variance 
+Computationally we'd like to see if this assumption holds, we can use Levene's Test for this.
+
+Since the p-value is less than 0.05 we can conclude that there is enough evidence to conclude that we can reject the null hypothesis that states that the residual variances are equal. Hence we conclude that at least one residual variance is not equalt to the others.
+__Conclusion is this assumption is violated.__
+```{r}
+media_pls1$model_residuals<- residuals(model) #extracts the residuals and places them in a new column in our original data table
+media_pls1$abs_model_residuals <- abs(media_pls1$model_residuals) #creates a new column with the absolute value of the residuals
+media_pls1$model_residuals_squared <- media_pls1$abs_model_residuals ^2 #squares the absolute values of the residuals to provide the more robust estimate
+levene_model <- lm(model_residuals_squared ~ child_id, data=media_pls1) #ANOVA of the squared residuals
+anova(levene_model) #displays the results
+```
+### Levene's Test (Automatic) for Homogeneity of Variance
+potentially get back to this
+```{r}
+# Levene's test with multiple independent variables
+#leveneTest(len ~ supp*dose, data = media_pls1)
+```
+
+### Bartlett's for homogeneity of variance
+https://www.datanovia.com/en/lessons/homogeneity-of-variance-test-in-r/
+```{r}
+#maybe for later
+
+
+```
+## Residuals of Model are Normally Distributed
+QQplots provide a estimation of where the standardized residuals lie with respect to the normal quantiles, strong deviation from the line indicates the residuals are not normally distributed.
+
+__Conclusion is this assumption is met.__
+```{r}
+qqmath(model)
+```
+
+
+
+## All in One of the Three Main Assumptions
+```{r}
+plot_model(model, type='diag')
+```
+```{r}
+plot(model, which = 1:4)
+```
+
+https://sites.globalhealth.duke.edu/rdac/wp-content/uploads/sites/27/2020/08/Core-Guide_Correlation-Structures-in-Longitudinal-Data-Analysis_09-19-17.pdf
+
+"When data are positively correlated within individual, ignoring the correlation in the analysis (e.g., fitting
+an ordinary least squares linear regression) will lead to inflated type I error rates for time-independent
+variables (e.g., sex, race) because of underestimated standard errors and inflated type II error rates for
+time-dependent variables (e.g., the time effect, certain biologic measurements and weight)..
+4"
+ 
+* Modeling of different types of within-person correlation structures
+* correlation of repeated measures on the same individual can be accounted for by including random effects 𝜸 and by specifying a structure for G.
+* the commonly used ‘exchangeable’ (or compound
+symmetry) correlation structure, in which the same correlation is assumed for all pairs of measurements
+on the same person irrespective of their timing, can be modeled either by (1) including a random
+intercept for each person
+
+
+https://stats.stackexchange.com/questions/213719/r-default-correlation-in-nlmelme
+
+## No autocorrelation
+```{r}
+
+```
+
+
+## No Multicollinearity 
+```{r}
+
+```
+
+
+##notable lmers from the data
+```{r}
+
+```
+Explanation:
+
+##cross-lagged associations using lm
+```{r}
+
+```
+Explanation:
+
+#significant ANOVA model
+```{r}
+pl_cond_w <- aov(plspr ~ treatment + wave + treatment:wave, media_pls)
+summary(pl_cond_w)
+
+tukey.test <- TukeyHSD(pl_cond_w)
+plot(tukey.test)
+
+
+TukeyHSD(pl_cond_w)
+```
+Explanation:
+
+##notable ANOVA models
+```{r}
+
+```
+Explanation:
+
+# main data visualizations
+```{r}
+library(MuMIn)
+MuMIn::r.squaredGLMM(model)
+media_pls1 %>%
+#  mutate(pred = predict(model, newdata = media_pls)) %>%
+  ggplot(aes(plspr, predict(model, newdata = media_pls1))) +
+  geom_point() +
+  geom_abline(intercept = 0,
+              slope = 1,
+              col = "salmon") +  
+  scale_y_continuous(expand=c(0,0), limits = c(0, 100))+
+  scale_x_continuous(expand=c(0,0), limits = c(0, 100))+
+  theme_bw()+
+  labs(y = "Acutal Total PLS Percentile Rank",
+       x = "Predicted Total PLS Percentile Rank",
+       title = "Actual vs Predicted PLS Percentile Rank",
+       caption = "Correlation: 0.819")
+
+cor(media_pls1$plspr, predict(model, newdata = media_pls1))
+
+library(equatiomatic)
+```
+Explanation:
+
+```{r}
+#hardly any difference b/w mothers and fathers (could test anova but the graph is pretty telling)
+g <- media_pls %>%
+  ggplot( aes(behavior_management, plspr)) +
+  geom_point(aes(color = behavior_management)) +
+  geom_smooth(method = "lm", color = "grey", size=0.7, se=FALSE) + 
+  facet_grid(treatment~wave) +
+  scale_color_viridis(option = "D") +
+  xlab("Media as Behavior Management Frequency") +
+  ylab("Infant Communication Skills") +
+  theme_minimal() +
+  ggtitle("Infant Communication Skills and Media as Behavior Management Across Waves")
+
+g + theme(legend.position="none")
+```
+Explanation:
+
+## notable data visualizations
+```{r}
+
+```
+

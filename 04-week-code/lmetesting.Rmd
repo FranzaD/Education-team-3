@@ -1,0 +1,372 @@
+
+```{r library}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(magrittr)
+library(ggcorrplot)
+```
+
+# Data 
+```{r}
+media_data <- readRDS(file="../data/media_data.dta")
+demography <- readRDS(file="../data/demography.dta")
+
+bit_long_par <- readRDS(file="../data/BIT_long_par.dta")
+bit_long_father <- readRDS(file="../data/BIT_long_father.dta")
+bit_long_mother <- readRDS(file="../data/BIT_long_mother.dta")
+
+bit_wide <- readRDS(file="../data/BIT_wide.dta")
+
+media_long <- readRDS(file="../data/media_long.dta")
+media_wide <- readRDS(file="../data/media_wide.dta")
+
+pls_wide <- readRDS(file="../data/PLS_wide_mother.dta")
+pls_wide_father <- readRDS(file="../data/PLS_wide_father.dta")
+pls_long <- readRDS(file="../data/PLS_long_mother.dta")
+pls_long_father <- readRDS(file="../data/PLS_long_father.dta")
+```
+
+
+```{r}
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+glimpse(media_pls)
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) 
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+glimpse(demo)
+demo <- demo %>% 
+  transmute(par_id, child_id, 
+            bill_difficulty = as.factor(bill_difficulty),
+            marital_status = as.factor(marital_status),
+            assistance,
+            father)
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+glimpse(media_pls)
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) 
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+
+
+```
+
+
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+
+# demo <- demo %>% 
+#   transmute(par_id, child_id, 
+#             bill_difficulty = as.factor(bill_difficulty),
+#             marital_status = as.factor(marital_status),
+#             assistance,
+#             father)
+
+#library(naniar)
+#vis_miss(demo)
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000, wave == 6, plspr != "NA", treatment == "mom") 
+
+
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+#table for michelle
+michelle <- media_pls %>% 
+  transmute(child_id, par_id, father, behavior_management, wave)
+```
+
+## Data for lmer assumption checking
+
+```{r}
+pls <- readRDS("../data/pls_long_rank.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+media <- readRDS("../data/media_long.dta") %>% glimpse()
+
+pls <- pls %>% 
+  mutate(child_id = as.character(child_id))
+
+pls_cond <- pls %>% 
+  inner_join(grouping, by = c("child_id"))
+
+bm <- media %>% 
+  select(child_id, par_id, behavior_management, wave)
+
+bm_cond <- media %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  select(child_id, par_id, behavior_management, condition)
+
+# pls by wave
+pls_w1 <- pls %>% 
+  filter(wave == 1) 
+pls_w4 <- pls %>%
+  filter(wave == 4)
+pls_w6 <- pls %>% 
+  filter(wave == 6)
+
+
+# pls by condition
+pls_cond_1 <- pls_cond %>%
+  filter(condition == 1)
+pls_cond_2 <- pls_cond %>%
+  filter(condition == 2)
+pls_cond_3 <- pls_cond %>%
+  filter(condition == 3)
+pls_cond_4 <- pls_cond %>%
+  filter(condition == 4)
+
+
+# behavior management by wave
+bm_w1 <- bm %>%
+  filter(wave == 1)
+bm_w4 <- bm %>%
+  filter(wave == 4)
+bm_w6 <- bm %>%
+  filter(wave == 6)
+
+# behavior management by condition
+bm_cond_1 <- bm_cond %>% 
+  filter(condition == 1)
+bm_cond_2 <- bm_cond %>% 
+  filter(condition == 1)
+bm_cond_3 <- bm_cond %>% 
+  filter(condition == 1)
+bm_cond_4 <- bm_cond %>% 
+  filter(condition == 1)
+
+
+```
+
+# Assumptions for LMER
+__We are currently dealing Linear-Mixed Effects Model with a Random Intercept (child_id) with a triple interaction term and a categorical fixed effect__
+
+  1. Positively Correlated Clustered Measurements (Ex: mealtimes_w1 v mealtimes_w4) (a)
+  2. Normality Distribution of Model Residuals/Error (c)
+        + may apply a transform to achieve this
+  3. Homoscedasiticity/Homogeneity of Residuals/Error Variance (b & c)
+        + (same thing?) Constant Variance b/w Transformed Residuals & Transformed Predicted Value
+  4. No autocorrelation (b)
+  5. No Multicollinearity (b)
+  
+References:
+  a. https://link.springer.com/article/10.1007/s41237-020-00130-8#:~:text=The%20LME%20incorrectly%20assumed%20a,estimated%20SEs%20under%20both%20models.
+  b. https://bookdown.org/animestina/phd_july_19/testing-the-assumptions.html
+  c. STATS 112 HW4
+
+## Positively Correlated Clustered Measurements
+Response: 
+* plspr
+
+Clustered by: 
+* Wave (3 levels)
+* Condition (4 levels)
+* father
+
+Data Variables Needed:
+
+__Table 1:__
+(Key) child_id
+1. plspr_w1
+2. plspr_w4
+3. plspr_w6
+
+```{r}
+
+
+corr_pls_wave <-
+```
+
+
+__Table 2:__
+(Key) child_id
+4. plspr_cond1
+5. plspr_cond2
+6. plspr_cond3
+7. plspr_cond4
+
+__Table 3:__
+(Key) child_id
+8. behavior_management_w1
+9. behavior_management_w4
+10. behavior_management_w6
+
+__Table 4:__
+(Key) child_id
+4. behavior_management_cond1
+5. behavior_management_cond2
+6. behavior_management_cond3
+7. behavior_management_cond4
+
+__Table 5:__
+(Key) child_id
+4. behavior_management_fatherTRUE
+5. behavior_management_fatherFALSE
+
+```{r}
+
+```
+
+Questions:
+1. Do we need to include behavior-management in this analysis to see if it's positively correlated b/w clusters
+  + "it assumes that observations within clusters are always positively correlated" (d)
+  + based on that this statement we probably should check behavior management
+  
+References: 
+ d. https://www.researchgate.net/publication/348750306_Small_and_negative_correlations_among_clustered_observations_limitations_of_the_linear_mixed_effects_model
+## Normality Distribution of Model Residuals/Error (c)
+
+## Homoscedasiticity/Homogeneity of Residuals/Error Variance (b & c)
+
+## No autocorrelation (b)
+
+## No Multicollinearity (b)
+
+
+# Final Model
+```{r}
+# final significant found before we got tired
+model <- lmer(plspr ~ behavior_management:father:wave + condition + (1 | child_id), REML = FALSE, data = media_pls)
+
+summary(model)
+```
+
+
+
+# EDA
+```{r}
+ggplot(cplm_data,
+       aes(x = ml_w1,
+           y = ml_w4))  +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+  
+ggplot(cplm_data,
+       aes(x = acpr_w1,
+           y = acpr_w4))  +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+```{r}
+#correlation matrix of just mealtimes and auditory comprehension across all waves
+corrplot(cor(cplm_data[,3:10]), order = "original", tl.col='black', tl.cex=.75) 
+```
+Need wide format data of all waves for (indented means variables have been included): 
+ *    mealtimes 
+ * behavior management
+ * daily_use
+ * total_score
+ *    auditory_comprehension
+ * expressive_communication
+ * social-emotional_problem
+ * social_emotional_competencies
+
+Expressive Communication
+```{r}
+
+```
+
+IDEA to consider if everything is bad:
+Take average of each variable across all time points and assign clusters based off condition, see if correlations are positive then maybe we can build a model based off that instead of across waves.
