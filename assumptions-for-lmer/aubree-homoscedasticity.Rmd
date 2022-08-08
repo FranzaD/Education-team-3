@@ -32,7 +32,10 @@ library(effects)
 #install.packages("sjPlot")
 library(sjPlot)
 #install.packages("glmmTMB")
-install.packages("robustlmm")
+#install.packages("robustlmm")
+#type in "no" when the question comes up. 
+
+
 library(robustlmm)
 ```
 
@@ -125,5 +128,10 @@ summary(robustmodel)
 ```
 
 Note there is a slight change in estimates and standard errors. 
+
+```{r}
+plot(robustmodel)
+
+```
 
 
