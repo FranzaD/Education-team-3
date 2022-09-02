@@ -1,0 +1,40 @@
+---
+title: "mothers-fathers-EDA"
+author: "Deborah Franza"
+date: "2022-09-02"
+output: html_document
+---
+
+#### Purpose of this file:
+
+To showcase previous work that is applicable to current problem statements and build more EDA to be able to answer the questions Dr. Reich specified:
+
+---
+#### Problem Statements:
+
+1.How do new mothers’ and fathers’ parenting practices around media align when their first child is 9 (W1) and 24 (W6) months of age?
+
+2.How do mothers’ and fathers’ parenting around media relate to their child’s development of language, social skills and behavior problems?
+
+    a.Do mothers’ and fathers’ parenting around media differentially predict child outcomes?
+    
+* PI wants to describe how parents agree/disagree on how they let their infants use media/ are exposed to media
+
+---
+
+#### Question for PI:
+
+How are we quantifying parenting styles?
+  * basing reponses off the MEDIA, TECHNOLOGY, AND YOUNG CHILDREN QUESTIONNAIRE?
+  
+
+#### Tasks:
+1. determining techniques for analysis (graphs, statistics, statistical tests)
+2. partitioning work effectively
+3. gathering previous relevant work and building off of it
+4. Consicely interpret the results of our findings
+5. Clarify what specific variables Dr. Reich is interested in
+    -  averages of media assessment questions
+6. Clarify that she wants to be able to describe how parents agree/disagree on how they let their infants use media/ are exposed to media
+
+#### Previous Work Relevant Towards Problem Statements| Dataframes | EDA | Statistical Tests
