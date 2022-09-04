@@ -25,6 +25,13 @@ summary(solodiff)
 ```
 There is a difference between what mothers report and what fathers report for "solo" between the waves
 
+Tukey Test for differences between parent and wave for "solo"
+```{r}
+summaTukeyHSD(solodiff)
+```
+
+
+
 
 Difference between mom and dad for coop in wave 1
 #par_id > 30,000 then it is male 
