@@ -9,6 +9,9 @@ library(nlme)
 ```{r}
 ## data
 data <- readRDS("../data/media_long.dta")
+
+data <- data %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother"))
 ```
 
 
