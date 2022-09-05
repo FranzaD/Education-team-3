@@ -265,7 +265,7 @@ We lost parents between wave 1 and wave 6, this is expected however it's importa
 
 ## Parents Average Positive Media Beliefs
 
-### Interaction Plot 
+##### Interaction Plot 
 ```{r}
 data %>% 
   ggplot() +
@@ -278,7 +278,7 @@ data %>%
 Observations:
 On average fathers had higher positive beliefs about media than mothers did, we see this relationship consistently in wave 1 and 6. Another general trend is that positive beliefs increase for both parent gender is the later wave (as the child gets older).
 
-### Boxplot/Violin plot 
+##### Boxplot/Violin plot 
 ```{r}
 data %>% 
 ggplot() +
@@ -295,7 +295,7 @@ There is a fair amount of overlap of ratings of parents positive beliefs about m
 
 ## Parents Average Educational Media Benefit Beliefs
 
-### Interaction Plot
+##### Interaction Plot
 ```{r}
 data %>% 
   ggplot() +
@@ -308,7 +308,7 @@ data %>%
 Observations:
 A similar trend where on average fathers consistently have higher beliefs in media education than mothers across waves 1 and 6.
 
-### Boxplot/Violin plot
+##### Boxplot/Violin plot
 ```{r}
 data %>% 
 ggplot() +
