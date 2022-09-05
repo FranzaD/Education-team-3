@@ -1,0 +1,106 @@
+---
+title: "Differences in parenting practices wave 1"
+author: "Chandra Lindy"
+date: '2022-09-03'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+media_w1 <- readRDS("data/media_wave_1.dta")
+media_w6 <- readRDS("data/media_wave_6.dta")
+```
+
+```{r eval=FALSE, include=FALSE}
+colnames(media_w1)
+```
+
+
+```{r echo = F}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>% 
+  ggplot(aes(solo, fill = parent)) +
+  geom_bar(position = "dodge")
+```
+
+```{r echo = F}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>% 
+  ggplot(aes(coop, fill = parent)) +
+  geom_bar(position = "dodge")
+```
+
+```{r echo = F}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>% 
+  ggplot(aes(digital_babysitting, fill = parent)) +
+  geom_bar(position = "dodge")
+```
+
+```{r echo = F}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>%  
+  ggplot(aes(mealtimes, fill = parent)) +
+  geom_bar(position = "dodge")
+```
+
+```{r echo = F}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>% 
+  ggplot(aes(daily_use, fill = parent)) +
+  geom_bar(position = "dodge")
+```
+
+```{r}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>% 
+  group_by(parent) %>% 
+  summarize(solo = mean(solo),
+            coop = mean(coop),
+            tv_exposure = mean(tv_exposure),
+            passive = mean(passive),
+            mealtimes = mean(mealtimes),
+            behavior_management = mean(behavior_management),
+            digital_babysitting = mean(digital_babysitting),
+            daily_use = mean(daily_use)) %>% 
+  pivot_longer(!parent, names_to = "practice", values_to = "mean") %>% 
+  ggplot(aes(practice, mean, fill = parent)) +
+  geom_col(position = "dodge") +
+  labs(title = "Wave 1 Comparison", x = "Parenting Pracitice", y = "mean")
+
+```
+
+```{r}
+media_w6 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  na.omit() %>% 
+  group_by(parent) %>% 
+  summarize(solo = mean(solo),
+            coop = mean(coop),
+            tv_exposure = mean(tv_exposure),
+            passive = mean(passive),
+            mealtimes = mean(mealtimes),
+            behavior_management = mean(behavior_management),
+            digital_babysitting = mean(digital_babysitting),
+            daily_use = mean(daily_use)) %>% 
+  pivot_longer(!parent, names_to = "practice", values_to = "mean") %>% 
+  ggplot(aes(practice, mean, fill = parent)) +
+  geom_col(position = "dodge") +
+  labs(title = "Wave 6 Comparison", x = "Parenting Pracitice", y = "mean")
+
+```
+
