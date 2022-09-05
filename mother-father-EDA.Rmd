@@ -4,6 +4,7 @@ author: "Deborah Franza"
 date: "2022-09-02"
 output: html_document
 ---
+# libraries
 ```{r warning = FALSE}
 library(forcats)
 library(haven)
@@ -17,6 +18,8 @@ library(lmerTest)
 #install.packages("agricolae")
 library(agricolae)
 library(nlme)
+library(viridis)
+
 ```
 # Purpose of this file:
 
@@ -251,7 +254,17 @@ Difference b/w mother and fathers b/w waves in measurements:
 * positive beliefs
 * educ benefits
 
-## Interaction Plot of Parents Average Positive Media Beliefs
+### Grouped Barchart Parent Gender & Wave
+```{r}
+data %>% 
+ggplot( aes(x=wave, fill=parent)) + 
+  geom_bar(position="dodge") +
+  labs( title = "Number of Parents Reporting in Waves 1 & 6", x = "Wave" )
+```
+
+## Parents Average Positive Media Beliefs
+
+### Interaction Plot 
 ```{r}
 data %>% 
   ggplot() +
@@ -261,14 +274,41 @@ data %>%
   labs(title = "Parents Mean Positive Education Beliefs Waves 1 & 6", x = "Wave", y = "Parents Positive Beliefs about Media") +
   theme_bw()
 ```
+### Boxplot 
+```{r}
+data %>% 
+ggplot() +
+  aes(x = parent, y = positive_beliefs_media, color = parent) +
+  geom_boxplot() +
+  facet_wrap(~wave) +
+  labs(title = "Parents Positive Education Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Positive Beliefs about Media") +
+  theme_bw()
+```
 
-## Interaction Plot of Parents Average Educational Media Benefits Beliefs
+## Parents Average Educational Media Benefit Beliefs
+
+### Interaction Plot
 ```{r}
 data %>% 
   ggplot() +
   aes(x = wave, color = parent, group = parent, y = educational_benefits) +
   stat_summary(fun = mean, geom = "point") +
   stat_summary(fun = mean, geom = "line") +
-  labs(title = "Parents Average Educational Media Benefits Beliefs", x = "Wave", y = "Parents Average Educational Media Benefits Beliefs") +
+  labs(title = "Parents Average Educational Media Benefit Beliefs", x = "Wave", y = "Parents Average Educational Media Benefit Beliefs") +
   theme_bw()
 ```
+
+### Boxplot
+```{r}
+data %>% 
+ggplot() +
+  aes(x = parent, y = educational_benefits, color = parent) +
+  geom_boxplot() +
+  facet_wrap(~wave) +
+  labs(title = "Parents Average Educational Media Benefit Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Average Educational Media Benefit Beliefs") +
+  theme_bw()
+```
+
+
+
+
