@@ -245,11 +245,11 @@ There is not enough evidence to claim there is a difference in __average infant 
 ## Relevant Conclusion:
 Between waves 1 & 6 the only variables that are statistically different between parent gender are average Educational Benefits and average Positive Media Beliefs.
 
-# EDA based on Differences Found In ANOVA tests
+# EDA of ANOVA tests
 
 Difference b/w mother and fathers b/w waves in measurements: 
-* beliefs
-* educ
+* positive beliefs
+* educ benefits
 
 ## Interaction Plot of Parents Average Positive Media Beliefs
 ```{r}
@@ -262,3 +262,13 @@ data %>%
   theme_bw()
 ```
 
+## Interaction Plot of Parents Average Educational Media Benefits Beliefs
+```{r}
+data %>% 
+  ggplot() +
+  aes(x = wave, color = parent, group = parent, y = educational_benefits) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun = mean, geom = "line") +
+  labs(title = "Parents Average Educational Media Benefits Beliefs", x = "Wave", y = "Parents Average Educational Media Benefits Beliefs") +
+  theme_bw()
+```
