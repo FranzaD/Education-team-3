@@ -1,0 +1,82 @@
+---
+title: "n count each variable both waves"
+author: "Chandra Lindy"
+date: '2022-09-05'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(knitr)
+media_w1 <- readRDS("../data/media_wave_1.dta")
+media_w6 <- readRDS("../data/media_wave_6.dta")
+```
+
+
+```{r echo=FALSE}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 1 count") 
+```
+
+```{r echo = F}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  na.omit() %>%
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 1 count with NA values omitted") 
+```
+
+```{r echo = F}
+media_w6 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 6 count") 
+```
+
+```{r echo = F}
+media_w6 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  na.omit() %>% 
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 6 count with NA values omitted") 
+```
+
