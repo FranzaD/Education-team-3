@@ -46,7 +46,7 @@ To showcase previous work that is applicable to current problem statements and b
 ## Data:
 ```{r}
 ## data
-data <- readRDS("../data/media_long.dta")
+data <- readRDS("data/media_long.dta")
 
 data <- data %>%
   subset(wave != 4) %>% 
@@ -58,15 +58,15 @@ data <- data %>%
 Data
 
 ```{r warning = FALSE}
-pls <- readRDS("../data/pls_long_rank.dta")
-bit_mother <- readRDS("../data/BIT_long_mother.dta")
-bit_mother <- readRDS("../data/BIT_long_mother.dta")
-bit_father <- readRDS("../data/BIT_long_father.dta")
-bit <- readRDS("../data/BIT_long_par.dta")
-demo <- readRDS("../data/demography.dta")
-media <- readRDS("../data/media_long.dta")
-grouping <- readRDS("../data/grouping_data.dta")
-demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+pls <- readRDS("data/pls_long_rank.dta")
+bit_mother <- readRDS("data/BIT_long_mother.dta")
+bit_mother <- readRDS("data/BIT_long_mother.dta")
+bit_father <- readRDS("data/BIT_long_father.dta")
+bit <- readRDS("data/BIT_long_par.dta")
+demo <- readRDS("data/demography.dta")
+media <- readRDS("data/media_long.dta")
+grouping <- readRDS("data/grouping_data.dta")
+demographic_background <- read_dta("data/wave-1-(9-mo)/1_DEM_w1.dta")
 
 grouping <- grouping %>% 
   mutate(treatment = case_when(
