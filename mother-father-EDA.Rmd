@@ -18,12 +18,12 @@ library(lmerTest)
 library(agricolae)
 library(nlme)
 ```
-#### Purpose of this file:
+# Purpose of this file:
 
 To showcase previous work that is applicable to current problem statements and build more EDA to be able to answer the questions Dr. Reich specified:
 
 ---
-#### Problem Statements:
+# Problem Statements:
 
 1.How do new mothers’ and fathers’ parenting practices around media align when their first child is 9 (W1) and 24 (W6) months of age?
 
@@ -35,13 +35,13 @@ To showcase previous work that is applicable to current problem statements and b
 
 ---
 
-#### Tasks:
+## Tasks:
 1. determining techniques for analysis (graphs, statistics, statistical tests)
 3. gathering previous relevant work and building off of it
 4. Consicely interpret the results of our findings
 
 
-#### Previous Work Relevant Towards Problem Statements| Dataframes | EDA | Statistical 
+# Previous Work Relevant Towards Problem Statements| Dataframes | EDA | Statistical 
 
 Data
 
@@ -116,7 +116,10 @@ model <- media_pls1 %>%
 summary(model)
 ```
 
-#### ANOVA Tests
+## Relevant Conclusion:
+In the linear mixed effects model there is not enough statistical evidence that parent gender has as non-zero effect on infant language scores across waves 1,4 & 6.
+
+# ANOVA Tests:
 Difference b/w mother and fathers b/w waves exists? 
 
 ###### Solo Use
@@ -233,7 +236,8 @@ There is not enough evidence to claim there is a difference in __average infant 
 
 There is not enough evidence to claim there is a difference in __average infant discipline behavior management__ reported in waves 1 & 6.
 ---
-
+## Relevant Conclusion:
+Between waves 1 & 6 the only variables that are statistically different between parent gender are average Educational Benefits and average Positive Media Beliefs.
 
 #### EDA based on Differences Found In ANOVA tests
 
