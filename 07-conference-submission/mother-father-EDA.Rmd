@@ -19,7 +19,6 @@ library(lmerTest)
 library(agricolae)
 library(nlme)
 library(viridis)
-
 ```
 # Purpose of this file:
 
@@ -46,7 +45,7 @@ To showcase previous work that is applicable to current problem statements and b
 ## Data:
 ```{r}
 ## data
-data <- readRDS("data/media_long.dta")
+data <- readRDS("../data/media_long.dta")
 
 data <- data %>%
   subset(wave != 4) %>% 
@@ -58,15 +57,15 @@ data <- data %>%
 Data
 
 ```{r warning = FALSE}
-pls <- readRDS("data/pls_long_rank.dta")
-bit_mother <- readRDS("data/BIT_long_mother.dta")
-bit_mother <- readRDS("data/BIT_long_mother.dta")
-bit_father <- readRDS("data/BIT_long_father.dta")
-bit <- readRDS("data/BIT_long_par.dta")
-demo <- readRDS("data/demography.dta")
-media <- readRDS("data/media_long.dta")
-grouping <- readRDS("data/grouping_data.dta")
-demographic_background <- read_dta("data/wave-1-(9-mo)/1_DEM_w1.dta")
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 
 grouping <- grouping %>% 
   mutate(treatment = case_when(
@@ -261,6 +260,8 @@ ggplot( aes(x=wave, fill=parent)) +
   geom_bar(position="dodge") +
   labs( title = "Number of Parents Reporting in Waves 1 & 6", x = "Wave" )
 ```
+Observation:
+We lost parents between wave 1 and wave 6, this is expected however it's important to note that we lost more father reportings.
 
 ## Parents Average Positive Media Beliefs
 
@@ -274,6 +275,9 @@ data %>%
   labs(title = "Parents Mean Positive Education Beliefs Waves 1 & 6", x = "Wave", y = "Parents Positive Beliefs about Media") +
   theme_bw()
 ```
+Observations:
+On average fathers had higher positive beliefs about media than mothers did, we see this relationship consistently in wave 1 and 6. Another general trend is that positive beliefs increase for both parent gender is the later wave (as the child gets older).
+
 ### Boxplot 
 ```{r}
 data %>% 
@@ -284,6 +288,9 @@ ggplot() +
   labs(title = "Parents Positive Education Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Positive Beliefs about Media") +
   theme_bw()
 ```
+Observations:
+There is a fair amount of overlap of ratings of parents positive beliefs about media in both waves 1 and 6. We see outliers for both mothers and fathers in wave 1 but not outliers for either parent gender in wave 6. We see that generally fathers have higher positive beliefs about media than mothers.
+
 
 ## Parents Average Educational Media Benefit Beliefs
 
@@ -297,6 +304,8 @@ data %>%
   labs(title = "Parents Average Educational Media Benefit Beliefs", x = "Wave", y = "Parents Average Educational Media Benefit Beliefs") +
   theme_bw()
 ```
+Observations:
+A similar trend where on average fathers consistently have higher beliefs in media education than mothers across waves 1 and 6.
 
 ### Boxplot
 ```{r}
@@ -308,7 +317,7 @@ ggplot() +
   labs(title = "Parents Average Educational Media Benefit Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Average Educational Media Benefit Beliefs") +
   theme_bw()
 ```
-
-
+Observations:
+There is visually less overlap of the mother and father ratings of beliefs surrounding media education, with fathers having generally higher ratings than mothers. We see outlers for mothers in both waves for this variable.
 
 
