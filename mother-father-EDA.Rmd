@@ -4,7 +4,20 @@ author: "Deborah Franza"
 date: "2022-09-02"
 output: html_document
 ---
-
+```{r warning = FALSE}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(lme4)
+library(lmerTest)
+#install.packages("agricolae")
+library(agricolae)
+library(nlme)
+```
 #### Purpose of this file:
 
 To showcase previous work that is applicable to current problem statements and build more EDA to be able to answer the questions Dr. Reich specified:
@@ -22,55 +35,26 @@ To showcase previous work that is applicable to current problem statements and b
 
 ---
 
-#### Question for PI:
-
-How are we quantifying parenting styles?
-  * basing reponses off the MEDIA, TECHNOLOGY, AND YOUNG CHILDREN QUESTIONNAIRE?
-  
-
 #### Tasks:
 1. determining techniques for analysis (graphs, statistics, statistical tests)
-2. partitioning work effectively
 3. gathering previous relevant work and building off of it
 4. Consicely interpret the results of our findings
-5. Clarify what specific variables Dr. Reich is interested in
-    -  averages of media assessment questions
-6. Clarify that she wants to be able to describe how parents agree/disagree on how they let their infants use media/ are exposed to media
+
 
 #### Previous Work Relevant Towards Problem Statements| Dataframes | EDA | Statistical 
 
-### Data
-```{r}
+Data
 
-library(forcats)
-library(haven)
-library(readxl)
-library(ggplot2)
-library(tidyverse)
-library(dplyr)
-library(janitor)
-library(lme4)
-library(lmerTest)
-
-pls <- readRDS("../data/pls_long_rank.dta")
-bit_mother <- readRDS("../data/BIT_long_mother.dta")
-bit_father <- readRDS("../data/BIT_long_father.dta")
-bit <- readRDS("../data/BIT_long_par.dta")
-demo <- readRDS("../data/demography.dta")
-media <- readRDS("../data/media_long.dta")
-grouping <- readRDS("../data/grouping_data.dta")
-
-
-
-# demo <- demo %>% 
-#   transmute(par_id, child_id, 
-#             bill_difficulty = as.factor(bill_difficulty),
-#             marital_status = as.factor(marital_status),
-#             assistance,
-#             father)
-
-#library(naniar)
-#vis_miss(demo)
+```{r warning = FALSE}
+pls <- readRDS("data/pls_long_rank.dta")
+bit_mother <- readRDS("data/BIT_long_mother.dta")
+bit_mother <- readRDS("data/BIT_long_mother.dta")
+bit_father <- readRDS("data/BIT_long_father.dta")
+bit <- readRDS("data/BIT_long_par.dta")
+demo <- readRDS("data/demography.dta")
+media <- readRDS("data/media_long.dta")
+grouping <- readRDS("data/grouping_data.dta")
+demographic_background <- read_dta("data/wave-1-(9-mo)/1_DEM_w1.dta")
 
 grouping <- grouping %>% 
   mutate(treatment = case_when(
@@ -113,7 +97,6 @@ media_pls_father <- media %>%
   inner_join(demo, by = c("child_id", "par_id")) %>%
   filter(par_id >= 30000)
  
-demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
 media_pls <- media_pls %>% 
   inner_join(transmute(demographic_background, par_age = parage,
     child_id = as.character(childid),
@@ -122,17 +105,165 @@ media_pls <- media_pls %>%
 media_pls1 <- media_pls %>% 
   select(plspr, behavior_management, father,wave, treatment , par_age, years_school_complete, span_lang_form, child_id) %>% 
   na.omit()
+```
 
+Model
+
+```{r warning = FALSE}
 model <- media_pls1 %>% 
   lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
 
 summary(model)
 ```
 
-```{r}
-model <- media_pls1 %>% 
-  lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+#### ANOVA Tests
+Difference b/w mother and fathers b/w waves exists? 
 
-summary(model)
+###### Solo Use
+```{r}
+solodiff <- aov(solo ~ parent + wave, data = data)
+
+summary(solodiff)
+```
+There is not enough evidence to claim there is a difference in __average infant solo use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in __average infant solo use__ reported in waves 1 & 6.
+
+###### Number Of Devices
+```{r}
+devicediff <- aov(n_devices ~ parent + wave, data = data)
+
+summary(devicediff)
+```
+There is not enough evidence to claim there is a difference in __average number of devices__ as reported by mothers and fathers in waves 1 & 6.
+
+There is not enough evidence to claim there is a difference in __average number of devices__ reported in waves 1 & 6.
+
+###### Passive Use 
+```{r}
+passdiff <- aov(passive ~ parent + wave, data = data)
+
+summary(passdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant passive use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in __average infant passive use__ reported in waves 1 & 6.
+
+###### Coop Use 
+```{r}
+coopdiff <- aov(coop ~ parent + wave, data = data)
+
+summary(coopdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant cooperative use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant cooperative use__ reported in waves 1 & 6.
+
+###### Mealtimes Use
+```{r}
+mealdiff <- aov(mealtimes ~ parent + wave, data = data)
+
+summary(mealdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant mealtimes use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant mealtimes use__ reported in waves 1 & 6.
+
+###### Behavior Management
+```{r}
+behaviordiff <- aov(behavior_management ~ parent + wave, data = data)
+
+summary(behaviordiff)
+```
+There is not enough evidence to claim there is a difference in __average media used as a form of behavior management__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average media used as a form of behavior management__ reported in waves 1 & 6.
+
+###### Positive Media Beliefs (signficant)
+```{r}
+beliefsdiff <- aov(positive_beliefs_media ~ parent + wave, data = data)
+
+summary(beliefsdiff)
+```
+There IS enough evidence to claim there is a difference in __average positive media beliefs__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average positive media beliefs__ reported in waves 1 & 6.
+
+###### Educational Benefits (signficant)
+```{r}
+edubendiff <- aov(educational_benefits ~ parent + wave, data = data)
+
+summary(edubendiff)
+```
+There IS enough evidence to claim there is a difference in __average Educational Benefit Beliefs__ as reported by mothers and fathers.
+
+There is not enough evidence to claim there is a difference in __average Educational Benefit Beliefs__ reported in waves 1 & 6.
+
+###### Digital Babysitting 
+```{r}
+digbabydiff <- aov(digital_babysitting ~ parent + wave, data = data)
+
+summary(digbabydiff)
+TukeyHSD(digbabydiff)
+```
+There is not enough evidence to claim there is a difference in __average infant digital babysitting__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant digital babysitting__ reported in waves 1 & 6.
+
+###### Daily Use
+```{r}
+dailydiff <- aov(daily_use ~ parent + wave, data = data)
+
+summary(dailydiff)
+TukeyHSD(dailydiff)
+```
+There is not enough evidence to claim there is a difference in __average infant daily use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant daily use__ reported in waves 1 & 6.
+
+
+###### Discipline Behavior Management
+```{r}
+discbmdiff <- aov(discipline_behavior_management ~ parent + wave, data = data)
+
+summary(discbmdiff)
+TukeyHSD(discbmdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant discipline behavior management__ as reported by mothers and fathers.
+
+There is not enough evidence to claim there is a difference in __average infant discipline behavior management__ reported in waves 1 & 6.
+---
+
+
+#### EDA based on Differences Found In ANOVA tests
+
+Data
+```{r}
+## data
+data <- readRDS("../data/media_long.dta")
+
+data <- data %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother"))
+```
+
+Main Observations
+
+Difference b/w mother and fathers b/w waves in measurements: 
+* solo
+* coop
+* passive
+* mealtime
+* behavior managment
+* dailyuse
+* digital babysitting
+
+Missing
+* number of devices
+* tvexposure
+* beliefs
+* educ
+
+```{r}
+
 ```
 
