@@ -35,15 +35,14 @@ media_w1 %>%
   select(-starts_with("q")) %>%
   mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
   group_by(parent) %>% 
-  na.omit() %>%
-  summarize(solo = n(),
-            coop = n(),
-            tv_exposure = n(),
-            passive = n(),
-            mealtimes = n(),
-            behavior_management = n(),
-            digital_babysitting = n(),
-            daily_use = n()) %>%
+  summarize(solo = sum(!is.na(solo)),
+            coop = sum(!is.na(coop)),
+            tv_exposure = sum(!is.na(tv_exposure)),
+            passive = sum(!is.na(passive)),
+            mealtimes = sum(!is.na(mealtimes)),
+            behavior_management = sum(!is.na(behavior_management)),
+            digital_babysitting = sum(!is.na(digital_babysitting)),
+            daily_use = sum(!is.na(daily_use))) %>%
   kable(caption = "Wave 1 count with NA values omitted") 
 ```
 
@@ -68,15 +67,54 @@ media_w6 %>%
   select(-starts_with("q")) %>%
   mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
   group_by(parent) %>% 
-  na.omit() %>% 
-  summarize(solo = n(),
-            coop = n(),
-            tv_exposure = n(),
-            passive = n(),
-            mealtimes = n(),
-            behavior_management = n(),
-            digital_babysitting = n(),
-            daily_use = n()) %>%
-  kable(caption = "Wave 6 count with NA values omitted") 
+  summarize(solo = sum(!is.na(solo)),
+            coop = sum(!is.na(coop)),
+            tv_exposure = sum(!is.na(tv_exposure)),
+            passive = sum(!is.na(passive)),
+            mealtimes = sum(!is.na(mealtimes)),
+            behavior_management = sum(!is.na(behavior_management)),
+            digital_babysitting = sum(!is.na(digital_babysitting)),
+            daily_use = sum(!is.na(daily_use))) %>%
+  kable(caption = "Wave 6 count with NA values omitted")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  mutate(solo_total = sum(!is.na(solo)),
+            coop_total = sum(!is.na(coop)),
+            tv_exposure_total = sum(!is.na(tv_exposure)),
+            passive_total = sum(!is.na(passive)),
+            mealtimes_total = sum(!is.na(mealtimes)),
+            behavior_management_total = sum(!is.na(behavior_management)),
+            digital_babysitting_total = sum(!is.na(digital_babysitting)),
+            daily_use_total = sum(!is.na(daily_use))) %>%
+  filter(daily_use == 0) %>% 
+  mutate(zero_daily_usage = n()) %>%
+  summarize(percent_daily_usage = zero_daily_usage / daily_use_total) %>% 
+  distinct(parent, percent_daily_usage) %>%
+  kable(caption = "Wave 1 - Percentage of zero daily media usage")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+media_w6 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  mutate(solo_total = sum(!is.na(solo)),
+            coop_total = sum(!is.na(coop)),
+            tv_exposure_total = sum(!is.na(tv_exposure)),
+            passive_total = sum(!is.na(passive)),
+            mealtimes_total = sum(!is.na(mealtimes)),
+            behavior_management_total = sum(!is.na(behavior_management)),
+            digital_babysitting_total = sum(!is.na(digital_babysitting)),
+            daily_use_total = sum(!is.na(daily_use))) %>%
+  filter(daily_use == 0) %>% 
+  mutate(zero_daily_usage = n()) %>%
+  summarize(percent_daily_usage = zero_daily_usage / daily_use_total) %>% 
+  distinct(parent, percent_daily_usage) %>%
+  kable(caption = "Wave 6 - Percentage of zero daily media usage")
 ```
 
