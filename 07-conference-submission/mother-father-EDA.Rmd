@@ -278,12 +278,13 @@ data %>%
 Observations:
 On average fathers had higher positive beliefs about media than mothers did, we see this relationship consistently in wave 1 and 6. Another general trend is that positive beliefs increase for both parent gender is the later wave (as the child gets older).
 
-### Boxplot 
+### Boxplot/Violin plot 
 ```{r}
 data %>% 
 ggplot() +
   aes(x = parent, y = positive_beliefs_media, color = parent) +
-  geom_boxplot() +
+  geom_violin() +
+  geom_boxplot(width=0.4) +
   facet_wrap(~wave) +
   labs(title = "Parents Positive Education Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Positive Beliefs about Media") +
   theme_bw()
@@ -307,17 +308,18 @@ data %>%
 Observations:
 A similar trend where on average fathers consistently have higher beliefs in media education than mothers across waves 1 and 6.
 
-### Boxplot
+### Boxplot/Violin plot
 ```{r}
 data %>% 
 ggplot() +
   aes(x = parent, y = educational_benefits, color = parent) +
-  geom_boxplot() +
+  geom_violin() +
+  geom_boxplot(width=0.4) +
   facet_wrap(~wave) +
   labs(title = "Parents Average Educational Media Benefit Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Average Educational Media Benefit Beliefs") +
   theme_bw()
 ```
 Observations:
-There is visually less overlap of the mother and father ratings of beliefs surrounding media education, with fathers having generally higher ratings than mothers. We see outlers for mothers in both waves for this variable.
+There is visually less overlap of the mother and father ratings of beliefs surrounding media education, with fathers having generally higher ratings than mothers. We see outliers for mothers in both waves for this variable.
 
 
