@@ -1,0 +1,101 @@
+```{r}
+library(tidyverse)
+library(haven)
+library(lme4)
+library(lmerTest)
+library(nlme)
+```
+
+```{r}
+## data
+data <- readRDS("../data/media_long.dta")
+
+data <- data %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother"))
+```
+
+
+# Wants to know difference between mother and father for all vairable in data set 
+
+
+Difference between mom and dad for solo in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+solodiff <- aov(solo ~ par_id + wave, data = data)
+
+summary(solodiff)
+```
+There is a difference between what mothers report and what fathers report for "solo" between the waves
+
+Tukey Test for differences between parent and wave for "solo"
+```{r}
+summaTukeyHSD(solodiff)
+```
+
+
+
+
+Difference between mom and dad for coop in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+coopdiff <- aov(coop ~ par_id + wave, data = data)
+
+summary(coopdiff)
+```
+There is a difference between what mothers report and what fathers report for "coop" between the waves 
+
+
+Difference between mom and dad for passive in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+passivediff <- aov(passive ~ par_id + wave, data = data)
+
+summary(passivediff)
+```
+There is a difference between what mothers report and what fathers report for "passive" between the waves
+
+Difference between mom and dad for mealtime in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+mealtimediff <- aov(mealtimes ~ par_id + wave, data = data)
+
+summary(mealtimediff)
+```
+There is a difference between what mothers report and what fathers report for "mealtime" between the waves
+
+
+Difference between mom and dad for behavior management in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+behaviormanagementdiff <- aov(behavior_management ~ par_id + wave, data = data)
+
+summary(behaviormanagementdiff)
+```
+There is a difference between what mothers report and what fathers report for "behavior managment" between the waves
+
+
+Difference between mom and dad for daily use in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+dailyusediff <- aov(daily_use ~ par_id + wave, data = data)
+
+summary(dailyusediff)
+```
+There is a difference between what mothers report and what fathers report for "dailyuse" between the waves
+
+
+Difference between mom and dad for digital babysitting in wave 1
+#par_id > 30,000 then it is male 
+```{r}
+
+digitalbabysittingdiff <- aov(digital_babysitting ~ par_id + wave, data = data)
+
+summary(digitalbabysittingdiff)
+```
+There is a difference between what mothers report and what fathers report for "digital babysitting" between the waves
