@@ -8,8 +8,9 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-media_w1 <- readRDS("data/media_wave_1.dta")
-media_w6 <- readRDS("data/media_wave_6.dta")
+library(knitr)
+media_w1 <- readRDS("../data/media_wave_1.dta")
+media_w6 <- readRDS("../data/media_wave_6.dta")
 ```
 
 ```{r eval=FALSE, include=FALSE}
@@ -66,16 +67,16 @@ media_w1 %>%
 media_w1 %>% 
   select(-starts_with("q")) %>%
   mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
-  na.omit() %>% 
+  #na.omit() %>% 
   group_by(parent) %>% 
-  summarize(solo = mean(solo),
-            coop = mean(coop),
-            tv_exposure = mean(tv_exposure),
-            passive = mean(passive),
-            mealtimes = mean(mealtimes),
-            behavior_management = mean(behavior_management),
-            digital_babysitting = mean(digital_babysitting),
-            daily_use = mean(daily_use)) %>% 
+  summarize(solo = mean(solo, na.rm = T),
+            coop = mean(coop, na.rm = T),
+            tv_exposure = mean(tv_exposure, na.rm = T),
+            passive = mean(passive, na.rm = T),
+            mealtimes = mean(mealtimes, na.rm = T),
+            behavior_management = mean(behavior_management, na.rm = T),
+            digital_babysitting = mean(digital_babysitting, na.rm = T),
+            daily_use = mean(daily_use, na.rm = T)) %>% 
   pivot_longer(!parent, names_to = "practice", values_to = "mean") %>% 
   ggplot(aes(practice, mean, fill = parent)) +
   geom_col(position = "dodge") +
@@ -87,20 +88,86 @@ media_w1 %>%
 media_w6 %>% 
   select(-starts_with("q")) %>%
   mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
-  na.omit() %>% 
+  #na.omit() %>% 
   group_by(parent) %>% 
-  summarize(solo = mean(solo),
-            coop = mean(coop),
-            tv_exposure = mean(tv_exposure),
-            passive = mean(passive),
-            mealtimes = mean(mealtimes),
-            behavior_management = mean(behavior_management),
-            digital_babysitting = mean(digital_babysitting),
-            daily_use = mean(daily_use)) %>% 
+  summarize(solo = mean(solo, na.rm = T),
+            coop = mean(coop, na.rm = T),
+            tv_exposure = mean(tv_exposure, na.rm = T),
+            passive = mean(passive, na.rm = T),
+            mealtimes = mean(mealtimes, na.rm = T),
+            behavior_management = mean(behavior_management, na.rm = T),
+            digital_babysitting = mean(digital_babysitting, na.rm = T),
+            daily_use = mean(daily_use, na.rm = T)) %>% 
   pivot_longer(!parent, names_to = "practice", values_to = "mean") %>% 
   ggplot(aes(practice, mean, fill = parent)) +
   geom_col(position = "dodge") +
   labs(title = "Wave 6 Comparison", x = "Parenting Pracitice", y = "mean")
 
+```
+
+```{r}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 1 count") 
+```
+
+```{r}
+media_w1 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  na.omit() %>%
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 1 count with NA values omitted") 
+```
+
+```{r}
+media_w6 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 6 count") 
+```
+
+```{r}
+media_w6 %>% 
+  select(-starts_with("q")) %>%
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother")) %>%
+  group_by(parent) %>% 
+  na.omit() %>% 
+  summarize(solo = n(),
+            coop = n(),
+            tv_exposure = n(),
+            passive = n(),
+            mealtimes = n(),
+            behavior_management = n(),
+            digital_babysitting = n(),
+            daily_use = n()) %>%
+  kable(caption = "Wave 6 count with NA values omitted") 
 ```
 
