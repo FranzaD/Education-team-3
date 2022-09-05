@@ -40,6 +40,15 @@ To showcase previous work that is applicable to current problem statements and b
 3. gathering previous relevant work and building off of it
 4. Consicely interpret the results of our findings
 
+## Data:
+```{r}
+## data
+data <- readRDS("data/media_long.dta")
+
+data <- data %>%
+  subset(wave != 4) %>% 
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother"))
+```
 
 # Previous Work Relevant Towards Problem Statements| Dataframes | EDA | Statistical 
 
@@ -120,7 +129,7 @@ summary(model)
 In the linear mixed effects model there is not enough statistical evidence that parent gender has as non-zero effect on infant language scores across waves 1,4 & 6.
 
 # ANOVA Tests:
-Difference b/w mother and fathers b/w waves exists? 
+Difference b/w mother and fathers b/w waves 1 & 6 exists? 
 
 ###### Solo Use
 ```{r}
@@ -207,7 +216,6 @@ There is not enough evidence to claim there is a difference in __average Educati
 digbabydiff <- aov(digital_babysitting ~ parent + wave, data = data)
 
 summary(digbabydiff)
-TukeyHSD(digbabydiff)
 ```
 There is not enough evidence to claim there is a difference in __average infant digital babysitting__ as reported by mothers and fathers.
 
@@ -218,7 +226,6 @@ There IS evidence to claim there is a difference in  __average infant digital ba
 dailydiff <- aov(daily_use ~ parent + wave, data = data)
 
 summary(dailydiff)
-TukeyHSD(dailydiff)
 ```
 There is not enough evidence to claim there is a difference in __average infant daily use__ as reported by mothers and fathers.
 
@@ -230,7 +237,6 @@ There IS evidence to claim there is a difference in  __average infant daily use_
 discbmdiff <- aov(discipline_behavior_management ~ parent + wave, data = data)
 
 summary(discbmdiff)
-TukeyHSD(discbmdiff)
 ```
 There is not enough evidence to claim there is a difference in __average infant discipline behavior management__ as reported by mothers and fathers.
 
@@ -239,35 +245,20 @@ There is not enough evidence to claim there is a difference in __average infant 
 ## Relevant Conclusion:
 Between waves 1 & 6 the only variables that are statistically different between parent gender are average Educational Benefits and average Positive Media Beliefs.
 
-#### EDA based on Differences Found In ANOVA tests
-
-Data
-```{r}
-## data
-data <- readRDS("../data/media_long.dta")
-
-data <- data %>%
-  mutate(parent = ifelse(par_id > 30000, "Father", "Mother"))
-```
-
-Main Observations
+# EDA based on Differences Found In ANOVA tests
 
 Difference b/w mother and fathers b/w waves in measurements: 
-* solo
-* coop
-* passive
-* mealtime
-* behavior managment
-* dailyuse
-* digital babysitting
-
-Missing
-* number of devices
-* tvexposure
 * beliefs
 * educ
 
+## Interaction Plot of Parents Average Positive Media Beliefs
 ```{r}
-
+data %>% 
+  ggplot() +
+  aes(x = wave, color = parent, group = parent, y = positive_beliefs_media) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun = mean, geom = "line") +
+  labs(title = "Parents Mean Positive Education Beliefs Waves 1 & 6", x = "Wave", y = "Parents Positive Beliefs about Media") +
+  theme_bw()
 ```
 
