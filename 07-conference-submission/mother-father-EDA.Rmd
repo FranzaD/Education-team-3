@@ -1,0 +1,325 @@
+---
+title: "mothers-fathers-EDA"
+author: "Deborah Franza"
+date: "2022-09-02"
+output: html_document
+---
+# libraries
+```{r warning = FALSE}
+library(forcats)
+library(haven)
+library(readxl)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(janitor)
+library(lme4)
+library(lmerTest)
+#install.packages("agricolae")
+library(agricolae)
+library(nlme)
+library(viridis)
+```
+# Purpose of this file:
+
+To showcase previous work that is applicable to current problem statements and build more EDA to be able to answer the questions Dr. Reich specified:
+
+---
+# Problem Statements:
+
+1.How do new mothers’ and fathers’ parenting practices around media align when their first child is 9 (W1) and 24 (W6) months of age?
+
+2.How do mothers’ and fathers’ parenting around media relate to their child’s development of language, social skills and behavior problems?
+
+    a.Do mothers’ and fathers’ parenting around media differentially predict child outcomes?
+    
+* PI wants to describe how parents agree/disagree on how they let their infants use media/ are exposed to media
+
+---
+
+## Tasks:
+1. determining techniques for analysis (graphs, statistics, statistical tests)
+3. gathering previous relevant work and building off of it
+4. Consicely interpret the results of our findings
+
+## Data:
+```{r}
+## data
+data <- readRDS("../data/media_long.dta")
+
+data <- data %>%
+  subset(wave != 4) %>% 
+  mutate(parent = ifelse(par_id > 30000, "Father", "Mother"))
+```
+
+# Previous Work Relevant Towards Problem Statements| Dataframes | EDA | Statistical 
+
+Data
+
+```{r warning = FALSE}
+pls <- readRDS("../data/pls_long_rank.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_mother <- readRDS("../data/BIT_long_mother.dta")
+bit_father <- readRDS("../data/BIT_long_father.dta")
+bit <- readRDS("../data/BIT_long_par.dta")
+demo <- readRDS("../data/demography.dta")
+media <- readRDS("../data/media_long.dta")
+grouping <- readRDS("../data/grouping_data.dta")
+demographic_background <- read_dta("../data/wave-1-(9-mo)/1_DEM_w1.dta")
+
+grouping <- grouping %>% 
+  mutate(treatment = case_when(
+    condition == "4" ~ " - control",
+    condition == "1" ~ " - mom",
+    condition == "2" ~ " - dad",
+    condition == "3" ~ " - both"),
+    treatment = fct_relevel(
+      treatment,
+      " - control",
+      " - mom",
+      " - dad",
+      " - both"),
+    control = ifelse(condition == "4", TRUE, FALSE))
+
+pls <- pls %>%
+  mutate(par_id = as.character(par_id),
+         child_id = as.character(child_id))
+pls %>% 
+  filter(wave == 6) %>% 
+  nrow()
+
+media_pls <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id"))
+
+media_pls_mother <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id < 30000)
+
+media_pls_father <- media %>%
+  full_join(bit, by = c("child_id", "wave")) %>% 
+  full_join(pls, by = c("par_id", "child_id", "wave")) %>%
+  inner_join(grouping, by = c("child_id")) %>%
+  inner_join(demo, by = c("child_id", "par_id")) %>%
+  filter(par_id >= 30000)
+ 
+media_pls <- media_pls %>% 
+  inner_join(transmute(demographic_background, par_age = parage,
+    child_id = as.character(childid),
+      par_id = as.character(parid)), by = c("child_id", "par_id"))
+
+media_pls1 <- media_pls %>% 
+  select(plspr, behavior_management, father,wave, treatment , par_age, years_school_complete, span_lang_form, child_id) %>% 
+  na.omit()
+```
+
+Model
+
+```{r warning = FALSE}
+model <- media_pls1 %>% 
+  lmer(plspr ~ behavior_management+ father+wave+ treatment + par_age+ years_school_complete+ span_lang_form+ (1 | child_id), REML = FALSE, data = .)
+
+summary(model)
+```
+
+## Relevant Conclusion:
+In the linear mixed effects model there is not enough statistical evidence that parent gender has as non-zero effect on infant language scores across waves 1,4 & 6.
+
+# ANOVA Tests:
+Difference b/w mother and fathers b/w waves 1 & 6 exists? 
+
+###### Solo Use
+```{r}
+solodiff <- aov(solo ~ parent + wave, data = data)
+
+summary(solodiff)
+```
+There is not enough evidence to claim there is a difference in __average infant solo use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in __average infant solo use__ reported in waves 1 & 6.
+
+###### Number Of Devices
+```{r}
+devicediff <- aov(n_devices ~ parent + wave, data = data)
+
+summary(devicediff)
+```
+There is not enough evidence to claim there is a difference in __average number of devices__ as reported by mothers and fathers in waves 1 & 6.
+
+There is not enough evidence to claim there is a difference in __average number of devices__ reported in waves 1 & 6.
+
+###### Passive Use 
+```{r}
+passdiff <- aov(passive ~ parent + wave, data = data)
+
+summary(passdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant passive use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in __average infant passive use__ reported in waves 1 & 6.
+
+###### Coop Use 
+```{r}
+coopdiff <- aov(coop ~ parent + wave, data = data)
+
+summary(coopdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant cooperative use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant cooperative use__ reported in waves 1 & 6.
+
+###### Mealtimes Use
+```{r}
+mealdiff <- aov(mealtimes ~ parent + wave, data = data)
+
+summary(mealdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant mealtimes use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant mealtimes use__ reported in waves 1 & 6.
+
+###### Behavior Management
+```{r}
+behaviordiff <- aov(behavior_management ~ parent + wave, data = data)
+
+summary(behaviordiff)
+```
+There is not enough evidence to claim there is a difference in __average media used as a form of behavior management__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average media used as a form of behavior management__ reported in waves 1 & 6.
+
+###### Positive Media Beliefs (signficant)
+```{r}
+beliefsdiff <- aov(positive_beliefs_media ~ parent + wave, data = data)
+
+summary(beliefsdiff)
+```
+There IS enough evidence to claim there is a difference in __average positive media beliefs__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average positive media beliefs__ reported in waves 1 & 6.
+
+###### Educational Benefits (signficant)
+```{r}
+edubendiff <- aov(educational_benefits ~ parent + wave, data = data)
+
+summary(edubendiff)
+```
+There IS enough evidence to claim there is a difference in __average Educational Benefit Beliefs__ as reported by mothers and fathers.
+
+There is not enough evidence to claim there is a difference in __average Educational Benefit Beliefs__ reported in waves 1 & 6.
+
+###### Digital Babysitting 
+```{r}
+digbabydiff <- aov(digital_babysitting ~ parent + wave, data = data)
+
+summary(digbabydiff)
+```
+There is not enough evidence to claim there is a difference in __average infant digital babysitting__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant digital babysitting__ reported in waves 1 & 6.
+
+###### Daily Use
+```{r}
+dailydiff <- aov(daily_use ~ parent + wave, data = data)
+
+summary(dailydiff)
+```
+There is not enough evidence to claim there is a difference in __average infant daily use__ as reported by mothers and fathers.
+
+There IS evidence to claim there is a difference in  __average infant daily use__ reported in waves 1 & 6.
+
+
+###### Discipline Behavior Management
+```{r}
+discbmdiff <- aov(discipline_behavior_management ~ parent + wave, data = data)
+
+summary(discbmdiff)
+```
+There is not enough evidence to claim there is a difference in __average infant discipline behavior management__ as reported by mothers and fathers.
+
+There is not enough evidence to claim there is a difference in __average infant discipline behavior management__ reported in waves 1 & 6.
+---
+## Relevant Conclusion:
+Between waves 1 & 6 the only variables that are statistically different between parent gender are average Educational Benefits and average Positive Media Beliefs.
+
+# EDA of ANOVA tests
+
+Difference b/w mother and fathers b/w waves in measurements: 
+* positive beliefs
+* educ benefits
+
+### Grouped Barchart Parent Gender & Wave
+```{r}
+data %>% 
+ggplot( aes(x=wave, fill=parent)) + 
+  geom_bar(position="dodge") +
+  labs( title = "Number of Parents Reporting in Waves 1 & 6", x = "Wave" )
+```
+Observation:
+We lost parents between wave 1 and wave 6, this is expected however it's important to note that we lost more father reportings.
+
+## Parents Average Positive Media Beliefs
+
+##### Interaction Plot 
+```{r}
+data %>% 
+  ggplot() +
+  aes(x = wave, color = parent, group = parent, y = positive_beliefs_media) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun = mean, geom = "line") +
+  labs(title = "Parents Mean Positive Education Beliefs Waves 1 & 6", x = "Wave", y = "Parents Positive Beliefs about Media") +
+  theme_bw()
+```
+Observations:
+On average fathers had higher positive beliefs about media than mothers did, we see this relationship consistently in wave 1 and 6. Another general trend is that positive beliefs increase for both parent gender is the later wave (as the child gets older).
+
+##### Boxplot/Violin plot 
+```{r}
+data %>% 
+ggplot() +
+  aes(x = parent, y = positive_beliefs_media, color = parent) +
+  geom_violin() +
+  geom_boxplot(width=0.4) +
+  facet_wrap(~wave) +
+  labs(title = "Parents Positive Education Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Positive Beliefs about Media") +
+  theme_bw()
+```
+Observations:
+There is a fair amount of overlap of ratings of parents positive beliefs about media in both waves 1 and 6. We see outliers for both mothers and fathers in wave 1 but not outliers for either parent gender in wave 6. We see that generally fathers have higher positive beliefs about media than mothers.
+
+
+## Parents Average Educational Media Benefit Beliefs
+
+##### Interaction Plot
+```{r}
+data %>% 
+  ggplot() +
+  aes(x = wave, color = parent, group = parent, y = educational_benefits) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun = mean, geom = "line") +
+  labs(title = "Parents Average Educational Media Benefit Beliefs", x = "Wave", y = "Parents Average Educational Media Benefit Beliefs") +
+  theme_bw()
+```
+Observations:
+A similar trend where on average fathers consistently have higher beliefs in media education than mothers across waves 1 and 6.
+
+##### Boxplot/Violin plot
+```{r}
+data %>% 
+ggplot() +
+  aes(x = parent, y = educational_benefits, color = parent) +
+  geom_violin() +
+  geom_boxplot(width=0.4) +
+  facet_wrap(~wave) +
+  labs(title = "Parents Average Educational Media Benefit Beliefs Waves 1 & 6", x = "Parent Gender", y = "Parents Average Educational Media Benefit Beliefs") +
+  theme_bw()
+```
+Observations:
+There is visually less overlap of the mother and father ratings of beliefs surrounding media education, with fathers having generally higher ratings than mothers. We see outliers for mothers in both waves for this variable.
+
+
